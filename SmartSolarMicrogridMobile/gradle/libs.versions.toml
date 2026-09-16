@@ -10,6 +10,7 @@ material = "1.14.0"
 activity = "1.13.0"
 constraintlayout = "2.2.2"
 room = "2.6.1"
+ksp = "2.1.0-1.0.29"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,4 +28,4 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
