@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">SmartSolarMicrogridMobile</string>
+    <string name="register_title">Prosumer Registration</string>
+    <string name="register_subtitle">Create your account to start sharing solar energy</string>
+    <string name="nic_hint">NIC</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="email_hint">Email</string>
+    <string name="phone_hint">Phone Number</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Re-enter Password</string>
+    <string name="register">Register</string>
+    <string name="registration_success">Registration successful</string>
+    <string name="error_nic_required">NIC is required</string>
+    <string name="error_nic_invalid">NIC must be 12 digits or 10 digits ending with \'v\'</string>
+    <string name="error_full_name_required">Full name is required</string>
+    <string name="error_email_required">Email is required</string>
+    <string name="error_email_invalid">Enter a valid email address</string>
+    <string name="error_phone_required">Phone number is required</string>
+    <string name="error_phone_invalid">Phone number must contain 10 digits and start with 07</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_password_invalid">Password must be at least 8 characters</string>
+    <string name="error_confirm_password_required">Please re-enter your password</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
 </resources>

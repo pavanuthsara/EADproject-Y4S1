@@ -13,6 +13,9 @@
         android:theme="@style/Theme.SmartSolarMicrogridMobile">
         <activity
             android:name=".ui.main.MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ProsumerRegistrationActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
