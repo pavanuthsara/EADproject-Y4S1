@@ -1,6 +1,9 @@
 @SmartSolarMicrogridAPI_HostAddress = http://localhost:5014
 
-GET {{SmartSolarMicrogridAPI_HostAddress}}/weatherforecast/
+### API health check
+GET {{SmartSolarMicrogridAPI_HostAddress}}/api/health
 Accept: application/json
 
-###
+### Database connection check
+GET {{SmartSolarMicrogridAPI_HostAddress}}/api/health/database
+Accept: application/json
