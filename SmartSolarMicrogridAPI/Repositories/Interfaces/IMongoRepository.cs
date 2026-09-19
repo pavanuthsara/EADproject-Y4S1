@@ -4,10 +4,11 @@
  */
 
 using System.Linq.Expressions;
+using SmartSolarMicrogridAPI.Models.Entities;
 
 namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 
-public interface IMongoRepository<T> where T : class
+public interface IMongoRepository<T> where T : class, IEntity
 {
     Task<IReadOnlyList<T>> GetAllAsync();
     Task<T?> GetByIdAsync(string id);

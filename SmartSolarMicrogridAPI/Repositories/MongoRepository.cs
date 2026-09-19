@@ -6,11 +6,12 @@
 using System.Linq.Expressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using SmartSolarMicrogridAPI.Models.Entities;
 using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class MongoRepository<T>(IMongoCollection<T> collection) : IMongoRepository<T> where T : class
+public class MongoRepository<T>(IMongoCollection<T> collection) : IMongoRepository<T> where T : class, IEntity
 {
     protected readonly IMongoCollection<T> Collection = collection;
 
@@ -44,13 +45,15 @@ public class MongoRepository<T>(IMongoCollection<T> collection) : IMongoReposito
         return entity;
     }
 
-    // Replaces the document with the given id and reports whether a document matched.
+    // Replaces the document with the given id, forcing the entity's Id to match, and reports whether a document matched.
     public async Task<bool> UpdateAsync(string id, T entity)
     {
         if (!ObjectId.TryParse(id, out var objectId))
         {
             return false;
         }
+
+        entity.Id = objectId.ToString();
 
         var result = await Collection.ReplaceOneAsync(Builders<T>.Filter.Eq("_id", objectId), entity);
         return result.MatchedCount > 0;

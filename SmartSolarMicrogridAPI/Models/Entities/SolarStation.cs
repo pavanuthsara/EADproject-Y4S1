@@ -9,7 +9,7 @@ using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace SmartSolarMicrogridAPI.Models.Entities;
 
-public class SolarStation
+public class SolarStation : IEntity
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

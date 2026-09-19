@@ -8,7 +8,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace SmartSolarMicrogridAPI.Models.Entities;
 
-public class EnergyReservation
+public class EnergyReservation : IEntity
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
