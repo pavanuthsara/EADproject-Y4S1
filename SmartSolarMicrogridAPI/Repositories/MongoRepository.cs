@@ -10,15 +10,9 @@ using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class MongoRepository<T> : IMongoRepository<T> where T : class
+public class MongoRepository<T>(IMongoCollection<T> collection) : IMongoRepository<T> where T : class
 {
-    protected readonly IMongoCollection<T> Collection;
-
-    // Stores the collection this repository operates on.
-    public MongoRepository(IMongoCollection<T> collection)
-    {
-        Collection = collection;
-    }
+    protected readonly IMongoCollection<T> Collection = collection;
 
     // Returns every document in the collection.
     public async Task<IReadOnlyList<T>> GetAllAsync()

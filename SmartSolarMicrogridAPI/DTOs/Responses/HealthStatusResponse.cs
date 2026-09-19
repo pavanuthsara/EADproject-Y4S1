@@ -9,4 +9,5 @@ public class HealthStatusResponse
 {
     public bool DatabaseConnected { get; set; }
     public string DatabaseName { get; set; } = string.Empty;
+    public long ResponseTimeMs { get; set; }
 }

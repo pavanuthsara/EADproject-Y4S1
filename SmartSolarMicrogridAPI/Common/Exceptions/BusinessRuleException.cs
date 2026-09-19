@@ -5,10 +5,4 @@
 
 namespace SmartSolarMicrogridAPI.Common.Exceptions;
 
-public class BusinessRuleException : Exception
-{
-    // Creates the exception with the message returned to the client.
-    public BusinessRuleException(string message) : base(message)
-    {
-    }
-}
+public class BusinessRuleException(string message) : Exception(message);

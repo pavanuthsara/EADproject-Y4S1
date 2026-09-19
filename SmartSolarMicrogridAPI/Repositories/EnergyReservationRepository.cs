@@ -11,13 +11,9 @@ using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class EnergyReservationRepository : MongoRepository<EnergyReservation>, IEnergyReservationRepository
+public class EnergyReservationRepository(MongoDbContext context)
+    : MongoRepository<EnergyReservation>(context.EnergyReservations), IEnergyReservationRepository
 {
-    // Binds the repository to the energyReservations collection.
-    public EnergyReservationRepository(MongoDbContext context) : base(context.EnergyReservations)
-    {
-    }
-
     // Returns all reservations made by the prosumer with the given NIC.
     public async Task<IReadOnlyList<EnergyReservation>> GetByProsumerNicAsync(string prosumerNic)
     {

@@ -10,13 +10,9 @@ using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class EnergyBookingSlotRepository : MongoRepository<EnergyBookingSlot>, IEnergyBookingSlotRepository
+public class EnergyBookingSlotRepository(MongoDbContext context)
+    : MongoRepository<EnergyBookingSlot>(context.EnergyBookingSlots), IEnergyBookingSlotRepository
 {
-    // Binds the repository to the energyBookingSlots collection.
-    public EnergyBookingSlotRepository(MongoDbContext context) : base(context.EnergyBookingSlots)
-    {
-    }
-
     // Returns all slots belonging to the given station.
     public async Task<IReadOnlyList<EnergyBookingSlot>> GetByStationIdAsync(string stationId)
     {

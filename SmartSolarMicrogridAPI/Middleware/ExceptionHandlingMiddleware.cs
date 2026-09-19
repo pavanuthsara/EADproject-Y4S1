@@ -9,24 +9,14 @@ using SmartSolarMicrogridAPI.Common.Responses;
 
 namespace SmartSolarMicrogridAPI.Middleware;
 
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-    // Stores the next delegate in the pipeline and the logger.
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     // Runs the rest of the pipeline and translates any thrown exception into an error response.
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex) when (!context.Response.HasStarted)
         {
@@ -47,7 +37,7 @@ public class ExceptionHandlingMiddleware
 
         if (statusCode == StatusCodes.Status500InternalServerError)
         {
-            _logger.LogError(ex, "Unhandled exception while processing {Method} {Path}", context.Request.Method, context.Request.Path);
+            logger.LogError(ex, "Unhandled exception while processing {Method} {Path}", context.Request.Method, context.Request.Path);
         }
 
         context.Response.StatusCode = statusCode;

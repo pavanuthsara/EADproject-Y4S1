@@ -10,13 +10,9 @@ using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class SolarStationRepository : MongoRepository<SolarStation>, ISolarStationRepository
+public class SolarStationRepository(MongoDbContext context)
+    : MongoRepository<SolarStation>(context.SolarStations), ISolarStationRepository
 {
-    // Binds the repository to the solarStations collection.
-    public SolarStationRepository(MongoDbContext context) : base(context.SolarStations)
-    {
-    }
-
     // Returns the station with the given code, or null when none exists.
     public async Task<SolarStation?> GetByStationCodeAsync(string stationCode)
     {

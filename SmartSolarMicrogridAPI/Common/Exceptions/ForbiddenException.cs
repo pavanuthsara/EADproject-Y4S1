@@ -5,10 +5,4 @@
 
 namespace SmartSolarMicrogridAPI.Common.Exceptions;
 
-public class ForbiddenException : Exception
-{
-    // Creates the exception with the message returned to the client.
-    public ForbiddenException(string message) : base(message)
-    {
-    }
-}
+public class ForbiddenException(string message) : Exception(message);

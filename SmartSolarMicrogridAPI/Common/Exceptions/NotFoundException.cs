@@ -5,10 +5,4 @@
 
 namespace SmartSolarMicrogridAPI.Common.Exceptions;
 
-public class NotFoundException : Exception
-{
-    // Creates the exception with the message returned to the client.
-    public NotFoundException(string message) : base(message)
-    {
-    }
-}
+public class NotFoundException(string message) : Exception(message);

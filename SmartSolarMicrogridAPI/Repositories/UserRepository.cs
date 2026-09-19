@@ -10,13 +10,8 @@ using SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 namespace SmartSolarMicrogridAPI.Repositories;
 
-public class UserRepository : MongoRepository<User>, IUserRepository
+public class UserRepository(MongoDbContext context) : MongoRepository<User>(context.Users), IUserRepository
 {
-    // Binds the repository to the users collection.
-    public UserRepository(MongoDbContext context) : base(context.Users)
-    {
-    }
-
     // Returns the user with the given NIC, or null when none exists.
     public async Task<User?> GetByNicAsync(string nic)
     {
