@@ -1,14 +1,14 @@
-name: API Build
+name: .NET Backend Build Check
 
 on:
   push:
     branches: [main]
     paths:
-      - 'SmartSolarMicrogridAPI/**'
+      - "SmartSolarMicrogridAPI/**"
   pull_request:
     branches: [main]
     paths:
-      - 'SmartSolarMicrogridAPI/**'
+      - "SmartSolarMicrogridAPI/**"
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Restore
         run: dotnet restore SmartSolarMicrogridAPI/SmartSolarMicrogridAPI.csproj
