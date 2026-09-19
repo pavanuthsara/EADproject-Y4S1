@@ -1,6 +1,11 @@
 /*
  * File: BusinessRuleConstants.cs
- * Purpose: Holds the numeric limits used by reservation business rules.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Holds the numeric limits used by reservation business rules.
+ *
+ * Individual Contribution: Defined the advance-booking window and minimum-notice limits
+ *                          used by reservation rules.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Constants;

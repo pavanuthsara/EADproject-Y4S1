@@ -1,6 +1,11 @@
 /*
  * File: ApiResponse.cs
- * Purpose: Generic response envelope returned by every API endpoint.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Generic response envelope returned by every API endpoint.
+ *
+ * Individual Contribution: Implemented the generic response envelope with Ok and Fail
+ *                          factory methods.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Responses;

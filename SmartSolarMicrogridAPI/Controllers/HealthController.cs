@@ -1,6 +1,12 @@
 /*
  * File: HealthController.cs
- * Purpose: Exposes the health check endpoint used to verify the API and database are reachable.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Exposes the health check endpoint used to verify the API and database
+ *              are reachable.
+ *
+ * Individual Contribution: Implemented the API health and database connection check
+ *                          endpoints.
  */
 
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,10 @@
 /*
  * File: HealthStatusResponse.cs
- * Purpose: Response DTO describing the API's database connection status.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Response DTO describing the API's database connection status.
+ *
+ * Individual Contribution: Implemented the health check response DTO.
  */
 
 namespace SmartSolarMicrogridAPI.DTOs.Responses;

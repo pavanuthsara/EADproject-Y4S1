@@ -1,6 +1,10 @@
 /*
  * File: CollectionNames.cs
- * Purpose: Holds the MongoDB collection names used across the API.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Holds the MongoDB collection names used across the API.
+ *
+ * Individual Contribution: Defined the MongoDB collection name constants.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Constants;

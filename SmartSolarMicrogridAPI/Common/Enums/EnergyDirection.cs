@@ -1,6 +1,12 @@
 /*
  * File: EnergyDirection.cs
- * Purpose: Defines whether a reservation injects energy into or draws energy from the grid.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Defines whether a reservation injects energy into or draws energy from
+ *              the grid.
+ *
+ * Individual Contribution: Defined the EnergyDirection enum for inject and draw
+ *                          reservations.
  */
 
 using System.Text.Json.Serialization;

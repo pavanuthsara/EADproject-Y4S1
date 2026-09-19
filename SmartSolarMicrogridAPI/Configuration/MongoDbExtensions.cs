@@ -1,6 +1,12 @@
 /*
  * File: MongoDbExtensions.cs
- * Purpose: Extension methods that register MongoDB services and verify the connection at startup.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Extension methods that register MongoDB services and verify the
+ *              connection at startup.
+ *
+ * Individual Contribution: Implemented MongoDB service registration with validated
+ *                          settings, the startup connection check and its console logging.
  */
 
 using Microsoft.Extensions.Options;
@@ -11,24 +17,16 @@ namespace SmartSolarMicrogridAPI.Configuration;
 
 public static class MongoDbExtensions
 {
-    // Binds MongoDbSettings and registers the Mongo client and database context as singletons.
+    // Binds and validates MongoDbSettings and registers the Mongo client and database context as singletons.
     public static IServiceCollection AddMongoDb(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<MongoDbSettings>(configuration.GetSection(MongoDbSettings.SectionName));
+        services.AddOptions<MongoDbSettings>()
+            .Bind(configuration.GetSection(MongoDbSettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddSingleton<IMongoClient>(sp =>
-        {
-            var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-
-            if (string.IsNullOrWhiteSpace(settings.ConnectionString)
-                || settings.ConnectionString == MongoDbSettings.PlaceholderConnectionString)
-            {
-                throw new InvalidOperationException(
-                    "MongoDbSettings:ConnectionString is not configured. Set it with dotnet user-secrets.");
-            }
-
-            return new MongoClient(settings.ConnectionString);
-        });
+            new MongoClient(sp.GetRequiredService<IOptions<MongoDbSettings>>().Value.ConnectionString));
 
         services.AddSingleton<MongoDbContext>();
 
@@ -47,7 +45,7 @@ public static class MongoDbExtensions
         }
         catch (Exception ex)
         {
-            app.Logger.LogError(ex, "MongoDB connection FAILED. Check MongoDbSettings:ConnectionString in user-secrets.");
+            app.Logger.LogError(ex, "MongoDB connection FAILED. Check MongoDbSettings__ConnectionString in .env or user-secrets.");
             throw;
         }
 

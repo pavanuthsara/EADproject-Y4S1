@@ -1,6 +1,12 @@
 /*
  * File: ExceptionHandlingMiddleware.cs
- * Purpose: Converts unhandled exceptions into ApiResponse JSON with the matching HTTP status code.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Converts unhandled exceptions into ApiResponse JSON with the matching
+ *              HTTP status code.
+ *
+ * Individual Contribution: Implemented global exception handling that maps exceptions
+ *                          to HTTP status codes without leaking stack traces.
  */
 
 using SmartSolarMicrogridAPI.Common.Constants;

@@ -1,6 +1,11 @@
 /*
  * File: DateTimeHelper.cs
- * Purpose: Provides UTC date and time maths helpers with no business decisions.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Provides UTC date and time maths helpers with no business decisions.
+ *
+ * Individual Contribution: Implemented the UTC helpers, including the check that a
+ *                          date-time is at least N hours in the future.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Helpers;

@@ -1,6 +1,11 @@
 /*
  * File: SolarStation.cs
- * Purpose: Entity mapped to the solarStations collection.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Entity mapped to the solarStations collection.
+ *
+ * Individual Contribution: Implemented the SolarStation entity, including its GeoJSON
+ *                          location mapping.
  */
 
 using MongoDB.Bson;

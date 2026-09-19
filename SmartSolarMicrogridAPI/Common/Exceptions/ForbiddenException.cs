@@ -1,6 +1,12 @@
 /*
  * File: ForbiddenException.cs
- * Purpose: Signals that the caller is not allowed to perform an action and maps to HTTP 403.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Signals that the caller is not allowed to perform an action and maps to
+ *              HTTP 403.
+ *
+ * Individual Contribution: Implemented the exception that the middleware maps to HTTP
+ *                          403.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Exceptions;

@@ -1,6 +1,11 @@
 /*
  * File: HealthService.cs
- * Purpose: Checks MongoDB connectivity and reports the database status.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Checks MongoDB connectivity and reports the database status.
+ *
+ * Individual Contribution: Implemented the database health check with response timing
+ *                          and a configurable timeout.
  */
 
 using System.Diagnostics;

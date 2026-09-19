@@ -1,6 +1,10 @@
 /*
  * File: IMongoRepository.cs
- * Purpose: Defines the generic async CRUD contract shared by all repositories.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Defines the generic async CRUD contract shared by all repositories.
+ *
+ * Individual Contribution: Defined the generic async CRUD repository contract.
  */
 
 using System.Linq.Expressions;

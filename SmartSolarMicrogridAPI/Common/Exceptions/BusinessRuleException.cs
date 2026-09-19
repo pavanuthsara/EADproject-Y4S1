@@ -1,6 +1,11 @@
 /*
  * File: BusinessRuleException.cs
- * Purpose: Signals that a request violates a business rule and maps to HTTP 400.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Signals that a request violates a business rule and maps to HTTP 400.
+ *
+ * Individual Contribution: Implemented the exception that the middleware maps to HTTP
+ *                          400.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Exceptions;

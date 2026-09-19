@@ -1,6 +1,12 @@
 /*
  * File: CorsExtensions.cs
- * Purpose: Extension methods that configure and apply the CORS policy for the web and mobile clients.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Extension methods that configure and apply the CORS policy for the web
+ *              and mobile clients.
+ *
+ * Individual Contribution: Implemented the configuration-driven CORS policy
+ *                          registration for the client apps.
  */
 
 namespace SmartSolarMicrogridAPI.Configuration;

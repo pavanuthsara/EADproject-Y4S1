@@ -1,6 +1,11 @@
 /*
  * File: ReservationStatus.cs
- * Purpose: Defines the lifecycle states of an energy reservation.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Defines the lifecycle states of an energy reservation.
+ *
+ * Individual Contribution: Defined the ReservationStatus enum for the reservation
+ *                          lifecycle.
  */
 
 using System.Text.Json.Serialization;

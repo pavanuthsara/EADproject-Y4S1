@@ -1,6 +1,11 @@
 /*
  * File: AccountStatus.cs
- * Purpose: Defines the lifecycle states of a user account.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Defines the lifecycle states of a user account.
+ *
+ * Individual Contribution: Defined the AccountStatus enum for the user account
+ *                          lifecycle.
  */
 
 using System.Text.Json.Serialization;

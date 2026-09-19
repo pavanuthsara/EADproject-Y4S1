@@ -1,6 +1,10 @@
 /*
  * File: ErrorMessages.cs
- * Purpose: Holds placeholder error messages returned to API clients.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Holds placeholder error messages returned to API clients.
+ *
+ * Individual Contribution: Defined the shared error messages returned to API clients.
  */
 
 namespace SmartSolarMicrogridAPI.Common.Constants;

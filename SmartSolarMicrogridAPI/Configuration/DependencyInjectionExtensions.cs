@@ -1,6 +1,11 @@
 /*
  * File: DependencyInjectionExtensions.cs
- * Purpose: Extension methods that register business services with the DI container.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Extension methods that register business services with the DI container.
+ *
+ * Individual Contribution: Implemented the dependency injection registration extension
+ *                          methods.
  */
 
 using SmartSolarMicrogridAPI.Services;

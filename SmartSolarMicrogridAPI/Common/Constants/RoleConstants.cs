@@ -1,6 +1,12 @@
 /*
  * File: RoleConstants.cs
- * Purpose: Holds role name strings matching the UserRole enum for use in attributes and comparisons.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Holds role name strings matching the UserRole enum for use in attributes
+ *              and comparisons.
+ *
+ * Individual Contribution: Defined the role name constants that match the UserRole
+ *                          enum.
  */
 
 using SmartSolarMicrogridAPI.Common.Enums;

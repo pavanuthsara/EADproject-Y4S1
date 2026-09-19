@@ -1,6 +1,11 @@
 /*
  * File: EnergyReservation.cs
- * Purpose: Entity mapped to the energyReservations collection.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Entity mapped to the energyReservations collection.
+ *
+ * Individual Contribution: Implemented the EnergyReservation entity and its BSON
+ *                          mapping.
  */
 
 using MongoDB.Bson;

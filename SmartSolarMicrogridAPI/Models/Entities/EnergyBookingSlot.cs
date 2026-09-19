@@ -1,6 +1,11 @@
 /*
  * File: EnergyBookingSlot.cs
- * Purpose: Entity mapped to the energyBookingSlots collection.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Entity mapped to the energyBookingSlots collection.
+ *
+ * Individual Contribution: Implemented the EnergyBookingSlot entity and its BSON
+ *                          mapping.
  */
 
 using MongoDB.Bson;

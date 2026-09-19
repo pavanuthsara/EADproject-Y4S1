@@ -1,6 +1,11 @@
 /*
  * File: MongoRepository.cs
- * Purpose: Generic MongoDB implementation of the async CRUD repository contract.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Generic MongoDB implementation of the async CRUD repository contract.
+ *
+ * Individual Contribution: Implemented the generic MongoDB repository, including
+ *                          updates that always keep the document id intact.
  */
 
 using System.Linq.Expressions;

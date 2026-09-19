@@ -1,6 +1,12 @@
 /*
  * File: MongoDbContext.cs
- * Purpose: Exposes the MongoDB database and typed collections, and creates required indexes.
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Exposes the MongoDB database and typed collections, and creates required
+ *              indexes.
+ *
+ * Individual Contribution: Implemented the database context, connection ping and index
+ *                          creation.
  */
 
 using Microsoft.Extensions.Options;
