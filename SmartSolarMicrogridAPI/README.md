@@ -135,7 +135,7 @@ Code lives in exactly one layer. **Controllers** handle routing, model binding a
 1. Add or reuse an entity in `Models/Entities/` and its repository interface and implementation.
 2. Add the request and response DTOs.
 3. Add the service interface and implementation with the business logic.
-4. Register the repository in `AddRepositories()` and the service in `AddServices()` in `Configuration/DependencyInjectionExtensions.cs`.
+4. Register the repository and the service in `Configuration/DependencyInjectionExtensions.cs` (`AddServices()`, plus a new `AddRepositories()` when the first repository is added).
 5. Add a thin controller that calls the service.
 
 Style: inject dependencies with C# 12 primary constructors, e.g. `public class FooService(IFooRepository repo) : IFooService`. Every `.cs` file starts with the header comment block, and every method has one brief comment on top.

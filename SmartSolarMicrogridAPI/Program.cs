@@ -9,7 +9,6 @@ using SmartSolarMicrogridAPI.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMongoDb(builder.Configuration);
-builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddClientAppsCors(builder.Configuration, builder.Environment);
 
