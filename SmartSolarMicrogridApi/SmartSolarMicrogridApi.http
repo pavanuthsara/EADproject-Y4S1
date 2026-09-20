@@ -1,0 +1,6 @@
+@SmartSolarMicrogridApi_HostAddress = http://localhost:5288
+
+GET {{SmartSolarMicrogridApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
