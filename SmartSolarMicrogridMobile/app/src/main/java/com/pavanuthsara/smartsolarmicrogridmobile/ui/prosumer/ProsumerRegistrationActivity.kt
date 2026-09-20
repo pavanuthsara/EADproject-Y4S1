@@ -41,6 +41,12 @@ class ProsumerRegistrationActivity : AppCompatActivity() {
         findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonRegister)
             .setOnClickListener { attemptRegistration() }
 
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonLoginRedirect)
+            .setOnClickListener {
+                startActivity(android.content.Intent(this, ProsumerLoginActivity::class.java))
+                finish()
+            }
+
         viewModel.registrationStatus.observe(this) { status ->
             when (status) {
                 is RegistrationStatus.Success -> {
