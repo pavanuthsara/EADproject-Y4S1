@@ -5,3 +5,6 @@
 *.user
 *.userosscache
 *.sln.docstates
+# .NET build artifacts
+[Bb]in/
+[Oo]bj/
