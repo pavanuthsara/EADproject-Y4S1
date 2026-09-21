@@ -1,23 +1,43 @@
+/*
+ * File: Program.cs
+ * Author: Dulsara Manakal (IT23214552)
+ * Group: 45
+ * Description: Composes the API's services and request pipeline and runs startup tasks.
+ *
+ * Individual Contribution: Implemented the service composition, request pipeline and
+ *                          startup sequence.
+ */
+
+using SmartSolarMicrogridAPI.Configuration;
+using SmartSolarMicrogridAPI.Middleware;
+
+DotEnvLoader.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddServices();
+builder.Services.AddClientAppsCors(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+app.UseRouting();
+app.UseClientAppsCors();
 app.MapControllers();
+
+await app.InitializeMongoDbAsync();
 
 app.Run();
