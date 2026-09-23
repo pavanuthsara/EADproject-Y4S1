@@ -16,6 +16,7 @@ DotEnvLoader.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddJwtAuth(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddClientAppsCors(builder.Configuration, builder.Environment);
 
@@ -36,6 +37,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseClientAppsCors();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 await app.InitializeMongoDbAsync();

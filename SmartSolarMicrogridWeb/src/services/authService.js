@@ -1,29 +1,35 @@
-const mockUsers = [
-    { username: "admin1", password: "test123", role: "Backoffice", isActive: true },
-    { username: "pavan", password: "pavan2003", role: "GridOperator", isActive: true },
+const API_BASE = "http://localhost:5014/api";
 
-];
+async function login(email, password) {
+    const response = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
 
-async function login(username, password) {
-    const user = mockUsers.find(u => u.username === username);
+    const data = await response.json();
 
-    if (!user) {
-        throw new Error("Invalid credentials");
+    if (!response.ok || !data.success) {
+        throw new Error(data.message || "Login failed");
     }
 
-    if (user.password !== password) {
-        throw new Error("Invalid credentials");
-    }
+    localStorage.setItem("token", data.data.token);
+    localStorage.setItem("role", data.data.role);
 
-    if (user.isActive === false) {
-        throw new Error("Account deactivated");
-    }
-
-    return {
-        token: "mock-token-" + user.username,
-        role: user.role,
-        isActive: user.isActive,
-    };
+    return data.data;
 }
 
-export { login };
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+}
+
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+function getRole() {
+    return localStorage.getItem("role");
+}
+
+export { login, logout, getToken, getRole };

@@ -8,6 +8,11 @@
  *                          methods.
  */
 
+using SmartSolarMicrogridAPI.Common.Security;
+using SmartSolarMicrogridAPI.Data;
+using SmartSolarMicrogridAPI.Models.Entities;
+using SmartSolarMicrogridAPI.Repositories;
+using SmartSolarMicrogridAPI.Repositories.Interfaces;
 using SmartSolarMicrogridAPI.Services;
 using SmartSolarMicrogridAPI.Services.Interfaces;
 
@@ -19,6 +24,13 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<IHealthService, HealthService>();
+        services.AddScoped<IAuthService, AuthService>();
+
+        services.AddScoped<IMongoRepository<User>>(sp =>
+            new MongoRepository<User>(sp.GetRequiredService<MongoDbContext>().Users));
+
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }

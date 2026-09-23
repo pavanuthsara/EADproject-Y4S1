@@ -8,3 +8,6 @@
 # .NET build artifacts
 [Bb]in/
 [Oo]bj/
+
+# Environment secrets
+.env
