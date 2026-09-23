@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 
 function LoginPage() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ function LoginPage() {
         e.preventDefault(); // stop the page reload
 
         try {
-            const result = await login(username, password);
+            const result = await login(email, password);
             if (result.role === "Backoffice") {
                 navigate("/backoffice");
             } else if (result.role === "GridOperator") {
@@ -25,7 +25,7 @@ function LoginPage() {
 
     return (
         <form onSubmit={handleSubmit}>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
             {errorMessage && <p>{errorMessage}</p>}
             <button type="submit">Login</button>

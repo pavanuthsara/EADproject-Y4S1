@@ -6,6 +6,7 @@
  * Individual Contribution: Implemented register and login logic.
  */
 
+using SmartSolarMicrogridAPI.Common.Constants;
 using SmartSolarMicrogridAPI.Common.Enums;
 using SmartSolarMicrogridAPI.Common.Exceptions;
 using SmartSolarMicrogridAPI.Common.Security;
@@ -42,7 +43,7 @@ public class AuthService : IAuthService
 
         var user = new User
         {
-            Role = dto.Role.ToString(),
+            Role = RoleConstants.Prosumer,
             Nic = dto.Nic,
             FullName = dto.FullName,
             Email = dto.Email,
@@ -77,6 +78,9 @@ public class AuthService : IAuthService
 
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
             throw new BusinessRuleException("Invalid email or password.");
+
+        if (user.AccountStatus == AccountStatus.Pending.ToString())
+            throw new ForbiddenException("Your account is pending activation by an administrator.");
 
         if (user.AccountStatus == AccountStatus.Deactivated.ToString())
             throw new ForbiddenException("Account is deactivated.");
