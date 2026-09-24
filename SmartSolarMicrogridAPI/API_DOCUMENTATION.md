@@ -132,9 +132,66 @@ Allows a user with the `Backoffice` role to create internal staff members (users
 
 ---
 
-## 3. Health Checks
+## 3. Prosumer Management
 
-### 3.1 API Health
+### 3.1 Prosumer Self-Registration (Mobile App)
+Allows a prosumer to self-register via the mobile app. Their account status will immediately be set to "Pending" awaiting Backoffice activation.
+
+*   **Endpoint:** `/api/prosumer/register`
+*   **Method:** `POST`
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "role": "Prosumer",
+      "nic": "123456789V",
+      "fullName": "John Doe",
+      "email": "john@example.com",
+      "phone": "0771234567",
+      "password": "Password123!",
+      "address": "123 Main St, Colombo",
+      "solarCapacityKw": 5.5
+    }
+    ```
+
+*   **Success Response (200 OK):** Returns the user's details and an initial JWT token (though trading actions will be forbidden until activated).
+
+### 3.2 Backoffice Registration & Approval (Web App)
+Allows the Backoffice to manually register a new prosumer. Their account status is immediately set to "Active".
+
+*   **Endpoint:** `/api/backoffice/prosumers`
+*   **Method:** `POST`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "nic": "112233445V",
+      "fullName": "Alice Green",
+      "email": "alice@example.com",
+      "phone": "0771122334",
+      "password": "Password123!",
+      "address": "789 Sun Rd, Kandy",
+      "solarCapacityKw": 10.0
+    }
+    ```
+
+*   **Success Response (200 OK):** Returns the activated prosumer's details.
+
+### 3.3 Activate Mobile Registrations
+Allows the Backoffice to activate a prosumer account that was registered via the mobile app (moving it from "Pending" to "Active").
+
+*   **Endpoint:** `/api/backoffice/prosumers/{nic}/activate`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body:** None
+*   **Success Response (200 OK):** Returns the newly activated prosumer's details.
+
+---
+
+## 4. Health Checks
+
+### 4.1 API Health
 Checks if the API is running and responding.
 
 *   **Endpoint:** `/api/health`
@@ -145,7 +202,7 @@ Checks if the API is running and responding.
     "Healthy"
     ```
 
-### 3.2 Database Connection Status
+### 4.2 Database Connection Status
 Checks if the API is successfully connected to the MongoDB database and returns the latency.
 
 *   **Endpoint:** `/api/health/database`
