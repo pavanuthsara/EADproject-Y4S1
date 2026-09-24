@@ -25,6 +25,7 @@ public static class DependencyInjectionExtensions
     {
         services.AddScoped<IHealthService, HealthService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddScoped<IMongoRepository<User>>(sp =>
             new MongoRepository<User>(sp.GetRequiredService<MongoDbContext>().Users));

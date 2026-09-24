@@ -89,9 +89,52 @@ Authenticates an existing user and returns a JWT token.
 
 ---
 
-## 2. Health Checks
+## 2. User Management
 
-### 2.1 API Health
+### 2.1 Create Staff User
+Allows a user with the `Backoffice` role to create internal staff members (users with either `Backoffice` or `GridOperator` roles).
+
+*   **Endpoint:** `/api/users/staff`
+*   **Method:** `POST`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "role": "GridOperator", // Can be "Backoffice" or "GridOperator"
+      "nic": "987654321V",
+      "fullName": "Jane Smith",
+      "email": "jane.smith@microgrid.com",
+      "phone": "0779876543",
+      "password": "SecurePassword1!",
+      "address": "456 Office Rd, Colombo"
+    }
+    ```
+
+*   **Success Response (200 OK):**
+
+    ```json
+    {
+      "success": true,
+      "message": "Staff user created successfully.",
+      "data": {
+        "id": "654c8e1...",
+        "role": "GridOperator",
+        "nic": "987654321V",
+        "fullName": "Jane Smith",
+        "email": "jane.smith@microgrid.com",
+        "phone": "0779876543",
+        "accountStatus": "Active",
+        "createdAt": "2023-11-01T14:30:00Z"
+      }
+    }
+    ```
+
+---
+
+## 3. Health Checks
+
+### 3.1 API Health
 Checks if the API is running and responding.
 
 *   **Endpoint:** `/api/health`
@@ -102,7 +145,7 @@ Checks if the API is running and responding.
     "Healthy"
     ```
 
-### 2.2 Database Connection Status
+### 3.2 Database Connection Status
 Checks if the API is successfully connected to the MongoDB database and returns the latency.
 
 *   **Endpoint:** `/api/health/database`
