@@ -14,4 +14,7 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 public interface IUserService
 {
     Task<UserResponseDto> CreateStaffAsync(CreateStaffRequestDto dto);
+    Task<UserResponseDto> CreateProsumerByBackofficeAsync(CreateProsumerRequestDto dto);
+    Task<UserResponseDto> ActivateProsumerAsync(string nic, string activatedByUserId);
+    Task<UserResponseDto> UpdateProsumerProfileAsync(string nic, UpdateProfileRequestDto dto);
 }
