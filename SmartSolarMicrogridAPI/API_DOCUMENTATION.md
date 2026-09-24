@@ -187,6 +187,35 @@ Allows the Backoffice to activate a prosumer account that was registered via the
 *   **Request Body:** None
 *   **Success Response (200 OK):** Returns the newly activated prosumer's details.
 
+### 3.4 Prosumer Profile Update (Self-Update)
+Allows prosumers to update their own profile data. The NIC is extracted securely from the JWT token.
+
+*   **Endpoint:** `/api/prosumer/profile`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Prosumer`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "fullName": "John Doe",
+      "email": "john.new@example.com",
+      "phone": "0771234567",
+      "address": "456 New St, Colombo",
+      "solarCapacityKw": 6.5
+    }
+    ```
+
+*   **Success Response (200 OK):** Returns the updated prosumer details.
+
+### 3.5 Backoffice Prosumer Profile Update
+Allows the Backoffice to update any prosumer's profile data.
+
+*   **Endpoint:** `/api/backoffice/prosumers/{nic}`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body (JSON):** Same as `3.4 Prosumer Profile Update`.
+*   **Success Response (200 OK):** Returns the updated prosumer details.
+
 ---
 
 ## 4. Health Checks

@@ -40,4 +40,12 @@ public class BackofficeController(IUserService userService) : ControllerBase
         var result = await userService.ActivateProsumerAsync(nic, adminId);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Prosumer activated successfully."));
     }
+
+    // Allows Backoffice to update profiles
+    [HttpPut("prosumers/{nic}")]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateProsumerAsync(string nic, [FromBody] UpdateProfileRequestDto dto)
+    {
+        var result = await userService.UpdateProsumerProfileAsync(nic, dto);
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Prosumer profile updated successfully."));
+    }
 }

@@ -126,4 +126,42 @@ public class UserService(
             CreatedAt = user.CreatedAt
         };
     }
+
+    public async Task<UserResponseDto> UpdateProsumerProfileAsync(string nic, UpdateProfileRequestDto dto)
+    {
+        var users = await userRepository.FindAsync(u => u.Nic == nic && u.Role == RoleConstants.Prosumer);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+            throw new NotFoundException($"Prosumer with NIC {nic} not found.");
+
+        // Check if new email is already taken by someone else
+        if (user.Email != dto.Email)
+        {
+            bool emailExists = await userRepository.ExistsAsync(u => u.Email == dto.Email && u.Id != user.Id);
+            if (emailExists)
+                throw new BusinessRuleException("Email address is already in use by another account.");
+        }
+
+        user.FullName = dto.FullName;
+        user.Email = dto.Email;
+        user.Phone = dto.Phone;
+        user.Address = dto.Address;
+        user.SolarCapacityKw = dto.SolarCapacityKw;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await userRepository.UpdateAsync(user.Id, user);
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Role = user.Role,
+            Nic = user.Nic,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AccountStatus = user.AccountStatus,
+            CreatedAt = user.CreatedAt
+        };
+    }
 }
