@@ -40,4 +40,19 @@ public class ProsumerController(IAuthService authService, IUserService userServi
         var result = await userService.UpdateProsumerProfileAsync(nic, dto);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Profile updated successfully."));
     }
+
+    // Allows prosumers to deactivate their own account
+    [HttpPut("deactivate")]
+    [Authorize(Roles = RoleConstants.Prosumer)]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> DeactivateProfileAsync()
+    {
+        string? nic = User.FindFirstValue("nic");
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(nic) || string.IsNullOrEmpty(userId))
+            return Unauthorized(ApiResponse<UserResponseDto>.Fail("Required claims missing in token."));
+
+        var result = await userService.DeactivateProsumerAsync(nic, userId);
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Account deactivated successfully."));
+    }
 }

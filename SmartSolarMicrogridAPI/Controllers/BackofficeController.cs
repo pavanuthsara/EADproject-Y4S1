@@ -48,4 +48,15 @@ public class BackofficeController(IUserService userService) : ControllerBase
         var result = await userService.UpdateProsumerProfileAsync(nic, dto);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Prosumer profile updated successfully."));
     }
+
+    // Backoffice deactivates prosumer
+    [HttpPut("prosumers/{nic}/deactivate")]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> DeactivateProsumerAsync(string nic)
+    {
+        string? adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (adminId == null) return Unauthorized();
+
+        var result = await userService.DeactivateProsumerAsync(nic, adminId);
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Prosumer deactivated successfully."));
+    }
 }

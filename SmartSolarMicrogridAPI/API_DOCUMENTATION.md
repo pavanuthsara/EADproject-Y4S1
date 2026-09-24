@@ -216,6 +216,24 @@ Allows the Backoffice to update any prosumer's profile data.
 *   **Request Body (JSON):** Same as `3.4 Prosumer Profile Update`.
 *   **Success Response (200 OK):** Returns the updated prosumer details.
 
+### 3.6 Prosumer Account Deactivation (Self)
+Allows prosumers to request deactivation of their own account. The NIC is extracted from their JWT token.
+
+*   **Endpoint:** `/api/prosumer/deactivate`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Prosumer`)
+*   **Request Body:** None
+*   **Success Response (200 OK):** Returns the updated prosumer details with status "Deactivated".
+
+### 3.7 Backoffice Prosumer Account Deactivation
+Allows the Backoffice to immediately deactivate a prosumer's account.
+
+*   **Endpoint:** `/api/backoffice/prosumers/{nic}/deactivate`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body:** None
+*   **Success Response (200 OK):** Returns the updated prosumer details with status "Deactivated".
+
 ---
 
 ## 4. Health Checks

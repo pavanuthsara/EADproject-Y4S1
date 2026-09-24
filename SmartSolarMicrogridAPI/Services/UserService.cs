@@ -107,9 +107,49 @@ public class UserService(
         if (user.AccountStatus == AccountStatus.Active.ToString())
             throw new BusinessRuleException("This prosumer is already active.");
 
+        if (user.AccountStatus == AccountStatus.Deactivated.ToString())
+        {
+            user.ReactivatedBy = activatedByUserId;
+            user.ReactivatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            user.ActivatedBy = activatedByUserId;
+            user.ActivatedAt = DateTime.UtcNow;
+        }
+
         user.AccountStatus = AccountStatus.Active.ToString();
-        user.ActivatedBy = activatedByUserId;
-        user.ActivatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await userRepository.UpdateAsync(user.Id, user);
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Role = user.Role,
+            Nic = user.Nic,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AccountStatus = user.AccountStatus,
+            CreatedAt = user.CreatedAt
+        };
+    }
+
+    public async Task<UserResponseDto> DeactivateProsumerAsync(string nic, string deactivatedByUserId)
+    {
+        var users = await userRepository.FindAsync(u => u.Nic == nic && u.Role == RoleConstants.Prosumer);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+            throw new NotFoundException($"Prosumer with NIC {nic} not found.");
+
+        if (user.AccountStatus == AccountStatus.Deactivated.ToString())
+            throw new BusinessRuleException("This prosumer is already deactivated.");
+
+        user.AccountStatus = AccountStatus.Deactivated.ToString();
+        user.DeactivatedBy = deactivatedByUserId;
+        user.DeactivatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
 
         await userRepository.UpdateAsync(user.Id, user);
