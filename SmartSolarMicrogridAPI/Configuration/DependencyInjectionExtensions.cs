@@ -26,9 +26,16 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IHealthService, HealthService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IStationService, StationService>();
 
         services.AddScoped<IMongoRepository<User>>(sp =>
             new MongoRepository<User>(sp.GetRequiredService<MongoDbContext>().Users));
+        services.AddScoped<IMongoRepository<SolarStation>>(sp =>
+            new MongoRepository<SolarStation>(sp.GetRequiredService<MongoDbContext>().SolarStations));
+        services.AddScoped<IMongoRepository<EnergyBookingSlot>>(sp =>
+            new MongoRepository<EnergyBookingSlot>(sp.GetRequiredService<MongoDbContext>().EnergyBookingSlots));
+        services.AddScoped<IMongoRepository<EnergyReservation>>(sp =>
+            new MongoRepository<EnergyReservation>(sp.GetRequiredService<MongoDbContext>().EnergyReservations));
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();

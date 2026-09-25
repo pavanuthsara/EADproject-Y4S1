@@ -1,0 +1,20 @@
+/*
+ * File: IStationService.cs
+ * Author: Ransilu Samaraweera
+ * Group: 45
+ * Description: Interface for solar station management service.
+ * Individual Contribution: Defined the station service interface for registration,
+ *                          schedule updates and deactivation.
+ */
+
+using SmartSolarMicrogridAPI.DTOs.Requests;
+using SmartSolarMicrogridAPI.DTOs.Responses;
+
+namespace SmartSolarMicrogridAPI.Services.Interfaces;
+
+public interface IStationService
+{
+    Task<StationResponseDto> CreateStationAsync(CreateStationRequestDto dto, string createdByUserId);
+    Task<ScheduleResponseDto> UpdateScheduleAsync(string stationId, string slotId, UpdateScheduleRequestDto dto);
+    Task<StationResponseDto> DeactivateStationAsync(string stationId, string deactivatedByUserId);
+}
