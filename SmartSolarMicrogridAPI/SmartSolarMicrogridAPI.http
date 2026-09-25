@@ -7,3 +7,35 @@ Accept: application/json
 ### Database connection check
 GET {{SmartSolarMicrogridAPI_HostAddress}}/api/health/database
 Accept: application/json
+
+### Register a solar station (Backoffice token)
+POST {{SmartSolarMicrogridAPI_HostAddress}}/api/stations
+Authorization: Bearer {{backofficeToken}}
+Content-Type: application/json
+
+{
+  "stationName": "Colombo Central Hub",
+  "stationCode": "COL-01",
+  "latitude": 6.9271,
+  "longitude": 79.8612,
+  "addressLine": "1 Galle Road",
+  "city": "Colombo",
+  "capacityKwh": 500,
+  "totalBays": 4
+}
+
+### Update a station schedule (Backoffice or GridOperator token)
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/schedules/{{slotId}}
+Authorization: Bearer {{gridOperatorToken}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-10-01T08:00:00Z",
+  "endTime": "2026-10-01T10:00:00Z",
+  "totalPositions": 3,
+  "status": "Available"
+}
+
+### Deactivate a station (Backoffice token) - 400 while it has Pending/Approved reservations
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/deactivate
+Authorization: Bearer {{backofficeToken}}

@@ -48,6 +48,12 @@ public class SolarStation : IEntity
     [BsonElement("createdBy")]
     public string CreatedBy { get; set; } = string.Empty;
 
+    [BsonElement("deactivatedBy")]
+    public string? DeactivatedBy { get; set; }
+
+    [BsonElement("deactivatedAt")]
+    public DateTime? DeactivatedAt { get; set; }
+
     [BsonElement("createdAt")]
     public DateTime CreatedAt { get; set; }
 

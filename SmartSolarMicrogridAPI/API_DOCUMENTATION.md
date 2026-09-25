@@ -236,9 +236,105 @@ Allows the Backoffice to immediately deactivate a prosumer's account.
 
 ---
 
-## 4. Health Checks
+## 4. Solar Station Management
 
-### 4.1 API Health
+All station endpoints require a Bearer token. Business rule violations return `400 Bad Request`, unknown stations/schedules return `404 Not Found`, and a wrong role returns `403 Forbidden`.
+
+### 4.1 Register Solar Station
+Registers a new solar grid hub with its GPS location, kWh capacity and number of battery storage slots (bays). The station is created as `Active`. `stationCode` is normalized to upper case and must be unique.
+
+*   **Endpoint:** `/api/stations`
+*   **Method:** `POST`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "stationName": "Colombo Central Hub",
+      "stationCode": "COL-01",
+      "latitude": 6.9271,
+      "longitude": 79.8612,
+      "addressLine": "1 Galle Road",
+      "city": "Colombo",
+      "capacityKwh": 500,
+      "totalBays": 4
+    }
+    ```
+
+*   **Success Response (200 OK):**
+
+    ```json
+    {
+      "success": true,
+      "message": "Station registered successfully.",
+      "data": {
+        "id": "654c8e1...",
+        "stationName": "Colombo Central Hub",
+        "stationCode": "COL-01",
+        "latitude": 6.9271,
+        "longitude": 79.8612,
+        "addressLine": "1 Galle Road",
+        "city": "Colombo",
+        "capacityKwh": 500,
+        "totalBays": 4,
+        "status": "Active",
+        "createdAt": "2023-11-01T14:30:00Z",
+        "deactivatedAt": null
+      }
+    }
+    ```
+
+*   **Errors:** `400` when the station code already exists or a field is invalid (e.g. latitude outside -90..90).
+
+### 4.2 Update Station Schedule
+Lets Grid Operators and Backoffice staff replace the schedule of a booking slot at a station. All fields are required.
+
+*   **Endpoint:** `/api/stations/{stationId}/schedules/{slotId}`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice` or `GridOperator`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "startTime": "2026-10-01T08:00:00Z",
+      "endTime": "2026-10-01T10:00:00Z",
+      "totalPositions": 3,
+      "status": "Available" // "Available" or "Closed"; "Full" is derived automatically
+    }
+    ```
+
+*   **Business rules (each returns `400`):**
+    *   The station must be `Active`.
+    *   `endTime` must be after `startTime`.
+    *   `totalPositions` cannot exceed the station's `totalBays`, nor be lower than the schedule's active (Pending/Approved) reservations.
+    *   The time window cannot change while the schedule has active reservations, must start in the future, and cannot overlap another schedule at the same station.
+    *   The status becomes `Full` automatically when active reservations fill every position, otherwise `Available` (or `Closed` if requested).
+
+*   **Success Response (200 OK):** Returns the updated schedule (`id`, `stationId`, `startTime`, `endTime`, `totalPositions`, `status`, `updatedAt`).
+
+### 4.3 Deactivate Station
+Deactivates a station. The request is **blocked** while any energy reservation tied to the station is still active (`Pending` or `Approved`); `Rejected`, `Completed` and `Cancelled` reservations do not block.
+
+*   **Endpoint:** `/api/stations/{stationId}/deactivate`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice`)
+*   **Request Body:** None
+*   **Success Response (200 OK):** Returns the station with status `Inactive` and `deactivatedAt` set.
+*   **Blocked Response (400 Bad Request):**
+
+    ```json
+    {
+      "success": false,
+      "message": "This station cannot be deactivated because it has 2 active energy reservation(s). Complete, cancel or reject them first.",
+      "data": null
+    }
+    ```
+
+---
+
+## 5. Health Checks
+
+### 5.1 API Health
 Checks if the API is running and responding.
 
 *   **Endpoint:** `/api/health`
@@ -249,7 +345,7 @@ Checks if the API is running and responding.
     "Healthy"
     ```
 
-### 4.2 Database Connection Status
+### 5.2 Database Connection Status
 Checks if the API is successfully connected to the MongoDB database and returns the latency.
 
 *   **Endpoint:** `/api/health/database`
