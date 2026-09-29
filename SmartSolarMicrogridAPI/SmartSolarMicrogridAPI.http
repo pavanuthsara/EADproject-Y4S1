@@ -39,3 +39,28 @@ Content-Type: application/json
 ### Deactivate a station (Backoffice token) - 400 while it has Pending/Approved reservations
 PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/deactivate
 Authorization: Bearer {{backofficeToken}}
+
+### Create an energy reservation (Prosumer token) - 201 with a Pending summary
+POST {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations
+Authorization: Bearer {{prosumerToken}}
+Content-Type: application/json
+
+{
+  "stationId": "{{stationId}}",
+  "slotId": "{{slotId}}",
+  "direction": "Inject",
+  "requestedKwh": 25
+}
+
+### Update a reservation (Prosumer token) - any of slotId, direction, requestedKwh
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/{{reservationId}}
+Authorization: Bearer {{prosumerToken}}
+Content-Type: application/json
+
+{
+  "requestedKwh": 40
+}
+
+### Cancel a reservation (Prosumer token) - 200 with the Cancelled summary, 409 if already cancelled
+DELETE {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/{{reservationId}}
+Authorization: Bearer {{prosumerToken}}
