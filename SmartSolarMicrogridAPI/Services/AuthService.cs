@@ -79,9 +79,6 @@ public class AuthService : IAuthService
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
             throw new BusinessRuleException("Invalid email or password.");
 
-        if (user.AccountStatus == AccountStatus.Pending.ToString())
-            throw new ForbiddenException("Your account is pending activation by an administrator.");
-
         if (user.AccountStatus == AccountStatus.Deactivated.ToString())
             throw new ForbiddenException("Account is deactivated.");
 

@@ -12,11 +12,11 @@ namespace SmartSolarMicrogridAPI.Common.Security;
 
 public class PasswordHasher : IPasswordHasher
 {
-    private const int SaltSize = 16;
-    private const int KeySize = 32;
-    private const int Iterations = 100_000;
-    private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256;
-    private const char SegmentDelimiter = '.';
+    private const int SaltSize = 16; //how many random bytes to generate for the salt (128 bits, a standard size).
+    private const int KeySize = 32; //32 bytes (256 bits), a standard size for cryptographic hashes.
+    private const int Iterations = 100_000; //number of times the hashing function is applied to the password. higher = more secure but slower.
+    private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256; //hashing algorithm to use (SHA-256, a standard cryptographic hash function).
+    private const char SegmentDelimiter = '.'; //delimiter used to separate the salt and hash in the stored password.
 
     public string Hash(string password)
     {
