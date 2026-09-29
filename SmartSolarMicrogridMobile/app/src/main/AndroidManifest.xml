@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -16,6 +18,11 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.SmartSolarMicrogridMobile">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="false" />
@@ -43,6 +50,9 @@
             android:name=".ui.prosumer.ReservationListActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.prosumer.GridMapActivity"
+            android:exported="false" />
+       <activity
             android:name=".ui.operator.OperatorDashboardActivity"
             android:exported="false" />
         <activity
