@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProsumers, createProsumer, updateProsumer, toggleProsumerStatus } from '../../services/prosumerService';
+import { getProsumers, createProsumer, updateProsumer, updateProsumerStatus } from '../../services/prosumerService';
 
 export default function ProsumerManagement() {
     const [prosumers, setProsumers] = useState([]);
@@ -8,6 +8,9 @@ export default function ProsumerManagement() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingNic, setEditingNic] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Filters
+    const [filterStatus, setFilterStatus] = useState('All'); // All, Pending, Active, Inactive
     
     const [formData, setFormData] = useState({
         nic: '',
@@ -83,14 +86,16 @@ export default function ProsumerManagement() {
         }
     };
 
-    const handleToggleStatus = async (nic) => {
+    const handleStatusChange = async (nic, newStatus) => {
         try {
-            await toggleProsumerStatus(nic);
+            await updateProsumerStatus(nic, newStatus);
             await loadProsumers();
         } catch (err) {
             alert('Failed to update status.');
         }
     };
+
+    const filteredProsumers = prosumers.filter(p => filterStatus === 'All' || p.status === filterStatus);
 
     if (isLoading && prosumers.length === 0) {
         return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
@@ -99,17 +104,39 @@ export default function ProsumerManagement() {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {/* Header Section */}
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:justify-between md:items-center bg-gray-50 gap-4">
                 <div>
                     <h2 className="text-xl font-semibold text-gray-800">Prosumer Management</h2>
-                    <p className="text-sm text-gray-500 mt-1">Manage user profiles, update details, and toggle active status.</p>
+                    <p className="text-sm text-gray-500 mt-1">Manage user profiles, activations, and statuses.</p>
                 </div>
                 <button 
                     onClick={() => openForm()}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap"
                 >
                     + Add Prosumer
                 </button>
+            </div>
+
+            {/* Filters */}
+            <div className="border-b border-gray-200 bg-white px-6 py-3 flex gap-4">
+                {['All', 'Pending', 'Active', 'Inactive'].map(status => (
+                    <button
+                        key={status}
+                        onClick={() => setFilterStatus(status)}
+                        className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+                            filterStatus === status 
+                                ? 'border-indigo-600 text-indigo-600' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        {status}
+                        <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
+                            {status === 'All' 
+                                ? prosumers.length 
+                                : prosumers.filter(p => p.status === status).length}
+                        </span>
+                    </button>
+                ))}
             </div>
 
             {/* Error Message Display */}
@@ -146,7 +173,7 @@ export default function ProsumerManagement() {
                                 name="nic"
                                 value={formData.nic}
                                 onChange={handleInputChange}
-                                disabled={!!editingNic} // NIC cannot be changed if editing
+                                disabled={!!editingNic}
                                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                                 placeholder="e.g. 199012345678"
                             />
@@ -232,14 +259,14 @@ export default function ProsumerManagement() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                        {prosumers.length === 0 ? (
+                        {filteredProsumers.length === 0 ? (
                             <tr>
                                 <td colSpan="5" className="p-8 text-center text-gray-500">
-                                    No prosumers found. Add one to get started.
+                                    No {filterStatus !== 'All' ? filterStatus.toLowerCase() : ''} prosumers found.
                                 </td>
                             </tr>
                         ) : (
-                            prosumers.map((prosumer) => (
+                            filteredProsumers.map((prosumer) => (
                                 <tr key={prosumer.nic} className="hover:bg-gray-50 transition-colors">
                                     <td className="p-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {prosumer.nic}
@@ -256,7 +283,9 @@ export default function ProsumerManagement() {
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                             prosumer.status === 'Active' 
                                                 ? 'bg-green-100 text-green-800' 
-                                                : 'bg-red-100 text-red-800'
+                                                : prosumer.status === 'Pending'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-red-100 text-red-800'
                                         }`}>
                                             {prosumer.status}
                                         </span>
@@ -268,12 +297,33 @@ export default function ProsumerManagement() {
                                         >
                                             Edit
                                         </button>
-                                        <button 
-                                            onClick={() => handleToggleStatus(prosumer.nic)}
-                                            className={`${prosumer.status === 'Active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
-                                        >
-                                            {prosumer.status === 'Active' ? 'Deactivate' : 'Activate'}
-                                        </button>
+                                        
+                                        {prosumer.status === 'Pending' && (
+                                            <button 
+                                                onClick={() => handleStatusChange(prosumer.nic, 'Active')}
+                                                className="text-green-600 hover:text-green-900"
+                                            >
+                                                Activate
+                                            </button>
+                                        )}
+                                        
+                                        {prosumer.status === 'Active' && (
+                                            <button 
+                                                onClick={() => handleStatusChange(prosumer.nic, 'Inactive')}
+                                                className="text-red-600 hover:text-red-900"
+                                            >
+                                                Deactivate
+                                            </button>
+                                        )}
+                                        
+                                        {prosumer.status === 'Inactive' && (
+                                            <button 
+                                                onClick={() => handleStatusChange(prosumer.nic, 'Active')}
+                                                className="text-blue-600 hover:text-blue-900"
+                                            >
+                                                Reactivate
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))
