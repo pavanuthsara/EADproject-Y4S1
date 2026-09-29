@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddJwtAuth(builder.Configuration);
 builder.Services.AddServices();
+builder.Services.AddReservations(builder.Configuration);
 builder.Services.AddClientAppsCors(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();

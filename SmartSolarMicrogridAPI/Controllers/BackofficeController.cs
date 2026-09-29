@@ -10,6 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartSolarMicrogridAPI.Common.Constants;
+using SmartSolarMicrogridAPI.Common.Enums;
 using SmartSolarMicrogridAPI.Common.Responses;
 using SmartSolarMicrogridAPI.DTOs.Requests;
 using SmartSolarMicrogridAPI.DTOs.Responses;
@@ -58,5 +59,28 @@ public class BackofficeController(IUserService userService) : ControllerBase
 
         var result = await userService.DeactivateProsumerAsync(nic, adminId);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Prosumer deactivated successfully."));
+    }
+
+    // Dashboard Analytics: returns counts of reservations
+    [HttpGet("dashboard/analytics")]
+    public async Task<ActionResult<ApiResponse<DashboardAnalyticsResponseDto>>> GetDashboardAnalyticsAsync(
+        [FromServices] IReservationService reservationService)
+    {
+        var analytics = await reservationService.GetDashboardAnalyticsAsync();
+        return Ok(ApiResponse<DashboardAnalyticsResponseDto>.Ok(analytics, "Analytics retrieved."));
+    }
+
+    // Retrieves complete booking history for a specific prosumer
+    [HttpGet("prosumers/{nic}/history")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<ReservationSummaryResponse>>>> GetProsumerHistoryAsync(
+        string nic,
+        [FromServices] IReservationService reservationService,
+        [FromQuery] DateTime? fromUtc,
+        [FromQuery] DateTime? toUtc,
+        [FromQuery] ReservationStatus? status,
+        [FromQuery] string? stationId)
+    {
+        var history = await reservationService.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId);
+        return Ok(ApiResponse<IEnumerable<ReservationSummaryResponse>>.Ok(history, "History retrieved."));
     }
 }

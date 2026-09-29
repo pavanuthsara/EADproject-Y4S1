@@ -22,7 +22,8 @@ namespace SmartSolarMicrogridAPI.Services;
 public class StationService(
     IMongoRepository<SolarStation> stationRepository,
     IMongoRepository<EnergyBookingSlot> slotRepository,
-    IMongoRepository<EnergyReservation> reservationRepository) : IStationService
+    IMongoRepository<EnergyReservation> reservationRepository,
+    ISolarStationRepository solarStationQueryRepository) : IStationService
 {
     // Registers a new station as Active with its GPS location, capacity and battery storage slots.
     public async Task<StationResponseDto> CreateStationAsync(CreateStationRequestDto dto, string createdByUserId)
@@ -180,11 +181,18 @@ public class StationService(
             r.SlotId == slotId && (r.Status == pending || r.Status == approved));
     }
 
-    // Treats an unspecified kind as UTC, matching DateTimeHelper.
     private static DateTime ToUtc(DateTime value) =>
         value.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
             : value.ToUniversalTime();
+
+    public async Task<IEnumerable<StationResponseDto>> GetNearbyStationsAsync(double latitude, double longitude, double maxDistanceMeters = 10000)
+    {
+        // Notice the interface expects (longitude, latitude) as standard GeoJSON
+        var stations = await solarStationQueryRepository.FindNearbyAsync(longitude, latitude, maxDistanceMeters);
+        
+        return stations.Select(MapStation).ToList();
+    }
 
     private static StationResponseDto MapStation(SolarStation station) => new()
     {

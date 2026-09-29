@@ -38,6 +38,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             NotFoundException => (StatusCodes.Status404NotFound, ex.Message),
             BusinessRuleException => (StatusCodes.Status400BadRequest, ex.Message),
             ForbiddenException => (StatusCodes.Status403Forbidden, ex.Message),
+            ConflictException => (StatusCodes.Status409Conflict, ex.Message),
             _ => (StatusCodes.Status500InternalServerError, ErrorMessages.InternalServerError)
         };
 
