@@ -54,4 +54,16 @@ public class StationsController(IStationService stationService) : ControllerBase
         var result = await stationService.DeactivateStationAsync(stationId, userId);
         return Ok(ApiResponse<StationResponseDto>.Ok(result, "Station deactivated successfully."));
     }
+
+    // Retrieves nearby grid nodes (solar stations) for the mobile app map.
+    [HttpGet("nearby")]
+    [Authorize(Roles = RoleConstants.Prosumer)]
+    public async Task<ActionResult<ApiResponse<IEnumerable<StationResponseDto>>>> GetNearbyStationsAsync(
+        [FromQuery] double lat,
+        [FromQuery] double lng,
+        [FromQuery] double radiusMeters = 10000)
+    {
+        var result = await stationService.GetNearbyStationsAsync(lat, lng, radiusMeters);
+        return Ok(ApiResponse<IEnumerable<StationResponseDto>>.Ok(result, "Nearby stations retrieved."));
+    }
 }

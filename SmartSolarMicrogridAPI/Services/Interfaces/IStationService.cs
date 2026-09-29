@@ -17,4 +17,5 @@ public interface IStationService
     Task<StationResponseDto> CreateStationAsync(CreateStationRequestDto dto, string createdByUserId);
     Task<ScheduleResponseDto> UpdateScheduleAsync(string stationId, string slotId, UpdateScheduleRequestDto dto);
     Task<StationResponseDto> DeactivateStationAsync(string stationId, string deactivatedByUserId);
+    Task<IEnumerable<StationResponseDto>> GetNearbyStationsAsync(double latitude, double longitude, double maxDistanceMeters = 10000);
 }
