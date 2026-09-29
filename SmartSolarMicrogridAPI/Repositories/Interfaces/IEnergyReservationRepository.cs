@@ -29,4 +29,13 @@ public interface IEnergyReservationRepository
         string slotId,
         IReadOnlyCollection<ReservationStatus> statuses,
         string? excludeReservationId);
+
+    Task<(long Active, long Pending, long ApprovedFuture)> GetDashboardAnalyticsAsync(DateTime nowUtc);
+
+    Task<IReadOnlyList<EnergyReservation>> GetBookingHistoryAsync(
+        string? prosumerNic,
+        DateTime? fromUtc,
+        DateTime? toUtc,
+        ReservationStatus? status,
+        string? stationId);
 }

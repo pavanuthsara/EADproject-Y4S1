@@ -65,4 +65,55 @@ public class EnergyReservationRepository(MongoDbContext context)
 
         return await Collection.Find(filter).Limit(1).AnyAsync();
     }
+
+    public async Task<(long Active, long Pending, long ApprovedFuture)> GetDashboardAnalyticsAsync(DateTime nowUtc)
+    {
+        var pendingFilter = Builders<EnergyReservation>.Filter.Eq(r => r.Status, ReservationStatus.Pending.ToString());
+        long pendingCount = await Collection.CountDocumentsAsync(pendingFilter);
+
+        var activeFilter = Builders<EnergyReservation>.Filter.Eq(r => r.Status, ReservationStatus.Approved.ToString());
+        long activeCount = await Collection.CountDocumentsAsync(activeFilter);
+
+        var futureFilter = activeFilter & Builders<EnergyReservation>.Filter.Gt(r => r.SlotStartUtc, nowUtc);
+        long approvedFutureCount = await Collection.CountDocumentsAsync(futureFilter);
+
+        return (activeCount, pendingCount, approvedFutureCount);
+    }
+
+    public async Task<IReadOnlyList<EnergyReservation>> GetBookingHistoryAsync(
+        string? prosumerNic,
+        DateTime? fromUtc,
+        DateTime? toUtc,
+        ReservationStatus? status,
+        string? stationId)
+    {
+        var filter = Builders<EnergyReservation>.Filter.Empty;
+
+        if (!string.IsNullOrEmpty(prosumerNic))
+        {
+            filter &= Builders<EnergyReservation>.Filter.Eq(r => r.ProsumerNic, prosumerNic);
+        }
+
+        if (fromUtc.HasValue)
+        {
+            filter &= Builders<EnergyReservation>.Filter.Gte(r => r.SlotStartUtc, fromUtc.Value);
+        }
+
+        if (toUtc.HasValue)
+        {
+            filter &= Builders<EnergyReservation>.Filter.Lte(r => r.SlotStartUtc, toUtc.Value);
+        }
+
+        if (status.HasValue)
+        {
+            filter &= Builders<EnergyReservation>.Filter.Eq(r => r.Status, status.Value.ToString());
+        }
+
+        if (!string.IsNullOrEmpty(stationId))
+        {
+            filter &= Builders<EnergyReservation>.Filter.Eq(r => r.StationId, stationId);
+        }
+
+        return await Collection.Find(filter).SortByDescending(r => r.CreatedAtUtc).ToListAsync();
+    }
 }
