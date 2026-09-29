@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonReservations).setOnClickListener {
             startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ReservationListActivity::class.java))
         }
+
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonGridMap).setOnClickListener {
+            startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.GridMapActivity::class.java))
+        }
     }
 
     override fun onResume() {

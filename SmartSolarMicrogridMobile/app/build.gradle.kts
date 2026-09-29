@@ -18,6 +18,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["MAPS_API_KEY"] = "YOUR_API_KEY_HERE"
     }
 
     buildTypes {
@@ -52,4 +54,5 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation("com.google.zxing:core:3.5.2")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 }
