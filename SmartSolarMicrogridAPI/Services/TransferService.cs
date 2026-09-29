@@ -42,12 +42,12 @@ public class TransferService(IMongoRepository<EnergyReservation> reservationRepo
             ProsumerNic = reservation.ProsumerNic,
             StationId = reservation.StationId,
             SlotId = reservation.SlotId,
-            SlotStartTime = reservation.SlotStartTime,
+            SlotStartTime = reservation.SlotStartUtc,
             Direction = reservation.Direction,
             RequestedKwh = reservation.RequestedKwh,
             Status = reservation.Status,
             QrToken = reservation.QrToken,
-            ApprovedAt = reservation.ApprovedAt
+            ApprovedAt = reservation.ApprovedAtUtc
         };
     }
 
@@ -69,8 +69,8 @@ public class TransferService(IMongoRepository<EnergyReservation> reservationRepo
         var completedTime = DateTime.UtcNow;
         reservation.Status = ReservationStatus.Completed.ToString();
         reservation.CompletedBy = operatorId;
-        reservation.CompletedAt = completedTime;
-        reservation.UpdatedAt = completedTime;
+        reservation.CompletedAtUtc = completedTime;
+        reservation.UpdatedAtUtc = completedTime;
 
         var updated = await reservationRepository.UpdateAsync(reservationId, reservation);
         if (!updated)
