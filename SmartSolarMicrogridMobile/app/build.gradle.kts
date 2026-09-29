@@ -6,14 +6,12 @@ plugins {
 
 android {
     namespace = "com.pavanuthsara.smartsolarmicrogridmobile"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.pavanuthsara.smartsolarmicrogridmobile"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -52,4 +50,8 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation("com.google.zxing:core:3.5.2")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

@@ -22,4 +22,19 @@
     <string name="error_confirm_password_required">Please re-enter your password</string>
     <string name="error_password_mismatch">Passwords do not match</string>
     <string name="app_logo_desc">App Logo</string>
+    <string name="tab_prosumer">Solar Prosumer</string>
+    <string name="tab_grid_operator">Grid Operator</string>
+    <string name="operator_login_title">Operator Portal</string>
+    <string name="operator_login_subtitle">Sign in to verify and finalize energy transfers</string>
+    <string name="prosumer_login_title">Prosumer Portal</string>
+    <string name="prosumer_login_subtitle">Sign in with your NIC and password</string>
+    <string name="scan_qr_cta">Scan Prosumer QR</string>
+    <string name="operator_dashboard_title">Grid Operations</string>
+    <string name="operator_welcome">Welcome, Operator</string>
+    <string name="finalize_transfer">Confirm &amp; Finalize Transfer</string>
+    <string name="camera_permission_required">Camera permission is required to scan transaction QR codes</string>
+    <string name="server_settings">Server Settings</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
 </resources>
