@@ -360,3 +360,76 @@ Checks if the API is successfully connected to the MongoDB database and returns 
       "responseTimeMs": 15
     }
     ```
+
+---
+
+## 6. QR Verification & Transfer Finalization
+
+### 6.1 Verify Scanned QR Code
+Cross-references a scanned QR code token against server reservation records and returns the booking details if valid and approved.
+
+*   **Endpoint:** `/api/transfers/verify`
+*   **Method:** `POST`
+*   **Authorization:** Bearer Token (Role: `GridOperator`, `Backoffice`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "qrToken": "string"
+    }
+    ```
+
+*   **Success Response (200 OK):**
+
+    ```json
+    {
+      "success": true,
+      "message": "QR code verified successfully.",
+      "data": {
+        "reservationId": "653b6f0...",
+        "reservationNo": "RES-2026-0001",
+        "prosumerId": "653b6e1...",
+        "prosumerNic": "199812345678",
+        "stationId": "653b6a2...",
+        "slotId": "653b6b3...",
+        "slotStartTime": "2026-10-01T08:00:00Z",
+        "direction": "DropOff",
+        "requestedKwh": 25.0,
+        "status": "Approved",
+        "qrToken": "string",
+        "approvedAt": "2026-09-29T10:00:00Z"
+      }
+    }
+    ```
+
+*   **Error Responses:**
+    *   **404 Not Found:** If no reservation matches the provided `qrToken`.
+    *   **400 Bad Request:** If the reservation is not in `Approved` status (e.g., already `Completed`, `Cancelled`, or `Pending`).
+
+### 6.2 Complete Energy Transfer
+Processes the business logic to officially finalize the energy transfer and record completion details.
+
+*   **Endpoint:** `/api/transfers/{reservationId}/complete`
+*   **Method:** `POST`
+*   **Authorization:** Bearer Token (Role: `GridOperator`, `Backoffice`)
+*   **Request Body:** None
+*   **Success Response (200 OK):**
+
+    ```json
+    {
+      "success": true,
+      "message": "Energy transfer completed successfully.",
+      "data": {
+        "reservationId": "653b6f0...",
+        "reservationNo": "RES-2026-0001",
+        "status": "Completed",
+        "completedBy": "operator-user-id",
+        "completedAt": "2026-09-29T11:30:00Z"
+      }
+    }
+    ```
+
+*   **Error Responses:**
+    *   **404 Not Found:** If no reservation exists with the given `reservationId`.
+    *   **400 Bad Request:** If the reservation is not in `Approved` status.
+
