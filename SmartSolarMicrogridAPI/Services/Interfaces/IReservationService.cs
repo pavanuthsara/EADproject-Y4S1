@@ -8,6 +8,7 @@
  *                          reservations controller.
  */
 
+using SmartSolarMicrogridAPI.Common.Enums;
 using SmartSolarMicrogridAPI.DTOs.Requests;
 using SmartSolarMicrogridAPI.DTOs.Responses;
 
@@ -20,4 +21,9 @@ public interface IReservationService
     Task<ReservationSummaryResponse> UpdateAsync(string reservationId, UpdateReservationRequest request, string prosumerId);
 
     Task<ReservationSummaryResponse> CancelAsync(string reservationId, string prosumerId);
+
+    Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync();
+
+    Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(
+        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId);
 }

@@ -13,6 +13,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartSolarMicrogridAPI.Common.Constants;
+using SmartSolarMicrogridAPI.Common.Enums;
 using SmartSolarMicrogridAPI.Common.Responses;
 using SmartSolarMicrogridAPI.DTOs.Requests;
 using SmartSolarMicrogridAPI.DTOs.Responses;
@@ -62,5 +63,21 @@ public class ReservationsController(IReservationService reservationService) : Co
 
         var summary = await reservationService.CancelAsync(id, prosumerId);
         return Ok(ApiResponse<ReservationSummaryResponse>.Ok(summary, summary.Message));
+    }
+
+    // Retrieves booking history for the signed-in prosumer with optional filters.
+    [HttpGet("history")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<ReservationSummaryResponse>>>> GetHistoryAsync(
+        [FromQuery] DateTime? fromUtc,
+        [FromQuery] DateTime? toUtc,
+        [FromQuery] ReservationStatus? status,
+        [FromQuery] string? stationId)
+    {
+        string? nic = User.FindFirstValue(CustomClaimTypes.Nic) ?? User.FindFirstValue("nic");
+        if (string.IsNullOrEmpty(nic))
+            return Unauthorized(ApiResponse<IEnumerable<ReservationSummaryResponse>>.Fail(ReservationMessages.MissingClaims));
+
+        var history = await reservationService.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId);
+        return Ok(ApiResponse<IEnumerable<ReservationSummaryResponse>>.Ok(history, "History retrieved."));
     }
 }

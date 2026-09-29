@@ -469,4 +469,30 @@ public class ReservationService(
         value.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
             : value.ToUniversalTime();
+
+    public async Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync()
+    {
+        var counts = await reservationRepository.GetDashboardAnalyticsAsync(UtcNow);
+        return new DashboardAnalyticsResponseDto
+        {
+            ActiveReservations = counts.Active,
+            PendingReservations = counts.Pending,
+            ApprovedFutureReservations = counts.ApprovedFuture
+        };
+    }
+
+    public async Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(
+        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId)
+    {
+        var reservations = await reservationRepository.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId);
+        
+        var results = new List<ReservationSummaryResponse>();
+        foreach (var res in reservations)
+        {
+            string stationName = await GetStationNameAsync(res.StationId);
+            results.Add(BuildSummary(res, stationName, ""));
+        }
+
+        return results;
+    }
 }

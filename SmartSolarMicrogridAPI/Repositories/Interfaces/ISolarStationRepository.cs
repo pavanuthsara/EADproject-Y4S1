@@ -16,4 +16,5 @@ namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 public interface ISolarStationRepository
 {
     Task<SolarStation?> GetByIdAsync(string id);
+    Task<IReadOnlyList<SolarStation>> FindNearbyAsync(double longitude, double latitude, double maxDistanceMeters);
 }
