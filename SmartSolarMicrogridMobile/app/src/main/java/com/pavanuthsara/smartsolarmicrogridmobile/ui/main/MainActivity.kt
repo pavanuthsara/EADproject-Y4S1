@@ -31,5 +31,9 @@ class MainActivity : AppCompatActivity() {
             email = "pavan@example.com",
             isLoggedIn = true
         )
+        
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonProfile).setOnClickListener {
+            startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerProfileActivity::class.java))
+        }
     }
 }
