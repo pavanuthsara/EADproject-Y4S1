@@ -8,6 +8,7 @@
  *                          methods.
  */
 
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SmartSolarMicrogridAPI.Common.Security;
 using SmartSolarMicrogridAPI.Data;
 using SmartSolarMicrogridAPI.Models.Entities;
@@ -40,6 +41,24 @@ public static class DependencyInjectionExtensions
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        return services;
+    }
+
+    // Registers the validated reservation policy, the three narrow repositories and the reservation service.
+    public static IServiceCollection AddReservations(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<ReservationPolicyOptions>()
+            .Bind(configuration.GetSection(ReservationPolicyOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddScoped<ISolarStationRepository, SolarStationRepository>();
+        services.AddScoped<IEnergyBookingSlotRepository, EnergyBookingSlotRepository>();
+        services.AddScoped<IEnergyReservationRepository, EnergyReservationRepository>();
+        services.AddScoped<IReservationService, ReservationService>();
 
         return services;
     }
