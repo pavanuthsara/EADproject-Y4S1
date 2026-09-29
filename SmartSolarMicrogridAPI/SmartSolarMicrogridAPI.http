@@ -64,3 +64,16 @@ Content-Type: application/json
 ### Cancel a reservation (Prosumer token) - 200 with the Cancelled summary, 409 if already cancelled
 DELETE {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/{{reservationId}}
 Authorization: Bearer {{prosumerToken}}
+
+### Verify scanned QR code (Grid Operator or Backoffice token)
+POST {{SmartSolarMicrogridAPI_HostAddress}}/api/transfers/verify
+Authorization: Bearer {{gridOperatorToken}}
+Content-Type: application/json
+
+{
+  "qrToken": "qr-token-example-12345"
+}
+
+### Finalize energy transfer job (Grid Operator or Backoffice token)
+POST {{SmartSolarMicrogridAPI_HostAddress}}/api/transfers/{{reservationId}}/complete
+Authorization: Bearer {{gridOperatorToken}}

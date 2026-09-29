@@ -1,18 +1,17 @@
 /*
  * File: RegisterRequestDto.cs
+ * Author: Damith Chandrathilaka (IT23168336)
  * Group: 45
  * Description: DTO for user registration requests.
+ * Individual Contribution: Implemented the user registration DTO with validation attributes.
  */
 
 using System.ComponentModel.DataAnnotations;
-using SmartSolarMicrogridAPI.Common.Enums;
 
 namespace SmartSolarMicrogridAPI.DTOs.Requests;
 
 public class RegisterRequestDto
 {
-    [Required(ErrorMessage = "Role is required.")]
-    public UserRole Role { get; set; }
 
     [Required(ErrorMessage = "NIC is required.")]
     [StringLength(12, MinimumLength = 10, ErrorMessage = "NIC must be 10–12 characters.")]
@@ -41,3 +40,4 @@ public class RegisterRequestDto
     [Range(0, 1000, ErrorMessage = "Solar capacity must be between 0 and 1000 kW.")]
     public double SolarCapacityKw { get; set; }
 }
+

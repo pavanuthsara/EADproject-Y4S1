@@ -25,6 +25,18 @@
         <activity
             android:name=".ui.prosumer.ProsumerRegistrationActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ProsumerProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ReservationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ReservationSummaryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ReservationListActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

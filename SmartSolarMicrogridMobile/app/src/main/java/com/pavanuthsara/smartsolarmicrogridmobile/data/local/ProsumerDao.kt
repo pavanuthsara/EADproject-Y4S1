@@ -12,4 +12,10 @@ interface ProsumerDao {
 
     @Query("SELECT * FROM prosumers WHERE nic = :nic")
     suspend fun getProsumer(nic: String): Prosumer?
+
+    @androidx.room.Update
+    suspend fun updateProsumer(prosumer: Prosumer)
+
+    @Query("DELETE FROM prosumers WHERE nic = :nic")
+    suspend fun deleteProsumer(nic: String)
 }

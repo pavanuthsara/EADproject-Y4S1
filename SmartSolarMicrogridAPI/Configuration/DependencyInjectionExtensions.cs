@@ -28,6 +28,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IStationService, StationService>();
+        services.AddScoped<ITransferService, TransferService>();
 
         services.AddScoped<IMongoRepository<User>>(sp =>
             new MongoRepository<User>(sp.GetRequiredService<MongoDbContext>().Users));

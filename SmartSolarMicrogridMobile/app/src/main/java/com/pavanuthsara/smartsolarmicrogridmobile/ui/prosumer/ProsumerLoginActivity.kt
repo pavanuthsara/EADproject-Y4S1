@@ -48,8 +48,13 @@ class ProsumerLoginActivity : AppCompatActivity() {
             when (status) {
                 is LoginStatus.Success -> {
                     Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+                    
+                    val sharedPrefs = getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+                    sharedPrefs.edit().putString("logged_in_nic", inputNic.editText?.text?.toString()?.trim()).apply()
+                    
                     // Navigate to Main Activity or Dashboard
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
                     finish()
                 }
                 is LoginStatus.Error -> {
