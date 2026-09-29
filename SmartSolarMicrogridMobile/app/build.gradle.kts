@@ -51,4 +51,5 @@ dependencies {
     implementation(libs.room.ktx)
     ksp("androidx.room:room-compiler:2.6.1")
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation("com.google.zxing:core:3.5.2")
 }
