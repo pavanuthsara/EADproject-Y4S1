@@ -26,7 +26,16 @@ public static class MongoDbExtensions
             .ValidateOnStart();
 
         services.AddSingleton<IMongoClient>(sp =>
-            new MongoClient(sp.GetRequiredService<IOptions<MongoDbSettings>>().Value.ConnectionString));
+        {
+            var connString = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value.ConnectionString;
+            var settings = MongoClientSettings.FromConnectionString(connString);
+            settings.SslSettings = new SslSettings
+            {
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+                ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true
+            };
+            return new MongoClient(settings);
+        });
 
         services.AddSingleton<MongoDbContext>();
 
