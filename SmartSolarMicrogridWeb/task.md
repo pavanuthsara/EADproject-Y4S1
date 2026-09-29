@@ -14,3 +14,14 @@
   - [ ] Replace `updateProsumerStatus(nic, newStatus)` with a `fetch` PATCH or PUT request.
 - [ ] Ensure the backend returns standard HTTP status codes so the frontend error handling (`catch (err)`) works correctly.
 - [ ] Verify that authentication tokens (JWT) are being passed in the headers of these new fetch requests, as required by the backend.
+
+## Frontend: Microgrid Node Management API Integration
+
+**Context:** The `NodeManagement.jsx` UI uses a mock service `src/services/nodeService.js`.
+
+**To-Do:**
+- [ ] Connect `getNodes()` to backend (GET request).
+- [ ] Connect `createNode(data)` to backend (POST request).
+- [ ] Connect `updateNodeSchedule(id, newSchedule)` to backend (PATCH/PUT request).
+- [ ] Connect `deactivateNode(id)` and `activateNode(id)` to backend.
+- [ ] Ensure backend implements the exact same validation to block node deactivation if active energy reservations exist.
