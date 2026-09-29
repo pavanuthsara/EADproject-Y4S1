@@ -25,6 +25,9 @@
         <activity
             android:name=".ui.prosumer.ProsumerRegistrationActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.ProsumerProfileActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
