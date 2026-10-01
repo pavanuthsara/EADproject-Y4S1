@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { getNodes, createNode, updateNodeSchedule, deactivateNode, activateNode } from '../../services/nodeService';
+import TimeRangePicker from './TimeRangePicker';
+import LocationPicker from './LocationPicker';
+
+const EMPTY_FORM = {
+    name: '',
+    latitude: '',
+    longitude: '',
+    capacity: '',
+    batterySlots: '',
+    schedule: '06:00-18:00'
+};
 
 export default function NodeManagement() {
     const [nodes, setNodes] = useState([]);
@@ -9,13 +20,7 @@ export default function NodeManagement() {
     // Create form state
     const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({
-        name: '',
-        gpsLocation: '',
-        capacity: '',
-        batterySlots: '',
-        schedule: ''
-    });
+    const [formData, setFormData] = useState(EMPTY_FORM);
 
     // Schedule update state
     const [editingScheduleId, setEditingScheduleId] = useState(null);
@@ -43,6 +48,10 @@ export default function NodeManagement() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleLocationChange = ({ latitude, longitude }) => {
+        setFormData(prev => ({ ...prev, latitude, longitude }));
+    };
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -50,14 +59,14 @@ export default function NodeManagement() {
         try {
             await createNode({
                 name: formData.name,
-                gpsLocation: formData.gpsLocation,
+                gpsLocation: `${formData.latitude}, ${formData.longitude}`,
                 capacity: Number(formData.capacity),
                 batterySlots: Number(formData.batterySlots),
                 schedule: formData.schedule
             });
             await loadNodes();
             setIsCreateFormOpen(false);
-            setFormData({ name: '', gpsLocation: '', capacity: '', batterySlots: '', schedule: '' });
+            setFormData(EMPTY_FORM);
         } catch (err) {
             setError(err.message || 'Error creating node.');
         } finally {
@@ -138,10 +147,6 @@ export default function NodeManagement() {
                             <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. Galle South Hub" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">GPS Location</label>
-                            <input required type="text" name="gpsLocation" value={formData.gpsLocation} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="Latitude, Longitude" />
-                        </div>
-                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (kW/h)</label>
                             <input required type="number" min="1" name="capacity" value={formData.capacity} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. 50" />
                         </div>
@@ -149,12 +154,16 @@ export default function NodeManagement() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Battery Slots</label>
                             <input required type="number" min="0" name="batterySlots" value={formData.batterySlots} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. 5" />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Operating Schedule</label>
-                            <input required type="text" name="schedule" value={formData.schedule} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. 06:00-18:00" />
-                        </div>
-                        <div className="flex items-end lg:col-span-1">
-                            <button type="submit" disabled={isSubmitting} className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+                        <fieldset className="md:col-span-2 lg:col-span-3">
+                            <legend className="block text-sm font-medium text-gray-700 mb-1">Operating Schedule</legend>
+                            <TimeRangePicker value={formData.schedule} onChange={(schedule) => setFormData(prev => ({ ...prev, schedule }))} />
+                        </fieldset>
+                        <fieldset className="md:col-span-2 lg:col-span-3">
+                            <legend className="block text-sm font-medium text-gray-700 mb-1">GPS Location</legend>
+                            <LocationPicker latitude={formData.latitude} longitude={formData.longitude} onChange={handleLocationChange} />
+                        </fieldset>
+                        <div className="flex justify-end md:col-span-2 lg:col-span-3">
+                            <button type="submit" disabled={isSubmitting} className="w-full md:w-auto md:min-w-48 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
                                 {isSubmitting ? 'Registering...' : 'Submit Hub'}
                             </button>
                         </div>
