@@ -22,6 +22,22 @@ public class UserService(
     IMongoRepository<User> userRepository,
     IPasswordHasher passwordHasher) : IUserService
 {
+    public async Task<IEnumerable<UserResponseDto>> GetAllProsumersAsync()
+    {
+        var prosumers = await userRepository.FindAsync(u => u.Role == RoleConstants.Prosumer);
+        return prosumers.Select(u => new UserResponseDto
+        {
+            Id = u.Id,
+            Role = u.Role,
+            Nic = u.Nic,
+            FullName = u.FullName,
+            Email = u.Email,
+            Phone = u.Phone,
+            AccountStatus = u.AccountStatus,
+            CreatedAt = u.CreatedAt
+        });
+    }
+
     public async Task<UserResponseDto> CreateStaffAsync(CreateStaffRequestDto dto)
     {
         if (dto.Role != UserRole.Backoffice && dto.Role != UserRole.GridOperator)

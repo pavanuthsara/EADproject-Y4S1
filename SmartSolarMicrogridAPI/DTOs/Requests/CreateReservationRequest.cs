@@ -17,6 +17,8 @@ namespace SmartSolarMicrogridAPI.DTOs.Requests;
 
 public class CreateReservationRequest
 {
+    public string? ProsumerNic { get; set; }
+
     [Required]
     public string StationId { get; set; } = string.Empty;
 

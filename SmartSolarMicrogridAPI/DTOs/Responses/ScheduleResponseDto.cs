@@ -15,6 +15,10 @@ public class ScheduleResponseDto
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
     public int TotalPositions { get; set; }
+    public int ReservedPositions { get; set; }
+    public double CapacityKwh { get; set; }
+    public double ReservedKwh { get; set; }
+    public List<string> SupportedDirections { get; set; } = new();
     public string Status { get; set; } = string.Empty;
     public DateTime UpdatedAt { get; set; }
 }

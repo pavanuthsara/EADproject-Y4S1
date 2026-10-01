@@ -3,13 +3,12 @@ import {
     getReservations,
     getStations,
     getSlots,
+    getReservationPolicy,
     createReservation,
     updateReservation,
     cancelReservation,
 } from '../../services/reservationService';
 import {
-    BOOKING_WINDOW_DAYS,
-    MINIMUM_NOTICE_HOURS,
     RESERVATION_STATUSES,
     directionsForSlot,
     bookingWindowBounds,
@@ -47,15 +46,15 @@ const NOTICE_STYLES = {
 };
 
 // Why a slot may not be booked, or how much room it has left if it may.
-function describeSlot(slot, now) {
+function describeSlot(slot, now, policy) {
     if (slot.status === 'Closed') {
         return { selectable: false, note: 'closed by operator' };
     }
     if (new Date(slot.startUtc).getTime() <= now.getTime()) {
         return { selectable: false, note: 'already started' };
     }
-    if (!isWithinBookingWindow(slot.startUtc, now)) {
-        return { selectable: false, note: `outside the ${BOOKING_WINDOW_DAYS}-day window` };
+    if (!isWithinBookingWindow(slot.startUtc, now, policy)) {
+        return { selectable: false, note: `outside the ${policy.bookingWindowDays}-day window` };
     }
     if (slot.reservedPositions >= slot.totalPositions) {
         return { selectable: false, note: 'all positions reserved' };
@@ -72,6 +71,7 @@ export default function ReservationManagement() {
     const [reservations, setReservations] = useState([]);
     const [stations, setStations] = useState([]);
     const [slots, setSlots] = useState([]);
+    const [policy, setPolicy] = useState({ bookingWindowDays: 7, minimumNoticeHours: 12 });
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,12 +112,13 @@ export default function ReservationManagement() {
     const loadAll = async () => {
         setIsLoading(true);
         try {
-            const [reservationData, stationData] = await Promise.all([getReservations(), getStations()]);
+            const [reservationData, stationData, policyData] = await Promise.all([getReservations(), getStations(), getReservationPolicy()]);
             setReservations(reservationData);
             setStations(stationData);
+            setPolicy(policyData);
             setError('');
         } catch {
-            setError('Failed to load reservations.');
+            setError('Failed to load reservations or policy.');
         } finally {
             setIsLoading(false);
         }
@@ -133,18 +134,18 @@ export default function ReservationManagement() {
         [slots, form.slotId]
     );
 
-    const windowBounds = useMemo(() => bookingWindowBounds(now), [now]);
+    const windowBounds = useMemo(() => bookingWindowBounds(now, policy), [now, policy]);
 
     // A slot may only accept one direction; an empty list means it accepts both.
     const allowedDirections = useMemo(() => directionsForSlot(selectedSlot), [selectedSlot]);
 
     const validation = useMemo(() => {
-        if (mode === 'create') return validateCreateForm(form, selectedSlot, now);
+        if (mode === 'create') return validateCreateForm(form, selectedSlot, now, policy);
         if (mode === 'update' && editingReservation) {
-            return validateUpdateForm(form, editingReservation, selectedSlot, now);
+            return validateUpdateForm(form, editingReservation, selectedSlot, now, policy);
         }
         return { valid: false, errors: {} };
-    }, [mode, form, selectedSlot, editingReservation, now]);
+    }, [mode, form, selectedSlot, editingReservation, now, policy]);
 
     const visibleReservations = useMemo(() => {
         const nic = filters.nic.trim().toLowerCase();
@@ -162,11 +163,11 @@ export default function ReservationManagement() {
             (r) => r.status === 'Approved' && new Date(r.slotStartUtc) > now
         ).length;
         const locked = reservations.filter(
-            (r) => !evaluateChangeEligibility(r, now).allowed && ['Pending', 'Approved'].includes(r.status)
+            (r) => !evaluateChangeEligibility(r, now, policy).allowed && ['Pending', 'Approved'].includes(r.status)
         ).length;
 
         return { total: reservations.length, pending, approvedFuture, locked };
-    }, [reservations, now]);
+    }, [reservations, now, policy]);
 
     const resetPanel = useCallback(() => {
         setMode(null);
@@ -187,7 +188,7 @@ export default function ReservationManagement() {
     // The notice rule is re-checked here so a booking that has since crossed the
     // deadline cannot be opened for editing at all.
     const openUpdate = (reservation) => {
-        const eligibility = evaluateChangeEligibility(reservation, now);
+        const eligibility = evaluateChangeEligibility(reservation, now, policy);
         if (!eligibility.allowed) {
             setError(eligibility.reason);
             return;
@@ -233,7 +234,7 @@ export default function ReservationManagement() {
         event.preventDefault();
 
         const checkedNow = new Date();
-        const result = validateCreateForm(form, selectedSlot, checkedNow);
+        const result = validateCreateForm(form, selectedSlot, checkedNow, policy);
         if (!result.valid) {
             setFieldErrors(result.errors);
             return;
@@ -265,7 +266,7 @@ export default function ReservationManagement() {
         // Validated against a fresh clock, not the ticking state, so a deadline that
         // passed between the last tick and this click still blocks the request.
         const checkedNow = new Date();
-        const result = validateUpdateForm(form, editingReservation, selectedSlot, checkedNow);
+        const result = validateUpdateForm(form, editingReservation, selectedSlot, checkedNow, policy);
         if (!result.valid) {
             setFieldErrors(result.errors);
             return;
@@ -275,6 +276,7 @@ export default function ReservationManagement() {
         setError('');
         try {
             const updated = await updateReservation(editingReservation.reservationId, {
+                prosumerNic: form.prosumerNic.trim(),
                 slotId: form.slotId,
                 direction: form.direction,
                 requestedKwh: Number(form.requestedKwh),
@@ -290,7 +292,7 @@ export default function ReservationManagement() {
     };
 
     const handleCancelConfirmed = async (reservation) => {
-        const eligibility = evaluateChangeEligibility(reservation, new Date());
+        const eligibility = evaluateChangeEligibility(reservation, new Date(), policy);
         if (!eligibility.allowed) {
             setError(eligibility.reason);
             setPendingCancelId(null);
@@ -300,7 +302,7 @@ export default function ReservationManagement() {
         setIsSubmitting(true);
         setError('');
         try {
-            const cancelled = await cancelReservation(reservation.reservationId);
+            const cancelled = await cancelReservation(reservation.reservationId, reservation.prosumerNic);
             setSummary(`${cancelled.reservationNo} — ${cancelled.message}`);
             setPendingCancelId(null);
             if (editingId === reservation.reservationId) resetPanel();
@@ -341,13 +343,13 @@ export default function ReservationManagement() {
             {/* Policy notice: the two rules this screen enforces */}
             <div className="bg-indigo-50 border-b border-indigo-100 px-6 py-4 grid gap-2 md:grid-cols-2 text-sm">
                 <p className="text-indigo-900">
-                    <span className="font-semibold">{BOOKING_WINDOW_DAYS}-day booking window:</span>{' '}
+                    <span className="font-semibold">{policy.bookingWindowDays}-day booking window:</span>{' '}
                     slots must start before{' '}
                     <span className="font-medium">{formatDateTime(windowBounds.latest)}</span>.
                 </p>
                 <p className="text-indigo-900">
-                    <span className="font-semibold">{MINIMUM_NOTICE_HOURS}-hour notice:</span>{' '}
-                    updates and cancellations close {MINIMUM_NOTICE_HOURS} hours before the slot starts.
+                    <span className="font-semibold">{policy.minimumNoticeHours}-hour notice:</span>{' '}
+                    updates and cancellations close {policy.minimumNoticeHours} hours before the slot starts.
                 </p>
             </div>
 
@@ -379,8 +381,8 @@ export default function ReservationManagement() {
                     </h3>
                     <p className="text-sm text-gray-500 mb-4">
                         {mode === 'create'
-                            ? `Only slots starting within the next ${BOOKING_WINDOW_DAYS} days can be booked.`
-                            : `Slot, direction and kWh can be changed until ${formatDateTime(noticeDeadline(editingReservation?.slotStartUtc))}.`}
+                            ? `Only slots starting within the next ${policy.bookingWindowDays} days can be booked.`
+                            : `Slot, direction and kWh can be changed until ${formatDateTime(noticeDeadline(editingReservation?.slotStartUtc, policy))}.`}
                     </p>
 
                     {fieldErrors.form && (
@@ -433,7 +435,7 @@ export default function ReservationManagement() {
                                     {form.stationId ? 'Select a slot…' : 'Choose a node first'}
                                 </option>
                                 {slots.map((slot) => {
-                                    const info = describeSlot(slot, now);
+                                    const info = describeSlot(slot, now, policy);
                                     const isCurrent = mode === 'update' && slot.id === editingReservation?.slotId;
                                     return (
                                         <option
@@ -515,6 +517,7 @@ export default function ReservationManagement() {
                             slot={selectedSlot}
                             reservation={mode === 'update' ? editingReservation : null}
                             now={now}
+                            policy={policy}
                         />
                     )}
                 </div>
@@ -565,6 +568,7 @@ export default function ReservationManagement() {
                             key={reservation.reservationId}
                             reservation={reservation}
                             now={now}
+                            policy={policy}
                             isBusy={isSubmitting}
                             isConfirmingCancel={pendingCancelId === reservation.reservationId}
                             onEdit={() => openUpdate(reservation)}
@@ -619,13 +623,13 @@ function Field({ label, error, children }) {
 
 // Spells out how the chosen slot scores against each rule, so a blocked submit
 // button always has a visible reason next to it.
-function SlotRuleCheck({ slot, reservation, now }) {
-    const startCheck = validateSlotStart(slot.startUtc, now);
+function SlotRuleCheck({ slot, reservation, now, policy }) {
+    const startCheck = validateSlotStart(slot.startUtc, now, policy);
     const hours = hoursUntil(slot.startUtc, now);
 
     const checks = [
         {
-            label: `Starts within ${BOOKING_WINDOW_DAYS} days`,
+            label: `Starts within ${policy.bookingWindowDays} days`,
             passed: startCheck.valid,
             detail: startCheck.valid
                 ? `starts in ${formatDuration(hours)}`
@@ -634,10 +638,10 @@ function SlotRuleCheck({ slot, reservation, now }) {
     ];
 
     if (reservation) {
-        const eligibility = evaluateChangeEligibility(reservation, now);
-        const notice = describeNotice(reservation, now);
+        const eligibility = evaluateChangeEligibility(reservation, now, policy);
+        const notice = describeNotice(reservation, now, policy);
         checks.push({
-            label: `At least ${MINIMUM_NOTICE_HOURS} hours' notice`,
+            label: `At least ${policy.minimumNoticeHours} hours' notice`,
             passed: eligibility.allowed,
             detail: eligibility.allowed ? notice.label : eligibility.reason,
         });
@@ -661,12 +665,12 @@ function SlotRuleCheck({ slot, reservation, now }) {
 }
 
 function ReservationCard({
-    reservation, now, isBusy, isConfirmingCancel,
+    reservation, now, policy, isBusy, isConfirmingCancel,
     onEdit, onRequestCancel, onAbortCancel, onConfirmCancel,
 }) {
-    const eligibility = evaluateChangeEligibility(reservation, now);
-    const notice = describeNotice(reservation, now);
-    const deadline = noticeDeadline(reservation.slotStartUtc);
+    const eligibility = evaluateChangeEligibility(reservation, now, policy);
+    const notice = describeNotice(reservation, now, policy);
+    const deadline = noticeDeadline(reservation.slotStartUtc, policy);
 
     return (
         <div className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white flex flex-col">
