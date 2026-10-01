@@ -8,6 +8,7 @@
 # .NET build artifacts
 [Bb]in/
 [Oo]bj/
+.log
 
 # Environment secrets
 .env

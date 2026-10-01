@@ -91,11 +91,22 @@ class ProsumerLoginActivity : AppCompatActivity() {
                     buttonLogin.isEnabled = true
                     Toast.makeText(this, "Welcome, Prosumer!", Toast.LENGTH_SHORT).show()
 
-                    val sharedPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                    sharedPrefs.edit().putString("logged_in_nic", status.nic).apply()
+                    // Write to legacy prefs (Room queries use logged_in_nic)
+                    getSharedPreferences("app_prefs", MODE_PRIVATE)
+                        .edit()
+                        .putString("logged_in_nic", status.nic)
+                        .putString("user_role", "PROSUMER")
+                        .apply()
+                    // Write role to SessionManager so MainActivity.isGridOperator() works
+                    sessionManager.saveAuthSession(
+                        token    = status.nic,
+                        userId   = status.nic,
+                        fullName = "",
+                        email    = "",
+                        role     = "Prosumer"
+                    )
 
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
                 is LoginStatus.OperatorSuccess -> {
@@ -103,8 +114,13 @@ class ProsumerLoginActivity : AppCompatActivity() {
                     buttonLogin.isEnabled = true
                     Toast.makeText(this, "Welcome, ${status.auth.fullName}!", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this, OperatorDashboardActivity::class.java)
-                    startActivity(intent)
+                    // SessionManager already written by loginOperator() in the ViewModel
+                    getSharedPreferences("app_prefs", MODE_PRIVATE)
+                        .edit()
+                        .putString("user_role", "OPERATOR")
+                        .apply()
+
+                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
                 is LoginStatus.Error -> {
