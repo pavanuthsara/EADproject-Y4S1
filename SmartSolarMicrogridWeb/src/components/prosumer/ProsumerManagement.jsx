@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProsumers, createProsumer, updateProsumer, updateProsumerStatus } from '../../services/prosumerService';
+import { getProsumers, createProsumer, updateProsumer, toggleProsumerStatus } from '../../services/prosumerService';
 
 export default function ProsumerManagement() {
     const [prosumers, setProsumers] = useState([]);
@@ -88,7 +88,7 @@ export default function ProsumerManagement() {
 
     const handleStatusChange = async (nic, newStatus) => {
         try {
-            await updateProsumerStatus(nic, newStatus);
+            await toggleProsumerStatus(nic, newStatus);
             await loadProsumers();
         } catch (err) {
             alert('Failed to update status.');
