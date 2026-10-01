@@ -7,6 +7,7 @@
  */
 
 using System.ComponentModel.DataAnnotations;
+using SmartSolarMicrogridAPI.Common.Helpers;
 
 namespace SmartSolarMicrogridAPI.DTOs.Requests;
 
@@ -41,4 +42,9 @@ public class CreateStationRequestDto
     // Number of battery storage slots (bays) available at the station.
     [Range(1, 1000)]
     public int TotalBays { get; set; }
+
+    // Daily operating window, e.g. "06:00-18:00". The service checks that it closes after it opens.
+    [Required]
+    [RegularExpression(OperatingScheduleHelper.Pattern, ErrorMessage = OperatingScheduleHelper.FormatErrorMessage)]
+    public string OperatingSchedule { get; set; } = string.Empty;
 }

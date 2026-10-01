@@ -1,9 +1,12 @@
 // Microgrid node (solar station) management calls.
 //
 // "Nodes" in the UI are solar stations in the API. Endpoints (StationsController):
-//   POST /api/stations                                  -> CreateStationRequestDto
-//   PUT  /api/stations/{stationId}/deactivate
+//   GET  /api/stations                                  -> Backoffice, GridOperator
+//   POST /api/stations                                  -> CreateStationRequestDto (Backoffice)
+//   PUT  /api/stations/{stationId}/operating-schedule   -> UpdateOperatingScheduleRequestDto
 //   PUT  /api/stations/{stationId}/schedules/{slotId}   -> UpdateScheduleRequestDto
+//   PUT  /api/stations/{stationId}/deactivate           -> Backoffice
+//   PUT  /api/stations/{stationId}/activate             -> Backoffice
 //   GET  /api/stations/nearby?lat&lng&radiusMeters      -> Prosumer only
 //
 // Payloads are passed straight through; the API owns all validation and rules.
@@ -13,11 +16,9 @@
 import { apiRequest } from "./apiClient";
 
 /**
- * Lists microgrid nodes visible to the caller.
- * GET /api/stations
- * NOTE: no plain staff list endpoint exists yet. GET /api/stations/nearby is
- * Prosumer-only and needs coordinates, so it is exposed separately below.
- * This will 404 until a staff list route is added.
+ * Lists every microgrid node for staff.
+ * GET /api/stations  (Backoffice or GridOperator role)
+ * @returns an array of StationResponseDto.
  */
 export async function getNodes() {
     const { data } = await apiRequest("/stations");
@@ -42,7 +43,8 @@ export async function getNearbyNodes({ lat, lng, radiusMeters }) {
  * POST /api/stations  (Backoffice role)
  * @param {object} data - CreateStationRequestDto
  *   { stationName, stationCode, latitude, longitude, addressLine, city,
- *     capacityKwh, totalBays }
+ *     capacityKwh, totalBays, operatingSchedule }
+ *   `operatingSchedule` is the daily window as 24h "HH:mm-HH:mm".
  * @returns the created StationResponseDto.
  */
 export async function createNode(data) {
@@ -51,6 +53,21 @@ export async function createNode(data) {
         body: data,
     });
     return created;
+}
+
+/**
+ * Changes a station's daily operating hours.
+ * PUT /api/stations/{stationId}/operating-schedule  (Backoffice or GridOperator role)
+ * @param {string} stationId
+ * @param {string} operatingSchedule - 24h "HH:mm-HH:mm", e.g. "06:00-18:00".
+ * @returns the updated StationResponseDto.
+ */
+export async function updateNodeOperatingSchedule(stationId, operatingSchedule) {
+    const { data: updated } = await apiRequest(
+        `/stations/${encodeURIComponent(stationId)}/operating-schedule`,
+        { method: "PUT", body: { operatingSchedule } }
+    );
+    return updated;
 }
 
 /**
@@ -90,9 +107,8 @@ export async function deactivateNode(stationId) {
 
 /**
  * Reactivates a previously deactivated station.
- * NOTE: the API has no activate route -- DeactivateStationAsync only moves a
- * station to Inactive. This will 404 until the endpoint is added.
- * PUT /api/stations/{stationId}/activate
+ * PUT /api/stations/{stationId}/activate  (Backoffice role)
+ * @returns the updated StationResponseDto.
  */
 export async function activateNode(stationId) {
     const { data: updated } = await apiRequest(`/stations/${encodeURIComponent(stationId)}/activate`, {

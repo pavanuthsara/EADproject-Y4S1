@@ -43,6 +43,16 @@ public class StationsController(IStationService stationService) : ControllerBase
         return Ok(ApiResponse<ScheduleResponseDto>.Ok(result, "Schedule updated successfully."));
     }
 
+    // Lets Grid Operators and Backoffice staff change a station's daily operating hours.
+    [HttpPut("{stationId}/operating-schedule")]
+    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
+    public async Task<ActionResult<ApiResponse<StationResponseDto>>> UpdateOperatingScheduleAsync(
+        string stationId, [FromBody] UpdateOperatingScheduleRequestDto dto)
+    {
+        var result = await stationService.UpdateOperatingScheduleAsync(stationId, dto);
+        return Ok(ApiResponse<StationResponseDto>.Ok(result, "Operating schedule updated successfully."));
+    }
+
     // Deactivates a station; blocked while it has active energy reservations.
     [HttpPut("{stationId}/deactivate")]
     [Authorize(Roles = RoleConstants.Backoffice)]

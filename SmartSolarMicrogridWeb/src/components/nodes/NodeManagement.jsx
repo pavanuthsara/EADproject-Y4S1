@@ -1,30 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { getNodes, createNode, updateNodeSchedule, deactivateNode, activateNode } from '../../services/nodeService';
+import { getNodes, createNode, updateNodeOperatingSchedule, deactivateNode, activateNode } from '../../services/nodeService';
+import { getRole } from '../../services/authService';
 import TimeRangePicker from './TimeRangePicker';
 import LocationPicker from './LocationPicker';
 
+const DEFAULT_SCHEDULE = '06:00-18:00';
+
 const EMPTY_FORM = {
-    name: '',
+    stationName: '',
+    stationCode: '',
     latitude: '',
     longitude: '',
-    capacity: '',
-    batterySlots: '',
-    schedule: '06:00-18:00'
+    addressLine: '',
+    city: '',
+    capacityKwh: '',
+    totalBays: '',
+    operatingSchedule: DEFAULT_SCHEDULE
 };
 
+const formatCoordinate = (value) => (typeof value === 'number' ? value.toFixed(5) : '—');
+
 export default function NodeManagement() {
+    // Registering, activating and deactivating hubs are Backoffice-only in the API;
+    // Grid Operators can view hubs and change their operating hours.
+    const canManageHubs = getRole() === 'Backoffice';
+
     const [nodes, setNodes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    
+
     // Create form state
     const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState(EMPTY_FORM);
 
-    // Schedule update state
+    // Operating schedule update state
     const [editingScheduleId, setEditingScheduleId] = useState(null);
-    const [newScheduleStr, setNewScheduleStr] = useState('');
+    const [newSchedule, setNewSchedule] = useState(DEFAULT_SCHEDULE);
+    const [isSavingSchedule, setIsSavingSchedule] = useState(false);
 
     useEffect(() => {
         loadNodes();
@@ -37,7 +50,7 @@ export default function NodeManagement() {
             setNodes(data);
             setError('');
         } catch (err) {
-            setError('Failed to load microgrid nodes.');
+            setError(err.message || 'Failed to load microgrid nodes.');
         } finally {
             setIsLoading(false);
         }
@@ -52,17 +65,30 @@ export default function NodeManagement() {
         setFormData(prev => ({ ...prev, latitude, longitude }));
     };
 
+    // Pre-fill the address from a map search result, without overwriting anything typed.
+    const handlePlaceSelected = ({ addressLine, city }) => {
+        setFormData(prev => ({
+            ...prev,
+            addressLine: prev.addressLine || addressLine,
+            city: prev.city || city
+        }));
+    };
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
         try {
             await createNode({
-                name: formData.name,
-                gpsLocation: `${formData.latitude}, ${formData.longitude}`,
-                capacity: Number(formData.capacity),
-                batterySlots: Number(formData.batterySlots),
-                schedule: formData.schedule
+                stationName: formData.stationName,
+                stationCode: formData.stationCode,
+                latitude: Number(formData.latitude),
+                longitude: Number(formData.longitude),
+                addressLine: formData.addressLine,
+                city: formData.city,
+                capacityKwh: Number(formData.capacityKwh),
+                totalBays: Number(formData.totalBays),
+                operatingSchedule: formData.operatingSchedule
             });
             await loadNodes();
             setIsCreateFormOpen(false);
@@ -96,17 +122,21 @@ export default function NodeManagement() {
 
     const startEditingSchedule = (node) => {
         setEditingScheduleId(node.id);
-        setNewScheduleStr(node.schedule);
+        setNewSchedule(node.operatingSchedule || DEFAULT_SCHEDULE);
     };
 
-    const handleSaveSchedule = async (id) => {
+    const handleSaveSchedule = async (e, id) => {
+        e.preventDefault();
         setError('');
+        setIsSavingSchedule(true);
         try {
-            await updateNodeSchedule(id, newScheduleStr);
+            await updateNodeOperatingSchedule(id, newSchedule);
             setEditingScheduleId(null);
             await loadNodes();
         } catch (err) {
             setError(err.message || 'Error updating schedule.');
+        } finally {
+            setIsSavingSchedule(false);
         }
     };
 
@@ -114,20 +144,28 @@ export default function NodeManagement() {
         return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
     }
 
+    const inputClass = 'w-full border-gray-300 rounded-md border p-2';
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:justify-between md:items-center bg-gray-50 gap-4">
                 <div>
                     <h2 className="text-xl font-semibold text-gray-800">Microgrid Node Management</h2>
-                    <p className="text-sm text-gray-500 mt-1">Register solar hubs, manage capacity, and update operational schedules.</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {canManageHubs
+                            ? 'Register solar hubs, manage capacity, and update operating schedules.'
+                            : 'View solar hubs and update their operating schedules.'}
+                    </p>
                 </div>
-                <button 
-                    onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap"
-                >
-                    {isCreateFormOpen ? 'Cancel Registration' : '+ Register New Hub'}
-                </button>
+                {canManageHubs && (
+                    <button
+                        onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap"
+                    >
+                        {isCreateFormOpen ? 'Cancel Registration' : '+ Register New Hub'}
+                    </button>
+                )}
             </div>
 
             {/* Error Message */}
@@ -138,31 +176,43 @@ export default function NodeManagement() {
             )}
 
             {/* Create Form */}
-            {isCreateFormOpen && (
+            {canManageHubs && isCreateFormOpen && (
                 <div className="p-6 border-b border-gray-200 bg-indigo-50/30">
                     <h3 className="text-lg font-medium text-gray-800 mb-4">Register Solar Grid Hub</h3>
-                    <form onSubmit={handleCreateSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <form onSubmit={handleCreateSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Hub Name</label>
-                            <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. Galle South Hub" />
+                            <label htmlFor="hub-name" className="block text-sm font-medium text-gray-700 mb-1">Hub Name</label>
+                            <input required id="hub-name" type="text" minLength={2} maxLength={100} name="stationName" value={formData.stationName} onChange={handleInputChange} className={inputClass} placeholder="e.g. Galle South Hub" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (kW/h)</label>
-                            <input required type="number" min="1" name="capacity" value={formData.capacity} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. 50" />
+                            <label htmlFor="hub-code" className="block text-sm font-medium text-gray-700 mb-1">Station Code</label>
+                            <input required id="hub-code" type="text" minLength={2} maxLength={20} name="stationCode" value={formData.stationCode} onChange={handleInputChange} className={`${inputClass} uppercase`} placeholder="e.g. GAL-01" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Battery Slots</label>
-                            <input required type="number" min="0" name="batterySlots" value={formData.batterySlots} onChange={handleInputChange} className="w-full border-gray-300 rounded-md border p-2" placeholder="e.g. 5" />
+                            <label htmlFor="hub-capacity" className="block text-sm font-medium text-gray-700 mb-1">Capacity (kW/h)</label>
+                            <input required id="hub-capacity" type="number" min="0.01" step="any" name="capacityKwh" value={formData.capacityKwh} onChange={handleInputChange} className={inputClass} placeholder="e.g. 50" />
                         </div>
-                        <fieldset className="md:col-span-2 lg:col-span-3">
+                        <div>
+                            <label htmlFor="hub-bays" className="block text-sm font-medium text-gray-700 mb-1">Battery Slots</label>
+                            <input required id="hub-bays" type="number" min="1" max="1000" name="totalBays" value={formData.totalBays} onChange={handleInputChange} className={inputClass} placeholder="e.g. 5" />
+                        </div>
+                        <fieldset className="md:col-span-2 lg:col-span-4">
                             <legend className="block text-sm font-medium text-gray-700 mb-1">Operating Schedule</legend>
-                            <TimeRangePicker value={formData.schedule} onChange={(schedule) => setFormData(prev => ({ ...prev, schedule }))} />
+                            <TimeRangePicker value={formData.operatingSchedule} onChange={(operatingSchedule) => setFormData(prev => ({ ...prev, operatingSchedule }))} />
                         </fieldset>
-                        <fieldset className="md:col-span-2 lg:col-span-3">
+                        <fieldset className="md:col-span-2 lg:col-span-4">
                             <legend className="block text-sm font-medium text-gray-700 mb-1">GPS Location</legend>
-                            <LocationPicker latitude={formData.latitude} longitude={formData.longitude} onChange={handleLocationChange} />
+                            <LocationPicker latitude={formData.latitude} longitude={formData.longitude} onChange={handleLocationChange} onPlaceSelected={handlePlaceSelected} />
                         </fieldset>
-                        <div className="flex justify-end md:col-span-2 lg:col-span-3">
+                        <div className="md:col-span-2 lg:col-span-3">
+                            <label htmlFor="hub-address" className="block text-sm font-medium text-gray-700 mb-1">Address Line</label>
+                            <input required id="hub-address" type="text" name="addressLine" value={formData.addressLine} onChange={handleInputChange} className={inputClass} placeholder="e.g. 12 Lighthouse Street" />
+                        </div>
+                        <div className="md:col-span-2 lg:col-span-1">
+                            <label htmlFor="hub-city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <input required id="hub-city" type="text" name="city" value={formData.city} onChange={handleInputChange} className={inputClass} placeholder="e.g. Galle" />
+                        </div>
+                        <div className="flex justify-end md:col-span-2 lg:col-span-4">
                             <button type="submit" disabled={isSubmitting} className="w-full md:w-auto md:min-w-48 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
                                 {isSubmitting ? 'Registering...' : 'Submit Hub'}
                             </button>
@@ -178,73 +228,77 @@ export default function NodeManagement() {
                         <div key={node.id} className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white flex flex-col relative">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{node.name}</h3>
-                                    <p className="text-xs text-gray-500 font-mono mt-1">ID: {node.id}</p>
+                                    <h3 className="text-lg font-bold text-gray-900">{node.stationName}</h3>
+                                    <p className="text-xs text-gray-500 font-mono mt-1">{node.stationCode}</p>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${node.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {node.status}
                                 </span>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4 text-sm mb-4 flex-grow">
+                                <div className="col-span-2">
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wider">Address</span>
+                                    <span className="font-medium">{[node.addressLine, node.city].filter(Boolean).join(', ') || '—'}</span>
+                                </div>
                                 <div>
                                     <span className="block text-gray-500 text-xs uppercase tracking-wider">GPS</span>
-                                    <span className="font-medium">{node.gpsLocation}</span>
+                                    <span className="font-medium font-mono">{formatCoordinate(node.latitude)}, {formatCoordinate(node.longitude)}</span>
                                 </div>
                                 <div>
                                     <span className="block text-gray-500 text-xs uppercase tracking-wider">Capacity</span>
-                                    <span className="font-medium">{node.capacity} kW/h</span>
+                                    <span className="font-medium">{node.capacityKwh} kW/h</span>
                                 </div>
                                 <div>
                                     <span className="block text-gray-500 text-xs uppercase tracking-wider">Battery Slots</span>
-                                    <span className="font-medium">{node.batterySlots}</span>
-                                </div>
-                                <div>
-                                    <span className="block text-gray-500 text-xs uppercase tracking-wider">Active Rsrv.</span>
-                                    <span className="font-medium">{node.activeReservations}</span>
+                                    <span className="font-medium">{node.totalBays}</span>
                                 </div>
                             </div>
 
                             {/* Schedule Section */}
                             <div className="border-t border-gray-100 pt-4 mb-4">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider mb-1">Schedule</span>
+                                <span className="block text-gray-500 text-xs uppercase tracking-wider mb-1">Operating Schedule</span>
                                 {editingScheduleId === node.id ? (
-                                    <div className="flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            value={newScheduleStr} 
-                                            onChange={(e) => setNewScheduleStr(e.target.value)} 
-                                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                        />
-                                        <button onClick={() => handleSaveSchedule(node.id)} className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Save</button>
-                                        <button onClick={() => setEditingScheduleId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300">Cancel</button>
-                                    </div>
+                                    // A form so the picker's native validity blocks saving an inverted window.
+                                    <form onSubmit={(e) => handleSaveSchedule(e, node.id)} className="space-y-2">
+                                        <TimeRangePicker value={newSchedule} onChange={setNewSchedule} />
+                                        <div className="flex justify-end gap-2">
+                                            <button type="button" onClick={() => setEditingScheduleId(null)} className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300">Cancel</button>
+                                            <button type="submit" disabled={isSavingSchedule} className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 disabled:opacity-50">
+                                                {isSavingSchedule ? 'Saving...' : 'Save'}
+                                            </button>
+                                        </div>
+                                    </form>
                                 ) : (
                                     <div className="flex justify-between items-center">
-                                        <span className="font-medium text-gray-800">{node.schedule}</span>
+                                        <span className={`font-medium font-mono ${node.operatingSchedule ? 'text-gray-800' : 'text-gray-400'}`}>
+                                            {node.operatingSchedule ? node.operatingSchedule.replace('-', ' – ') : 'Not set'}
+                                        </span>
                                         <button onClick={() => startEditingSchedule(node)} className="text-indigo-600 text-sm hover:underline">Edit</button>
                                     </div>
                                 )}
                             </div>
 
                             {/* Actions */}
-                            <div className="mt-auto flex justify-end">
-                                {node.status === 'Active' ? (
-                                    <button 
-                                        onClick={() => handleDeactivate(node.id)} 
-                                        className="text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-medium transition-colors"
-                                    >
-                                        Deactivate Node
-                                    </button>
-                                ) : (
-                                    <button 
-                                        onClick={() => handleActivate(node.id)} 
-                                        className="text-green-600 hover:bg-green-50 px-3 py-1.5 rounded text-sm font-medium transition-colors"
-                                    >
-                                        Activate Node
-                                    </button>
-                                )}
-                            </div>
+                            {canManageHubs && (
+                                <div className="mt-auto flex justify-end">
+                                    {node.status === 'Active' ? (
+                                        <button
+                                            onClick={() => handleDeactivate(node.id)}
+                                            className="text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-medium transition-colors"
+                                        >
+                                            Deactivate Node
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleActivate(node.id)}
+                                            className="text-green-600 hover:bg-green-50 px-3 py-1.5 rounded text-sm font-medium transition-colors"
+                                        >
+                                            Activate Node
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                     {nodes.length === 0 && (

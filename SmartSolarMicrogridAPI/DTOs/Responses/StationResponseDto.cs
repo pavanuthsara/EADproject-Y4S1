@@ -19,6 +19,7 @@ public class StationResponseDto
     public string City { get; set; } = string.Empty;
     public double CapacityKwh { get; set; }
     public int TotalBays { get; set; }
+    public string? OperatingSchedule { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? DeactivatedAt { get; set; }

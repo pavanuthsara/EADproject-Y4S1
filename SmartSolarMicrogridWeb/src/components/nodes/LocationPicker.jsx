@@ -6,12 +6,14 @@ import 'leaflet/dist/leaflet.css';
 // GPS picker for hub registration: click the map (or drag the pin) to set
 // coordinates, search an address to jump to a region, or use the browser's
 // geolocation. Map tiles and address search come from OpenStreetMap, so no API
-// key is needed.
+// key is needed. Nominatim's usage policy allows at most one search per second,
+// which handleSearch enforces.
 
 const DEFAULT_CENTER = [7.8731, 80.7718]; // Sri Lanka
 const DEFAULT_ZOOM = 7;
 const PIN_ZOOM = 15;
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const MIN_SEARCH_INTERVAL_MS = 1000;
 
 // Inline SVG pin: avoids Leaflet's default marker images, which break under Vite bundling.
 const pinIcon = L.divIcon({
@@ -35,6 +37,16 @@ function parseCoordinates(latitude, longitude) {
     return [lat, lng];
 }
 
+// Turns a Nominatim address breakdown into the hub's address line and city.
+function toAddress(result) {
+    const a = result.address ?? {};
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    return {
+        addressLine: street || a.neighbourhood || a.suburb || result.name || '',
+        city: a.city || a.town || a.village || a.municipality || a.county || '',
+    };
+}
+
 function MapClickHandler({ onPick }) {
     useMapEvents({
         click: (e) => onPick(e.latlng.lat, e.latlng.lng),
@@ -56,7 +68,8 @@ function MapViewController({ target }) {
     return null;
 }
 
-export default function LocationPicker({ latitude, longitude, onChange }) {
+// onPlaceSelected (optional) receives { addressLine, city } when a search result is chosen.
+export default function LocationPicker({ latitude, longitude, onChange, onPlaceSelected }) {
     const position = parseCoordinates(latitude, longitude);
 
     const [viewTarget, setViewTarget] = useState(null);
@@ -66,6 +79,7 @@ export default function LocationPicker({ latitude, longitude, onChange }) {
     const [isLocating, setIsLocating] = useState(false);
     const [message, setMessage] = useState(null); // { text, tone: 'info' | 'warn' }
     const searchAbortRef = useRef(null);
+    const lastSearchAtRef = useRef(0);
 
     useEffect(() => () => searchAbortRef.current?.abort(), []);
 
@@ -88,7 +102,12 @@ export default function LocationPicker({ latitude, longitude, onChange }) {
         setMessage(null);
         setResults([]);
         try {
-            const params = new URLSearchParams({ q, format: 'jsonv2', limit: '5' });
+            const wait = lastSearchAtRef.current + MIN_SEARCH_INTERVAL_MS - Date.now();
+            if (wait > 0) await new Promise(resolve => setTimeout(resolve, wait));
+            if (controller.signal.aborted) return;
+            lastSearchAtRef.current = Date.now();
+
+            const params = new URLSearchParams({ q, format: 'jsonv2', limit: '5', addressdetails: '1' });
             const res = await fetch(`${NOMINATIM_URL}?${params}`, {
                 signal: controller.signal,
                 headers: { Accept: 'application/json' },
@@ -113,6 +132,7 @@ export default function LocationPicker({ latitude, longitude, onChange }) {
         setViewTarget(result.boundingbox ? { bounds: [[s, w], [n, e]] } : { center: [lat, lng] });
         setResults([]);
         setQuery(result.display_name);
+        onPlaceSelected?.(toAddress(result));
         setMessage({ text: 'Pin placed at the search result. Click the map or drag the pin to fine-tune.', tone: 'info' });
     };
 
