@@ -444,6 +444,7 @@ public class ReservationService(
         {
             ReservationId = reservation.Id,
             ReservationNo = reservation.ReservationNo,
+            ProsumerNic = reservation.ProsumerNic,
             Status = reservation.StatusValue,
             StationId = reservation.StationId,
             StationName = stationName,

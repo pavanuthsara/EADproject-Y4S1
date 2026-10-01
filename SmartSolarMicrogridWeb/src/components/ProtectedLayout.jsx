@@ -2,6 +2,11 @@ import React from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { getRole, logout } from '../services/authService';
 
+const DASHBOARD_BY_ROLE = {
+  Backoffice: '/backoffice',
+  GridOperator: '/operator',
+};
+
 const ProtectedLayout = ({ allowedRoles }) => {
   const role = getRole();
   const navigate = useNavigate();
@@ -11,9 +16,11 @@ const ProtectedLayout = ({ allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If user role is not allowed for this route, redirect to their own dashboard
+  // If user role is not allowed for this route, redirect to their own dashboard.
+  // Roles without a dashboard (e.g. Prosumer) fall back to /login so we never
+  // redirect back to the same guarded route.
   if (allowedRoles && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'GridOperator' ? '/operator' : '/backoffice'} replace />;
+    return <Navigate to={DASHBOARD_BY_ROLE[role] ?? '/login'} replace />;
   }
 
   const handleLogout = () => {

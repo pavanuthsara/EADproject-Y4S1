@@ -23,6 +23,14 @@ namespace SmartSolarMicrogridAPI.Controllers;
 [Authorize(Roles = RoleConstants.Backoffice)]
 public class BackofficeController(IUserService userService) : ControllerBase
 {
+    // Lists all prosumers
+    [HttpGet("prosumers")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetProsumersAsync()
+    {
+        var prosumers = await userService.GetAllProsumersAsync();
+        return Ok(ApiResponse<IEnumerable<UserResponseDto>>.Ok(prosumers, "Prosumers retrieved."));
+    }
+
     // Web App: Backoffice Registration & Approval (creates immediately Active prosumer)
     [HttpPost("prosumers")]
     public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateProsumerAsync([FromBody] CreateProsumerRequestDto dto)

@@ -129,6 +129,10 @@ public class StationService(
             StartTime = slot.StartTime,
             EndTime = slot.EndTime,
             TotalPositions = slot.TotalPositions,
+            ReservedPositions = slot.ReservedPositions,
+            CapacityKwh = slot.CapacityKwh,
+            ReservedKwh = slot.ReservedKwh,
+            SupportedDirections = slot.SupportedDirections,
             Status = slot.Status,
             UpdatedAt = slot.UpdatedAt
         };
@@ -154,6 +158,26 @@ public class StationService(
         station.Status = StationStatus.Inactive.ToString();
         station.DeactivatedBy = deactivatedByUserId;
         station.DeactivatedAt = DateTime.UtcNow;
+        station.UpdatedAt = DateTime.UtcNow;
+
+        await stationRepository.UpdateAsync(station.Id, station);
+
+        return MapStation(station);
+    }
+
+    // Activates a previously deactivated station.
+    public async Task<StationResponseDto> ActivateStationAsync(string stationId)
+    {
+        var station = await stationRepository.GetByIdAsync(stationId);
+        if (station == null)
+            throw new NotFoundException($"Station {stationId} not found.");
+
+        if (station.Status == StationStatus.Active.ToString())
+            throw new BusinessRuleException("This station is already active.");
+
+        station.Status = StationStatus.Active.ToString();
+        station.DeactivatedBy = null;
+        station.DeactivatedAt = null;
         station.UpdatedAt = DateTime.UtcNow;
 
         await stationRepository.UpdateAsync(station.Id, station);
@@ -192,6 +216,31 @@ public class StationService(
         var stations = await solarStationQueryRepository.FindNearbyAsync(longitude, latitude, maxDistanceMeters);
         
         return stations.Select(MapStation).ToList();
+    }
+
+    public async Task<IEnumerable<StationResponseDto>> GetAllStationsAsync()
+    {
+        var stations = await stationRepository.FindAsync(_ => true);
+        return stations.Select(MapStation).ToList();
+    }
+
+    public async Task<IEnumerable<ScheduleResponseDto>> GetStationSlotsAsync(string stationId)
+    {
+        var slots = await slotRepository.FindAsync(s => s.StationId == stationId);
+        return slots.Select(s => new ScheduleResponseDto
+        {
+            Id = s.Id,
+            StationId = s.StationId,
+            StartTime = s.StartTime,
+            EndTime = s.EndTime,
+            TotalPositions = s.TotalPositions,
+            ReservedPositions = s.ReservedPositions,
+            CapacityKwh = s.CapacityKwh,
+            ReservedKwh = s.ReservedKwh,
+            SupportedDirections = s.SupportedDirections,
+            Status = s.Status,
+            UpdatedAt = s.UpdatedAt
+        }).ToList();
     }
 
     private static StationResponseDto MapStation(SolarStation station) => new()

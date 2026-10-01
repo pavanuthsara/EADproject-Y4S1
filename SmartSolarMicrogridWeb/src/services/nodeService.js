@@ -1,77 +1,102 @@
-// Mock service for managing Microgrid Nodes (Solar Hubs)
-// Replace with actual API calls to the backend when ready.
+// Microgrid node (solar station) management calls.
+//
+// "Nodes" in the UI are solar stations in the API. Endpoints (StationsController):
+//   POST /api/stations                                  -> CreateStationRequestDto
+//   PUT  /api/stations/{stationId}/deactivate
+//   PUT  /api/stations/{stationId}/schedules/{slotId}   -> UpdateScheduleRequestDto
+//   GET  /api/stations/nearby?lat&lng&radiusMeters      -> Prosumer only
+//
+// Payloads are passed straight through; the API owns all validation and rules.
+// In particular the API blocks deactivation while active reservations exist, so no
+// such check is duplicated here.
 
-let mockNodes = [
-    { 
-        id: 'NODE-001', 
-        name: 'Colombo Central Hub', 
-        gpsLocation: '6.9271, 79.8612', 
-        capacity: 50, 
-        batterySlots: 5, 
-        status: 'Active',
-        activeReservations: 2, 
-        schedule: '06:00-18:00' 
-    },
-    { 
-        id: 'NODE-002', 
-        name: 'Kandy Solar Station', 
-        gpsLocation: '7.2906, 80.6337', 
-        capacity: 30, 
-        batterySlots: 3, 
-        status: 'Active',
-        activeReservations: 0, 
-        schedule: '07:00-17:00' 
-    },
-];
+import { apiRequest } from "./apiClient";
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
+/**
+ * Lists microgrid nodes visible to the caller.
+ * GET /api/stations
+ * NOTE: no plain staff list endpoint exists yet. GET /api/stations/nearby is
+ * Prosumer-only and needs coordinates, so it is exposed separately below.
+ * This will 404 until a staff list route is added.
+ */
 export async function getNodes() {
-    await delay(400);
-    return [...mockNodes];
+    const { data } = await apiRequest("/stations");
+    return data ?? [];
 }
 
+/**
+ * Finds stations near a coordinate. Prosumer role only, used by the mobile map.
+ * GET /api/stations/nearby
+ * @param {{ lat: number, lng: number, radiusMeters?: number }} coords
+ * @returns an array of StationResponseDto.
+ */
+export async function getNearbyNodes({ lat, lng, radiusMeters }) {
+    const { data } = await apiRequest("/stations/nearby", {
+        query: { lat, lng, radiusMeters },
+    });
+    return data ?? [];
+}
+
+/**
+ * Registers a new microgrid node / solar station.
+ * POST /api/stations  (Backoffice role)
+ * @param {object} data - CreateStationRequestDto
+ *   { stationName, stationCode, latitude, longitude, addressLine, city,
+ *     capacityKwh, totalBays }
+ * @returns the created StationResponseDto.
+ */
 export async function createNode(data) {
-    await delay(400);
-    const newNode = {
-        id: `NODE-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-        ...data,
-        status: 'Active',
-        activeReservations: 0, // newly created nodes start with 0 reservations
-        schedule: data.schedule || '00:00-23:59'
-    };
-    mockNodes = [...mockNodes, newNode];
-    return newNode;
+    const { data: created } = await apiRequest("/stations", {
+        method: "POST",
+        body: data,
+    });
+    return created;
 }
 
-export async function updateNodeSchedule(id, newSchedule) {
-    await delay(400);
-    const index = mockNodes.findIndex(n => n.id === id);
-    if (index === -1) throw new Error('Node not found');
-    
-    mockNodes[index] = { ...mockNodes[index], schedule: newSchedule };
-    return mockNodes[index];
+/**
+ * Replaces a station slot's schedule. This is a full replacement, so the API marks
+ * every field required.
+ * PUT /api/stations/{stationId}/schedules/{slotId}
+ * @param {string} stationId - Owning station.
+ * @param {string} slotId - Booking slot to update.
+ * @param {object} newSchedule - UpdateScheduleRequestDto
+ *   { startTime, endTime, totalPositions, status }
+ *   `status` is the SlotStatus enum name: "Available", "Full" or "Closed".
+ *   Only Available or Closed can be requested; Full is derived server-side.
+ * @returns the updated ScheduleResponseDto.
+ * @param {string} [operatorId] - unused; the API reads the operator from the JWT.
+ */
+export async function updateNodeSchedule(stationId, slotId, newSchedule) {
+    const { data: updated } = await apiRequest(
+        `/stations/${encodeURIComponent(stationId)}/schedules/${encodeURIComponent(slotId)}`,
+        { method: "PUT", body: newSchedule }
+    );
+    return updated;
 }
 
-export async function deactivateNode(id) {
-    await delay(400);
-    const index = mockNodes.findIndex(n => n.id === id);
-    if (index === -1) throw new Error('Node not found');
-    
-    // Check if node has active reservations
-    if (mockNodes[index].activeReservations > 0) {
-        throw new Error(`Cannot deactivate node: There are ${mockNodes[index].activeReservations} active energy reservations.`);
-    }
-
-    mockNodes[index] = { ...mockNodes[index], status: 'Inactive' };
-    return mockNodes[index];
+/**
+ * Deactivates a station. The API rejects this while active energy reservations
+ * exist, and that message is passed back to the caller unchanged.
+ * PUT /api/stations/{stationId}/deactivate  (Backoffice role)
+ * @param {string} stationId
+ * @returns the updated StationResponseDto.
+ */
+export async function deactivateNode(stationId) {
+    const { data: updated } = await apiRequest(`/stations/${encodeURIComponent(stationId)}/deactivate`, {
+        method: "PUT",
+    });
+    return updated;
 }
 
-export async function activateNode(id) {
-    await delay(400);
-    const index = mockNodes.findIndex(n => n.id === id);
-    if (index === -1) throw new Error('Node not found');
-
-    mockNodes[index] = { ...mockNodes[index], status: 'Active' };
-    return mockNodes[index];
+/**
+ * Reactivates a previously deactivated station.
+ * NOTE: the API has no activate route -- DeactivateStationAsync only moves a
+ * station to Inactive. This will 404 until the endpoint is added.
+ * PUT /api/stations/{stationId}/activate
+ */
+export async function activateNode(stationId) {
+    const { data: updated } = await apiRequest(`/stations/${encodeURIComponent(stationId)}/activate`, {
+        method: "PUT",
+    });
+    return updated;
 }

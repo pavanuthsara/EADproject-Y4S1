@@ -1,46 +1,95 @@
-// Mock service for managing Prosumers
-// In a real application, these functions would use fetch() or axios to call your backend API.
+// Prosumer management calls for the Backoffice dashboard.
+//
+// Endpoints (BackofficeController, all [Authorize(Roles = Backoffice)]):
+//   POST /api/backoffice/prosumers              -> CreateProsumerRequestDto
+//   PUT  /api/backoffice/prosumers/{nic}         -> UpdateProfileRequestDto
+//   PUT  /api/backoffice/prosumers/{nic}/activate
+//   PUT  /api/backoffice/prosumers/{nic}/deactivate
+//
+// Payloads are passed straight through; the API owns all validation and rules.
 
-let mockProsumers = [
-    { nic: '199012345678', name: 'John Doe', email: 'john@example.com', phone: '0712345678', address: '123 Solar Way, Colombo', status: 'Active' },
-    { nic: '198598765432', name: 'Jane Smith', email: 'jane@example.com', phone: '0777654321', address: '456 Green Rd, Kandy', status: 'Inactive' },
-    { nic: '200112345678', name: 'Alice Silva', email: 'alice@example.com', phone: '0701122334', address: '789 Blue Ave, Galle', status: 'Pending' },
-];
+import { apiRequest } from "./apiClient";
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
+/**
+ * Fetches every prosumer registered through backoffice or the mobile app.
+ * GET /api/backoffice/prosumers
+ * NOTE: this endpoint does not exist yet on the API, so this will 404 until
+ * a list route is added. Callers should handle the rejection.
+ */
 export async function getProsumers() {
-    await delay(400); // Simulate network latency
-    return [...mockProsumers];
+    const { data } = await apiRequest("/backoffice/prosumers");
+    return data ?? [];
 }
 
+/**
+ * Registers a new prosumer and activates it immediately.
+ * POST /api/backoffice/prosumers
+ * @param {object} data - CreateProsumerRequestDto
+ *   { nic, fullName, email, phone, password, address, solarCapacityKw }
+ * @returns the created UserResponseDto.
+ */
 export async function createProsumer(data) {
-    await delay(400);
-    if (mockProsumers.find(p => p.nic === data.nic)) {
-        throw new Error('A prosumer with this NIC already exists.');
-    }
-    // New accounts can start as 'Pending' or 'Active'. We'll default to Pending.
-    const newProsumer = { ...data, status: 'Pending' };
-    mockProsumers = [...mockProsumers, newProsumer];
-    return newProsumer;
+    const { data: created } = await apiRequest("/backoffice/prosumers", {
+        method: "POST",
+        body: data,
+    });
+    return created;
 }
 
+/**
+ * Updates a prosumer's profile fields.
+ * PUT /api/backoffice/prosumers/{nic}
+ * @param {string} nic - National Identity Card number, the lookup key.
+ * @param {object} data - UpdateProfileRequestDto
+ *   { fullName, email, phone, address, solarCapacityKw }
+ * @returns the updated UserResponseDto.
+ */
 export async function updateProsumer(nic, data) {
-    await delay(400);
-    const index = mockProsumers.findIndex(p => p.nic === nic);
-    if (index === -1) throw new Error('Prosumer not found.');
-    
-    // NIC is the primary key and shouldn't typically be changed, 
-    // but we'll merge the rest of the data.
-    mockProsumers[index] = { ...mockProsumers[index], ...data };
-    return mockProsumers[index];
+    const { data: updated } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}`, {
+        method: "PUT",
+        body: data,
+    });
+    return updated;
 }
 
-export async function updateProsumerStatus(nic, newStatus) {
-    await delay(400);
-    const index = mockProsumers.findIndex(p => p.nic === nic);
-    if (index === -1) throw new Error('Prosumer not found.');
-    
-    mockProsumers[index] = { ...mockProsumers[index], status: newStatus };
-    return mockProsumers[index];
+/**
+ * Activates or deactivates a prosumer account.
+ *
+ * The API exposes these as two separate routes rather than a status field, so this
+ * dispatches on `isActive`. `Pending` registrations are moved to Active by the
+ * activate route.
+ *
+ * @param {string} nic - National Identity Card number.
+ * @param {boolean|string} isActive - true to activate, false to deactivate.
+ * @returns the updated UserResponseDto.
+ */
+export async function toggleProsumerStatus(nic, isActive) {
+    const action = isActive === true || isActive === "Active" ? "activate" : "deactivate";
+    const { data: updated } = await apiRequest(
+        `/backoffice/prosumers/${encodeURIComponent(nic)}/${action}`,
+        { method: "PUT" }
+    );
+    return updated;
+}
+
+/**
+ * Activates a pending prosumer registration.
+ * PUT /api/backoffice/prosumers/{nic}/activate
+ */
+export async function activateProsumer(nic) {
+    const { data } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}/activate`, {
+        method: "PUT",
+    });
+    return data;
+}
+
+/**
+ * Deactivates a prosumer account.
+ * PUT /api/backoffice/prosumers/{nic}/deactivate
+ */
+export async function deactivateProsumer(nic) {
+    const { data } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}/deactivate`, {
+        method: "PUT",
+    });
+    return data;
 }

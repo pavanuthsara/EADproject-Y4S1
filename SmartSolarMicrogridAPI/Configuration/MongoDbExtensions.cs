@@ -49,6 +49,10 @@ public static class MongoDbExtensions
 
         try
         {
+            var cs = app.Configuration["MongoDbSettings:ConnectionString"];
+            Console.WriteLine(string.IsNullOrWhiteSpace(cs)
+                ? "ConnectionString is EMPTY/NULL"
+                : $"ConnectionString host: {new MongoUrl(cs).Servers.FirstOrDefault()?.Host ?? "(srv) " + cs.Split('@').Last().Split('/').First()}");
             await context.PingAsync();
             app.Logger.LogInformation("MongoDB connection successful. Database: {DatabaseName}", context.DatabaseName);
         }

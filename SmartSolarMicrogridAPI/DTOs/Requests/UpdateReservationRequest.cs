@@ -16,6 +16,8 @@ namespace SmartSolarMicrogridAPI.DTOs.Requests;
 
 public class UpdateReservationRequest
 {
+    public string? ProsumerNic { get; set; }
+    
     public string? SlotId { get; set; }
 
     public EnergyDirection? Direction { get; set; }

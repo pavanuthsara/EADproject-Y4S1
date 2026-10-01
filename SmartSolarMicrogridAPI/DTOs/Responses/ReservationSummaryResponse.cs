@@ -17,6 +17,7 @@ public class ReservationSummaryResponse
 {
     public string ReservationId { get; set; } = string.Empty;
     public string ReservationNo { get; set; } = string.Empty;
+    public string ProsumerNic { get; set; } = string.Empty;
     public ReservationStatus Status { get; set; }
     public string StationId { get; set; } = string.Empty;
     public string StationName { get; set; } = string.Empty;

@@ -1,14 +1,10 @@
 // Client-side reservation rules for the web app.
 //
-// These mirror the Web API's ReservationPolicy section (appsettings.json:
-// BookingWindowDays = 7, MinimumNoticeHours = 12) so the UI can block an
+// These mirror the Web API's ReservationPolicy section so the UI can block an
 // invalid action before it is sent. The API remains the authority; this module
 // only keeps staff from submitting requests the API would reject anyway.
 // Messages match the API's ReservationMessages so the same wording is shown
 // whichever side rejects the request.
-
-export const BOOKING_WINDOW_DAYS = 7;
-export const MINIMUM_NOTICE_HOURS = 12;
 
 // Only these statuses can still be changed or cancelled.
 export const MODIFIABLE_STATUSES = ['Pending', 'Approved'];
@@ -28,8 +24,8 @@ const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 export const RuleMessages = {
     slotStarted: 'Slot already started: bookings are only accepted for slots that start in the future.',
-    outsideBookingWindow: `Booking window rule: slots can only be booked up to ${BOOKING_WINDOW_DAYS} days in advance.`,
-    insufficientNotice: `Notice rule: reservations can only be changed or cancelled at least ${MINIMUM_NOTICE_HOURS} hours before the start time.`,
+    outsideBookingWindow: (days) => `Booking window rule: slots can only be booked up to ${days} days in advance.`,
+    insufficientNotice: (hours) => `Notice rule: reservations can only be changed or cancelled at least ${hours} hours before the start time.`,
     invalidState: (status) => `State rule: a ${status} reservation can no longer be changed or cancelled.`,
     invalidDate: 'Select a valid start time for the reservation.',
     directionNotSupported: (direction) => `Direction rule: this slot does not accept ${direction} reservations.`,
@@ -93,8 +89,8 @@ export function formatDuration(hours) {
 
 // Earliest and latest start time a new booking may have, as datetime-local
 // values so they can be fed straight into an input's min/max attributes.
-export function bookingWindowBounds(now = new Date()) {
-    const latest = new Date(now.getTime() + BOOKING_WINDOW_DAYS * MS_PER_DAY);
+export function bookingWindowBounds(now, policy) {
+    const latest = new Date(now.getTime() + policy.bookingWindowDays * MS_PER_DAY);
     return {
         earliest: now,
         latest,
@@ -104,16 +100,16 @@ export function bookingWindowBounds(now = new Date()) {
 }
 
 // True when a start time is in the future and no more than seven days ahead.
-export function isWithinBookingWindow(startValue, now = new Date()) {
+export function isWithinBookingWindow(startValue, now, policy) {
     const start = startValue instanceof Date ? startValue : new Date(startValue);
     if (Number.isNaN(start.getTime())) return false;
 
     return start.getTime() > now.getTime()
-        && start.getTime() <= now.getTime() + BOOKING_WINDOW_DAYS * MS_PER_DAY;
+        && start.getTime() <= now.getTime() + policy.bookingWindowDays * MS_PER_DAY;
 }
 
 // Checks a proposed start time against the booking window rule.
-export function validateSlotStart(startValue, now = new Date()) {
+export function validateSlotStart(startValue, now, policy) {
     const start = startValue instanceof Date ? startValue : new Date(startValue);
 
     if (!startValue || Number.isNaN(start.getTime())) {
@@ -122,8 +118,8 @@ export function validateSlotStart(startValue, now = new Date()) {
     if (start.getTime() <= now.getTime()) {
         return { valid: false, message: RuleMessages.slotStarted };
     }
-    if (start.getTime() > now.getTime() + BOOKING_WINDOW_DAYS * MS_PER_DAY) {
-        return { valid: false, message: RuleMessages.outsideBookingWindow };
+    if (start.getTime() > now.getTime() + policy.bookingWindowDays * MS_PER_DAY) {
+        return { valid: false, message: RuleMessages.outsideBookingWindow(policy.bookingWindowDays) };
     }
     return { valid: true, message: '' };
 }
@@ -131,47 +127,51 @@ export function validateSlotStart(startValue, now = new Date()) {
 // --- The twelve-hour notice period ----------------------------------------
 
 // The last moment a booking starting at slotStart can still be changed or cancelled.
-export function noticeDeadline(slotStartValue) {
+export function noticeDeadline(slotStartValue, policy) {
     const start = slotStartValue instanceof Date ? slotStartValue : new Date(slotStartValue);
     if (Number.isNaN(start.getTime())) return null;
-    return new Date(start.getTime() - MINIMUM_NOTICE_HOURS * MS_PER_HOUR);
+    return new Date(start.getTime() - policy.minimumNoticeHours * MS_PER_HOUR);
 }
 
 // True when the start time is still at least twelve hours away.
-export function hasSufficientNotice(slotStartValue, now = new Date()) {
+export function hasSufficientNotice(slotStartValue, now, policy) {
     const hours = hoursUntil(slotStartValue, now);
-    return Number.isFinite(hours) && hours >= MINIMUM_NOTICE_HOURS;
+    return Number.isFinite(hours) && hours >= policy.minimumNoticeHours;
 }
 
 // Whether a reservation may still be changed or cancelled, and why not if it may not.
 // The notice period is always measured against the booking's existing start time,
 // never against a newly requested one, which is what the API does too.
-export function evaluateChangeEligibility(reservation, now = new Date()) {
+export function evaluateChangeEligibility(reservation, now, policy) {
     if (!reservation) {
         return { allowed: false, reason: 'No reservation selected.' };
+    }
+    // Trust the API's canModify initially; only invalidate it if the clock has passed the threshold since loading.
+    if (!reservation.canModify && !hasSufficientNotice(reservation.slotStartUtc, now, policy)) {
+        return { allowed: false, reason: RuleMessages.insufficientNotice(policy.minimumNoticeHours) };
     }
     if (!MODIFIABLE_STATUSES.includes(reservation.status)) {
         return { allowed: false, reason: RuleMessages.invalidState(reservation.status) };
     }
-    if (!hasSufficientNotice(reservation.slotStartUtc, now)) {
-        return { allowed: false, reason: RuleMessages.insufficientNotice };
+    if (!hasSufficientNotice(reservation.slotStartUtc, now, policy)) {
+        return { allowed: false, reason: RuleMessages.insufficientNotice(policy.minimumNoticeHours) };
     }
     return { allowed: true, reason: '' };
 }
 
 // A short label for how much of the notice period is left.
-export function describeNotice(reservation, now = new Date()) {
+export function describeNotice(reservation, now, policy) {
     const hours = hoursUntil(reservation?.slotStartUtc, now);
     if (!Number.isFinite(hours)) return { tone: 'neutral', label: '—' };
 
     if (hours <= 0) {
         return { tone: 'expired', label: 'Slot has already started' };
     }
-    if (hours < MINIMUM_NOTICE_HOURS) {
+    if (hours < policy.minimumNoticeHours) {
         return { tone: 'expired', label: `Notice window closed · starts in ${formatDuration(hours)}` };
     }
 
-    const remaining = hours - MINIMUM_NOTICE_HOURS;
+    const remaining = hours - policy.minimumNoticeHours;
     const tone = remaining <= 6 ? 'warning' : 'ok';
     return { tone, label: `${formatDuration(remaining)} left to change or cancel` };
 }
@@ -198,7 +198,7 @@ export function validateRequestedKwh(value, availableKwh = null) {
 }
 
 // Validates everything a create request needs before it is sent.
-export function validateCreateForm(form, slot, now = new Date()) {
+export function validateCreateForm(form, slot, now, policy) {
     const errors = {};
 
     if (!form.prosumerNic?.trim()) {
@@ -210,7 +210,7 @@ export function validateCreateForm(form, slot, now = new Date()) {
     if (!form.slotId) {
         errors.slotId = 'Select a booking slot.';
     } else {
-        const window = validateSlotStart(slot?.startUtc, now);
+        const window = validateSlotStart(slot?.startUtc, now, policy);
         if (!window.valid) errors.slotId = window.message;
     }
     if (!ENERGY_DIRECTIONS.includes(form.direction)) {
@@ -228,10 +228,10 @@ export function validateCreateForm(form, slot, now = new Date()) {
 
 // Validates an update request: the notice rule on the current booking, the booking
 // window on any new slot, and that at least one field actually changed.
-export function validateUpdateForm(form, reservation, slot, now = new Date()) {
+export function validateUpdateForm(form, reservation, slot, now, policy) {
     const errors = {};
 
-    const eligibility = evaluateChangeEligibility(reservation, now);
+    const eligibility = evaluateChangeEligibility(reservation, now, policy);
     if (!eligibility.allowed) {
         return { valid: false, errors: { form: eligibility.reason } };
     }
@@ -245,7 +245,7 @@ export function validateUpdateForm(form, reservation, slot, now = new Date()) {
     }
 
     if (slotChanging) {
-        const window = validateSlotStart(slot?.startUtc, now);
+        const window = validateSlotStart(slot?.startUtc, now, policy);
         if (!window.valid) errors.slotId = window.message;
     }
 

@@ -55,6 +55,15 @@ public class StationsController(IStationService stationService) : ControllerBase
         return Ok(ApiResponse<StationResponseDto>.Ok(result, "Station deactivated successfully."));
     }
 
+    // Activates a station.
+    [HttpPut("{stationId}/activate")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<StationResponseDto>>> ActivateStationAsync(string stationId)
+    {
+        var result = await stationService.ActivateStationAsync(stationId);
+        return Ok(ApiResponse<StationResponseDto>.Ok(result, "Station activated successfully."));
+    }
+
     // Retrieves nearby grid nodes (solar stations) for the mobile app map.
     [HttpGet("nearby")]
     [Authorize(Roles = RoleConstants.Prosumer)]
@@ -65,5 +74,23 @@ public class StationsController(IStationService stationService) : ControllerBase
     {
         var result = await stationService.GetNearbyStationsAsync(lat, lng, radiusMeters);
         return Ok(ApiResponse<IEnumerable<StationResponseDto>>.Ok(result, "Nearby stations retrieved."));
+    }
+
+    // Retrieves all stations for staff.
+    [HttpGet]
+    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<StationResponseDto>>>> GetAllStationsAsync()
+    {
+        var result = await stationService.GetAllStationsAsync();
+        return Ok(ApiResponse<IEnumerable<StationResponseDto>>.Ok(result, "Stations retrieved."));
+    }
+
+    // Retrieves all booking slots for a given station.
+    [HttpGet("{stationId}/slots")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<IEnumerable<ScheduleResponseDto>>>> GetStationSlotsAsync(string stationId)
+    {
+        var result = await stationService.GetStationSlotsAsync(stationId);
+        return Ok(ApiResponse<IEnumerable<ScheduleResponseDto>>.Ok(result, "Station slots retrieved."));
     }
 }
