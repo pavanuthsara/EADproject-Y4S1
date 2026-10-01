@@ -104,36 +104,49 @@ class ReservationListActivity : AppCompatActivity() {
             val emptyText = TextView(this).apply {
                 text = "No reservations found."
                 textSize = 16f
+                setTextColor(androidx.core.content.ContextCompat.getColor(this@ReservationListActivity, R.color.text_secondary))
+                gravity = android.view.Gravity.CENTER
+                setPadding(0, 48, 0, 48)
             }
             reservationsLayout.addView(emptyText)
         } else {
             for (res in list) {
                 val card = LinearLayout(this).apply {
                     orientation = LinearLayout.VERTICAL
-                    setPadding(32, 32, 32, 32)
-                    setBackgroundColor(Color.parseColor("#F5F5F5"))
+                    setPadding(40, 36, 40, 36)
+                    setBackgroundResource(R.drawable.reservation_card_border)
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { setMargins(0, 0, 0, 32) }
+                    ).apply { setMargins(0, 0, 0, 28) }
                 }
 
                 val infoText = TextView(this).apply {
-                    text = "${res.type}\nDate: ${res.date} | Time: ${res.time}\nStatus: ${res.status}"
-                    textSize = 16f
-                    setTextColor(Color.BLACK)
+                    text = "${res.type}\nDate: ${res.date}  |  Time: ${res.time}\nStatus: ${res.status}"
+                    textSize = 15f
+                    setTextColor(androidx.core.content.ContextCompat.getColor(this@ReservationListActivity, R.color.text))
+                    setLineSpacing(8f, 1f)
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { setMargins(0, 0, 0, 16) }
+                    ).apply { setMargins(0, 0, 0, 20) }
                 }
 
                 val actionLayout = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
                 }
 
-                val btnEdit = Button(this).apply {
-                    text = "Edit/Cancel"
+                val btnEdit = com.google.android.material.button.MaterialButton(this).apply {
+                    text = "Edit / Cancel"
+                    textSize = 13f
+                    setTextColor(androidx.core.content.ContextCompat.getColor(this@ReservationListActivity, R.color.text))
+                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    strokeWidth = (1.5f * resources.displayMetrics.density).toInt()
+                    setStrokeColorResource(R.color.outline)
+                    cornerRadius = (10f * resources.displayMetrics.density).toInt()
+                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        marginEnd = 16
+                    }
                     setOnClickListener {
                         val intent = Intent(this@ReservationListActivity, ReservationActivity::class.java)
                         intent.putExtra("RESERVATION_ID", res.id)
@@ -141,8 +154,13 @@ class ReservationListActivity : AppCompatActivity() {
                     }
                 }
 
-                val btnQr = Button(this).apply {
+                val btnQr = com.google.android.material.button.MaterialButton(this).apply {
                     text = "View QR"
+                    textSize = 13f
+                    setTextColor(androidx.core.content.ContextCompat.getColor(this@ReservationListActivity, R.color.on_primary))
+                    setBackgroundColor(androidx.core.content.ContextCompat.getColor(this@ReservationListActivity, R.color.primary))
+                    cornerRadius = (10f * resources.displayMetrics.density).toInt()
+                    layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                     setOnClickListener {
                         val intent = Intent(this@ReservationListActivity, ReservationSummaryActivity::class.java)
                         intent.putExtra("RESERVATION_ID", res.id)
