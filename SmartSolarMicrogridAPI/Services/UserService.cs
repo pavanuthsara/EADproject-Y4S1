@@ -76,6 +76,105 @@ public class UserService(
         };
     }
 
+    public async Task<IEnumerable<UserResponseDto>> GetAllStaffAsync()
+    {
+        var staffRoles = new[] { RoleConstants.Backoffice, RoleConstants.GridOperator };
+        var staffUsers = await userRepository.FindAsync(u => staffRoles.Contains(u.Role));
+        
+        return staffUsers.Select(u => new UserResponseDto
+        {
+            Id = u.Id,
+            Role = u.Role,
+            Nic = u.Nic,
+            FullName = u.FullName,
+            Email = u.Email,
+            Phone = u.Phone,
+            AccountStatus = u.AccountStatus,
+            CreatedAt = u.CreatedAt
+        });
+    }
+
+    public async Task<UserResponseDto> UpdateStaffProfileAsync(string id, UpdateStaffRequestDto dto)
+    {
+        var users = await userRepository.FindAsync(u => u.Id == id);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+            throw new NotFoundException($"Staff with ID {id} not found.");
+
+        if (user.Role != RoleConstants.Backoffice && user.Role != RoleConstants.GridOperator)
+            throw new BusinessRuleException("Cannot update a non-staff user via this endpoint.");
+
+        // Check if new email is already taken by someone else
+        if (user.Email != dto.Email)
+        {
+            bool emailExists = await userRepository.ExistsAsync(u => u.Email == dto.Email && u.Id != user.Id);
+            if (emailExists)
+                throw new BusinessRuleException("Email address is already in use by another account.");
+        }
+
+        user.FullName = dto.FullName;
+        user.Email = dto.Email;
+        user.Phone = dto.Phone ?? user.Phone;
+        user.Address = dto.Address ?? user.Address;
+        user.Role = dto.Role.ToString();
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await userRepository.UpdateAsync(user.Id, user);
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Role = user.Role,
+            Nic = user.Nic,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AccountStatus = user.AccountStatus,
+            CreatedAt = user.CreatedAt
+        };
+    }
+
+    public async Task<UserResponseDto> UpdateStaffStatusAsync(string id, string status, string updatedBy)
+    {
+        var users = await userRepository.FindAsync(u => u.Id == id);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+            throw new NotFoundException($"Staff with ID {id} not found.");
+
+        if (user.Role != RoleConstants.Backoffice && user.Role != RoleConstants.GridOperator)
+            throw new BusinessRuleException("Cannot update a non-staff user via this endpoint.");
+
+        user.AccountStatus = status;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        if (status == AccountStatus.Deactivated.ToString())
+        {
+            user.DeactivatedBy = updatedBy;
+            user.DeactivatedAt = DateTime.UtcNow;
+        }
+        else if (status == AccountStatus.Active.ToString())
+        {
+            user.ReactivatedBy = updatedBy;
+            user.ReactivatedAt = DateTime.UtcNow;
+        }
+
+        await userRepository.UpdateAsync(user.Id, user);
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Role = user.Role,
+            Nic = user.Nic,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AccountStatus = user.AccountStatus,
+            CreatedAt = user.CreatedAt
+        };
+    }
+
     public async Task<UserResponseDto> CreateProsumerByBackofficeAsync(CreateProsumerRequestDto dto)
     {
         bool userExists = await userRepository.ExistsAsync(u => u.Nic == dto.Nic || u.Email == dto.Email);

@@ -26,6 +26,17 @@
 - [ ] Connect `deactivateNode(id)` and `activateNode(id)` to backend.
 - [ ] Ensure backend implements the exact same validation to block node deactivation if active energy reservations exist.
 
+## Frontend: Staff Management API Integration
+
+**Context:** The `StaffManagement.jsx` UI uses a mock service `src/services/staffService.js` to manage internal Backoffice and Grid Operator users.
+
+**To-Do:**
+- [x] Connect `getStaff()` to backend (GET request).
+- [x] Connect `createStaff(data)` to backend (POST request) allowing internal role assignment.
+- [x] Connect `updateStaff(id, data)` to backend (PUT request).
+- [x] Connect `updateStaffStatus(id, newStatus)` to backend (PATCH/PUT request).
+- [x] Ensure Role-Based Access Control (RBAC) on the backend prevents unauthorized users from modifying staff records.
+
 ## Frontend: Energy Slot Reservation Management API Integration
 
 **Context:** `ReservationManagement.jsx` is mounted on both the Backoffice and Grid
