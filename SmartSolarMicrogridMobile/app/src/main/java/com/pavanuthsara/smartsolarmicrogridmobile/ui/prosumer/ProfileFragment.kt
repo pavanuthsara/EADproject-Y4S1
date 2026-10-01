@@ -12,19 +12,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.session.SessionManager
 
 /**
- * ProfileFragment (Prosumer) — edit profile data, request account deactivation.
- * Mirrors ProsumerProfileActivity logic but lives within the bottom-nav shell.
+ * ProfileFragment (Prosumer) — edit profile data, logout, and account deactivation.
+ * ViewModel is initialised in onViewCreated() using ViewModelProvider(requireActivity())
+ * so that the AndroidViewModel correctly receives the Application reference.
  */
 class ProfileFragment : Fragment() {
 
-    private val viewModel: ProsumerProfileViewModel by lazy {
-        ViewModelProvider(this)[ProsumerProfileViewModel::class.java]
-    }
+    private lateinit var viewModel: ProsumerProfileViewModel
+    private lateinit var sessionManager: SessionManager
 
     private lateinit var textProfileName: TextView
     private lateinit var textProfileNic: TextView
@@ -41,6 +42,11 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialise ViewModel — requireActivity() is the ViewModelStoreOwner and
+        // supplies the Application to the AndroidViewModel constructor.
+        viewModel      = ViewModelProvider(requireActivity())[ProsumerProfileViewModel::class.java]
+        sessionManager = SessionManager.getInstance(requireContext())
+
         textProfileName = view.findViewById(R.id.textProfileName)
         textProfileNic  = view.findViewById(R.id.textProfileNic)
         inputNic        = view.findViewById(R.id.inputNic)
@@ -48,7 +54,7 @@ class ProfileFragment : Fragment() {
         inputEmail      = view.findViewById(R.id.inputEmail)
         inputPhone      = view.findViewById(R.id.inputPhone)
 
-        val sessionManager = SessionManager.getInstance(requireContext())
+        // Resolve logged-in NIC: SessionManager first, then legacy prefs
         val loggedInNic = sessionManager.getUserId()
             ?: requireContext()
                 .getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -56,21 +62,30 @@ class ProfileFragment : Fragment() {
 
         if (loggedInNic == null) {
             Toast.makeText(requireContext(), "Session expired. Please log in again.", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(requireContext(), ProsumerLoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
+            redirectToLogin()
             return
         }
 
-        viewModel.loadProfile(loggedInNic)
+        // Load profile only if not already loaded (avoids reload on tab re-select)
+        if (viewModel.profileStatus.value == ProfileStatus.Idle) {
+            viewModel.loadProfile(loggedInNic)
+        }
+
+        // ── Button wiring ─────────────────────────────────────────────────────
 
         view.findViewById<MaterialButton>(R.id.buttonSave).setOnClickListener {
             attemptUpdate()
         }
 
         view.findViewById<MaterialButton>(R.id.buttonDeactivate).setOnClickListener {
-            showDeactivateDialog(loggedInNic)
+            showDeactivateDialog()
         }
+
+        view.findViewById<MaterialButton>(R.id.buttonLogout).setOnClickListener {
+            showLogoutDialog()
+        }
+
+        // ── Observe ───────────────────────────────────────────────────────────
 
         viewModel.profileStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
@@ -87,12 +102,7 @@ class ProfileFragment : Fragment() {
                 }
                 is ProfileStatus.DeactivateSuccess -> {
                     Toast.makeText(requireContext(), "Account deactivated.", Toast.LENGTH_SHORT).show()
-                    sessionManager.clearSession()
-                    requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-                        .edit().remove("logged_in_nic").apply()
-                    startActivity(Intent(requireContext(), ProsumerLoginActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    })
+                    clearSessionAndLogout()
                 }
                 is ProfileStatus.Error -> {
                     Toast.makeText(requireContext(), status.message, Toast.LENGTH_LONG).show()
@@ -101,6 +111,8 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private fun attemptUpdate() {
         val fullName = inputFullName.editText?.text?.toString()?.trim().orEmpty()
@@ -114,21 +126,47 @@ class ProfileFragment : Fragment() {
             else                                               -> null
         }
         inputPhone.error    = when {
-            phone.isEmpty()                                         -> getString(R.string.error_phone_required)
-            !ProsumerRegistrationViewModel.isValidPhoneNumber(phone)-> getString(R.string.error_phone_invalid)
-            else                                                    -> null
+            phone.isEmpty()                                          -> getString(R.string.error_phone_required)
+            !ProsumerRegistrationViewModel.isValidPhoneNumber(phone) -> getString(R.string.error_phone_invalid)
+            else                                                     -> null
         }
 
         val isValid = listOf(inputFullName, inputEmail, inputPhone).none { !it.error.isNullOrEmpty() }
         if (isValid) viewModel.updateProfile(fullName, email, phone)
     }
 
-    private fun showDeactivateDialog(nic: String) {
+    private fun showDeactivateDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Deactivate Account")
             .setMessage("Are you sure you want to deactivate your account? All data will be permanently deleted.")
             .setPositiveButton("Deactivate") { _, _ -> viewModel.deactivateAccount() }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun showLogoutDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Log Out")
+            .setMessage("Are you sure you want to log out?")
+            .setPositiveButton("Log Out") { _, _ -> clearSessionAndLogout() }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun clearSessionAndLogout() {
+        sessionManager.clearSession()
+        requireContext()
+            .getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .remove("logged_in_nic")
+            .remove("user_role")
+            .apply()
+        redirectToLogin()
+    }
+
+    private fun redirectToLogin() {
+        startActivity(Intent(requireContext(), ProsumerLoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
     }
 }

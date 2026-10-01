@@ -8,12 +8,11 @@
         android:id="@+id/nav_map"
         android:icon="@drawable/ic_map"
         android:title="Map" />
-    <!-- Invisible spacer so FAB cradle falls between Map and Bookings -->
+    <!-- Invisible spacer so FAB cradle falls between Map and Bookings — no icon! -->
     <item
         android:id="@+id/nav_placeholder"
         android:title=""
-        android:enabled="false"
-        android:icon="@drawable/ic_home" />
+        android:enabled="false" />
     <item
         android:id="@+id/nav_bookings"
         android:icon="@drawable/ic_history"
