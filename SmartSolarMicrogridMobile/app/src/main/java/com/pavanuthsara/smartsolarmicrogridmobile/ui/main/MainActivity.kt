@@ -1,21 +1,31 @@
 package com.pavanuthsara.smartsolarmicrogridmobile.ui.main
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import com.pavanuthsara.smartsolarmicrogridmobile.R
+import com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.GridMapActivity
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerProfileActivity
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ReservationListActivity
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     // Initializes the ViewModel tied to this Activity's lifecycle
     private val testUserViewModel: TestUserViewModel by viewModels()
 
-    private lateinit var textPendingCount: android.widget.TextView
-    private lateinit var textApprovedCount: android.widget.TextView
-    private lateinit var textTotalCount: android.widget.TextView
+    private lateinit var textPendingCount: TextView
+    private lateinit var textApprovedCount: TextView
+    private lateinit var textTotalCount: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,16 +41,16 @@ class MainActivity : AppCompatActivity() {
         textApprovedCount = findViewById(R.id.textApprovedCount)
         textTotalCount = findViewById(R.id.textTotalCount)
 
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonProfile).setOnClickListener {
-            startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerProfileActivity::class.java))
+        findViewById<MaterialButton>(R.id.buttonProfile).setOnClickListener {
+            startActivity(Intent(this, ProsumerProfileActivity::class.java))
         }
 
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonReservations).setOnClickListener {
-            startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ReservationListActivity::class.java))
+        findViewById<MaterialButton>(R.id.buttonReservations).setOnClickListener {
+            startActivity(Intent(this, ReservationListActivity::class.java))
         }
 
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonGridMap).setOnClickListener {
-            startActivity(android.content.Intent(this, com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.GridMapActivity::class.java))
+        findViewById<MaterialButton>(R.id.buttonGridMap).setOnClickListener {
+            startActivity(Intent(this, GridMapActivity::class.java))
         }
     }
 
@@ -50,12 +60,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateDashboardStats() {
-        val sharedPrefs = getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val loggedInNic = sharedPrefs.getString("logged_in_nic", "") ?: ""
 
         if (loggedInNic.isNotEmpty()) {
-            val dao = com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase.getDatabase(this).reservationDao()
-            androidx.lifecycle.lifecycleScope.launchWhenStarted {
+            val dao = AppDatabase.getDatabase(this).reservationDao()
+            lifecycleScope.launch {
                 val list = dao.getReservationsByNic(loggedInNic)
                 val pendingCount = list.count { it.status == "Pending" }
                 val approvedCount = list.count { it.status == "Approved" }

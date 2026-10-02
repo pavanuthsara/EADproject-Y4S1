@@ -5,7 +5,7 @@
     android:id="@+id/operatorDashboardRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="?android:colorBackground"
     tools:context=".ui.operator.OperatorDashboardActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -17,8 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/operator_dashboard_title"
-            app:titleTextColor="?attr/colorOnPrimaryContainer"
-            android:background="?attr/colorPrimaryContainer">
+            app:titleTextColor="@color/on_primary"
+            android:background="@color/primary">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonLogout"
@@ -29,7 +29,7 @@
                 android:layout_marginEnd="8dp"
                 android:contentDescription="Logout"
                 app:icon="@drawable/ic_logout"
-                app:iconTint="?attr/colorOnPrimaryContainer" />
+                app:iconTint="@color/on_primary" />
 
         </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -160,10 +160,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:text="Launch QR Scanner"
+                        android:textColor="@color/on_secondary"
                         android:textSize="16sp"
                         android:textStyle="bold"
+                        app:backgroundTint="@color/secondary"
                         app:cornerRadius="14dp"
                         app:icon="@drawable/ic_qr_code_scanner"
+                        app:iconTint="@color/on_secondary"
                         app:iconGravity="textStart" />
 
                 </LinearLayout>
