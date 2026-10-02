@@ -241,7 +241,7 @@ Allows the Backoffice to immediately deactivate a prosumer's account.
 All station endpoints require a Bearer token. Business rule violations return `400 Bad Request`, unknown stations/schedules return `404 Not Found`, and a wrong role returns `403 Forbidden`.
 
 ### 4.1 Register Solar Station
-Registers a new solar grid hub with its GPS location, kWh capacity and number of battery storage slots (bays). The station is created as `Active`. `stationCode` is normalized to upper case and must be unique.
+Registers a new solar grid hub with its GPS location, kWh capacity, number of battery storage slots (bays) and daily operating schedule. The station is created as `Active`. `stationCode` is normalized to upper case and must be unique.
 
 *   **Endpoint:** `/api/stations`
 *   **Method:** `POST`
@@ -257,7 +257,8 @@ Registers a new solar grid hub with its GPS location, kWh capacity and number of
       "addressLine": "1 Galle Road",
       "city": "Colombo",
       "capacityKwh": 500,
-      "totalBays": 4
+      "totalBays": 4,
+      "operatingSchedule": "06:00-18:00"
     }
     ```
 
@@ -277,6 +278,7 @@ Registers a new solar grid hub with its GPS location, kWh capacity and number of
         "city": "Colombo",
         "capacityKwh": 500,
         "totalBays": 4,
+        "operatingSchedule": "06:00-18:00",
         "status": "Active",
         "createdAt": "2023-11-01T14:30:00Z",
         "deactivatedAt": null
@@ -284,7 +286,8 @@ Registers a new solar grid hub with its GPS location, kWh capacity and number of
     }
     ```
 
-*   **Errors:** `400` when the station code already exists or a field is invalid (e.g. latitude outside -90..90).
+*   **Errors:** `400` when the station code already exists or a field is invalid (e.g. latitude outside -90..90, or `operatingSchedule` not in 24-hour `HH:mm-HH:mm` format or closing before it opens).
+*   `operatingSchedule` is `null` in responses for stations registered before the field existed.
 
 ### 4.2 Update Station Schedule
 Lets Grid Operators and Backoffice staff replace the schedule of a booking slot at a station. All fields are required.
@@ -330,8 +333,27 @@ Deactivates a station. The request is **blocked** while any energy reservation t
     }
     ```
 
----
+### 4.4 Update Station Operating Hours
+Lets Grid Operators and Backoffice staff change a station's daily operating window. This is separate from the booking slot schedules in 4.2.
 
+*   **Endpoint:** `/api/stations/{stationId}/operating-schedule`
+*   **Method:** `PUT`
+*   **Authorization:** Bearer Token (Role: `Backoffice` or `GridOperator`)
+*   **Request Body (JSON):**
+
+    ```json
+    {
+      "operatingSchedule": "06:00-18:00"
+    }
+    ```
+
+*   **Business rules (each returns `400`):**
+    *   The station must be `Active`.
+    *   `operatingSchedule` must be in 24-hour `HH:mm-HH:mm` format and close after it opens on the same day.
+
+*   **Success Response (200 OK):** Returns the updated station, including `operatingSchedule`.
+
+---
 ## 5. Health Checks
 
 ### 5.1 API Health

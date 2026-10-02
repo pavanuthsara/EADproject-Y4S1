@@ -42,6 +42,10 @@ public class SolarStation : IEntity
     [BsonElement("totalBays")]
     public int TotalBays { get; set; }
 
+    // Daily operating window as "HH:mm-HH:mm" (24h). Null for stations registered before it existed.
+    [BsonElement("operatingSchedule")]
+    public string? OperatingSchedule { get; set; }
+
     [BsonElement("status")]
     public string Status { get; set; } = string.Empty;
 

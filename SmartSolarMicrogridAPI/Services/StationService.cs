@@ -11,6 +11,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.GeoJsonObjectModel;
 using SmartSolarMicrogridAPI.Common.Enums;
 using SmartSolarMicrogridAPI.Common.Exceptions;
+using SmartSolarMicrogridAPI.Common.Helpers;
 using SmartSolarMicrogridAPI.DTOs.Requests;
 using SmartSolarMicrogridAPI.DTOs.Responses;
 using SmartSolarMicrogridAPI.Models.Entities;
@@ -29,6 +30,7 @@ public class StationService(
     public async Task<StationResponseDto> CreateStationAsync(CreateStationRequestDto dto, string createdByUserId)
     {
         string stationCode = dto.StationCode.Trim().ToUpperInvariant();
+        EnsureValidOperatingWindow(dto.OperatingSchedule);
 
         bool codeExists = await stationRepository.ExistsAsync(s => s.StationCode == stationCode);
         if (codeExists)
@@ -45,6 +47,7 @@ public class StationService(
             City = dto.City.Trim(),
             CapacityKwh = dto.CapacityKwh,
             TotalBays = dto.TotalBays,
+            OperatingSchedule = dto.OperatingSchedule,
             Status = StationStatus.Active.ToString(),
             CreatedBy = createdByUserId,
             CreatedAt = DateTime.UtcNow,
@@ -138,6 +141,26 @@ public class StationService(
         };
     }
 
+    // Replaces a station's daily operating window ("HH:mm-HH:mm").
+    public async Task<StationResponseDto> UpdateOperatingScheduleAsync(string stationId, UpdateOperatingScheduleRequestDto dto)
+    {
+        var station = await stationRepository.GetByIdAsync(stationId);
+        if (station == null)
+            throw new NotFoundException($"Station {stationId} not found.");
+
+        if (station.Status != StationStatus.Active.ToString())
+            throw new BusinessRuleException("Schedules cannot be changed for an inactive station.");
+
+        EnsureValidOperatingWindow(dto.OperatingSchedule);
+
+        station.OperatingSchedule = dto.OperatingSchedule;
+        station.UpdatedAt = DateTime.UtcNow;
+
+        await stationRepository.UpdateAsync(station.Id, station);
+
+        return MapStation(station);
+    }
+
     // Deactivates a station, refusing while any Pending or Approved reservation is tied to it.
     public async Task<StationResponseDto> DeactivateStationAsync(string stationId, string deactivatedByUserId)
     {
@@ -205,6 +228,13 @@ public class StationService(
             r.SlotId == slotId && (r.Status == pending || r.Status == approved));
     }
 
+    // The DTO already enforces the HH:mm-HH:mm format; this enforces the window itself.
+    private static void EnsureValidOperatingWindow(string operatingSchedule)
+    {
+        if (!OperatingScheduleHelper.HasValidWindow(operatingSchedule))
+            throw new BusinessRuleException("The operating schedule must close after it opens on the same day.");
+    }
+
     private static DateTime ToUtc(DateTime value) =>
         value.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
@@ -254,6 +284,7 @@ public class StationService(
         City = station.City,
         CapacityKwh = station.CapacityKwh,
         TotalBays = station.TotalBays,
+        OperatingSchedule = station.OperatingSchedule,
         Status = station.Status,
         CreatedAt = station.CreatedAt,
         DeactivatedAt = station.DeactivatedAt
