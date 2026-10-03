@@ -319,4 +319,24 @@ public class UserService(
             CreatedAt = user.CreatedAt
         };
     }
+
+    public async Task<UserResponseDto?> GetProsumerStatusAsync(string identifier)
+    {
+        var users = await userRepository.FindAsync(u =>
+            (u.Nic == identifier || u.Email == identifier) && u.Role == RoleConstants.Prosumer);
+        var user = users.FirstOrDefault();
+        if (user == null) return null;
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Role = user.Role,
+            Nic = user.Nic,
+            FullName = user.FullName,
+            Email = user.Email,
+            Phone = user.Phone,
+            AccountStatus = user.AccountStatus,
+            CreatedAt = user.CreatedAt
+        };
+    }
 }

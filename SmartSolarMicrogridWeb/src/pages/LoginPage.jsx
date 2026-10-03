@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/authService";
 
 const DASHBOARD_BY_ROLE = {
@@ -322,7 +322,18 @@ function LoginPage() {
                             </button>
                         </form>
 
-                        <div className="mt-8 rounded-xl border border-slate-200 bg-background p-4">
+                        <div className="mt-6 text-center text-xs text-muted">
+                            Are you a solar prosumer?{" "}
+                            <Link to="/register" className="font-bold text-primary hover:underline">
+                                Register your solar node
+                            </Link>{" "}
+                            or{" "}
+                            <Link to="/" className="font-bold text-slate-700 hover:underline">
+                                View homepage
+                            </Link>
+                        </div>
+
+                        <div className="mt-6 rounded-xl border border-slate-200 bg-background p-4">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
                                 Where do I land?
                             </p>
