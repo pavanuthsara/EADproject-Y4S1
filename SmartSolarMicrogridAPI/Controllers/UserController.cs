@@ -28,4 +28,31 @@ public class UserController(IUserService userService) : ControllerBase
         var result = await userService.CreateStaffAsync(dto);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Staff user created successfully."));
     }
+
+    [HttpGet("staff")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetAllStaffAsync()
+    {
+        var result = await userService.GetAllStaffAsync();
+        return Ok(ApiResponse<IEnumerable<UserResponseDto>>.Ok(result, "Staff list retrieved successfully."));
+    }
+
+    [HttpPut("staff/{id}")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateStaffAsync(string id, [FromBody] UpdateStaffRequestDto dto)
+    {
+        var result = await userService.UpdateStaffProfileAsync(id, dto);
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Staff updated successfully."));
+    }
+
+    [HttpPatch("staff/{id}/status")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateStaffStatusAsync(string id, [FromBody] UpdateUserStatusRequestDto dto)
+    {
+        // Typically updatedBy would come from User.Claims (e.g. JWT)
+        // For simplicity, passing "System" or you could extract from context: User.Identity.Name
+        string updatedBy = User.Identity?.Name ?? "Admin";
+        var result = await userService.UpdateStaffStatusAsync(id, dto.Status, updatedBy);
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Staff status updated successfully."));
+    }
 }
