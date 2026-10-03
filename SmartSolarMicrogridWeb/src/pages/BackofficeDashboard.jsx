@@ -1,5 +1,6 @@
 import React from 'react';
 import ProsumerManagement from '../components/prosumer/ProsumerManagement';
+import NodeManagement from '../components/nodes/NodeManagement';
 import ReservationManagement from '../components/reservations/ReservationManagement';
 import StaffManagement from '../components/staff/StaffManagement';
 
@@ -13,6 +14,10 @@ function BackofficeDashboard() {
 
             <section>
                 <ProsumerManagement />
+            </section>
+
+            <section>
+                <NodeManagement />
             </section>
 
             <section>

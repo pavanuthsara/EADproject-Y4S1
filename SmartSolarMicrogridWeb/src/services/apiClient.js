@@ -23,6 +23,12 @@ async function readEnvelope(response) {
     }
 }
 
+// ASP.NET model validation failures come back as ProblemDetails
+// ({ title, errors: { Field: ["message"] } }) rather than the envelope.
+function firstValidationError(body) {
+    return Object.values(body?.errors ?? {}).flat()[0];
+}
+
 // Requests that fail because the token is missing, expired or rejected.
 function isAuthFailure(response) {
     return response.status === 401 || response.status === 403;
@@ -72,6 +78,7 @@ export async function apiRequest(path, { method = "GET", body, query } = {}) {
         // The middleware writes the same envelope shape for unhandled exceptions.
         const message =
             envelope?.message ||
+            firstValidationError(envelope) ||
             (isAuthFailure(response)
                 ? "Your session has expired. Please log in again."
                 : `Request failed with status ${response.status}.`);

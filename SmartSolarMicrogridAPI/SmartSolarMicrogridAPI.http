@@ -21,7 +21,8 @@ Content-Type: application/json
   "addressLine": "1 Galle Road",
   "city": "Colombo",
   "capacityKwh": 500,
-  "totalBays": 4
+  "totalBays": 4,
+  "operatingSchedule": "06:00-18:00"
 }
 
 ### Update a station schedule (Backoffice or GridOperator token)
@@ -34,6 +35,15 @@ Content-Type: application/json
   "endTime": "2026-10-01T10:00:00Z",
   "totalPositions": 3,
   "status": "Available"
+}
+
+### Update a station's daily operating hours (Backoffice or GridOperator token)
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/operating-schedule
+Authorization: Bearer {{gridOperatorToken}}
+Content-Type: application/json
+
+{
+  "operatingSchedule": "06:00-18:00"
 }
 
 ### Deactivate a station (Backoffice token) - 400 while it has Pending/Approved reservations

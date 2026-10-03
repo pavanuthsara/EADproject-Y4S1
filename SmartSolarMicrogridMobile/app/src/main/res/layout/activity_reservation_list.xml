@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="?attr/colorSurface">
+    android:background="?android:colorBackground">
 
     <LinearLayout
         android:id="@+id/listContainer"
@@ -18,16 +18,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="My Reservations"
+            android:textColor="@color/text"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
+            android:fontFamily="sans-serif-black"
+            android:layout_marginBottom="20dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonNewBooking"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Book a New Slot"
-            app:cornerRadius="12dp"
+            android:textColor="@color/on_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_bolt"
+            app:iconTint="@color/on_primary"
+            app:iconGravity="textStart"
             android:layout_marginBottom="16dp"/>
 
         <EditText
@@ -35,14 +43,18 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:hint="Search by Date (YYYY-MM-DD)"
+            android:textColor="@color/text"
+            android:textColorHint="@color/text_secondary"
+            android:background="@drawable/edit_text_border"
+            android:paddingHorizontal="16dp"
             android:inputType="text"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="12dp"/>
 
         <Spinner
             android:id="@+id/spinnerFilter"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="20dp"
             android:background="@android:drawable/btn_dropdown" />
 
         <LinearLayout
