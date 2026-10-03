@@ -24,12 +24,14 @@ export async function createStaff(data) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        // We supply dummy NIC/Phone/Address if they aren't provided in the UI
         body: JSON.stringify({
-            ...data,
-            nic: data.nic || `NIC${Math.floor(Math.random() * 1000000)}`,
-            phone: data.phone || "0000000000",
-            address: data.address || "N/A"
+            role: data.role,
+            fullName: data.name, // Mapping UI 'name' to Backend 'FullName'
+            email: data.email,
+            password: data.password,
+            nic: data.nic || `99999${Math.floor(10000 + Math.random() * 90000)}V`, // Ensures 10+ characters for NIC validation
+            phone: data.phone || "0770000000", // Valid phone number format
+            address: data.address || "Corporate Office"
         })
     });
     
@@ -49,7 +51,11 @@ export async function updateStaff(id, data) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+            role: data.role,
+            fullName: data.name,
+            email: data.email
+        })
     });
 
     if (!response.ok) {

@@ -44,10 +44,10 @@ export default function StaffManagement() {
     const openForm = (staff = null) => {
         if (staff) {
             setFormData({
-                name: staff.name,
-                email: staff.email,
+                name: staff.fullName || staff.name || '',
+                email: staff.email || '',
                 password: '', // Don't populate password on edit
-                role: staff.role
+                role: staff.role || 'GridOperator'
             });
             setEditingId(staff.id);
         } else {
@@ -239,7 +239,7 @@ export default function StaffManagement() {
                                 <tr key={staff.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="p-4 whitespace-nowrap text-sm font-medium text-gray-900">{staff.id}</td>
                                     <td className="p-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{staff.name}</div>
+                                        <div className="text-sm font-medium text-gray-900">{staff.fullName || staff.name}</div>
                                         <div className="text-xs text-gray-500">{staff.email}</div>
                                     </td>
                                     <td className="p-4 whitespace-nowrap text-sm text-gray-600">
