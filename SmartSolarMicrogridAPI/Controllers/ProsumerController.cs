@@ -55,4 +55,15 @@ public class ProsumerController(IAuthService authService, IUserService userServi
         var result = await userService.DeactivateProsumerAsync(nic, userId);
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Account deactivated successfully."));
     }
+
+    // Prosumer check registration and approval status
+    [HttpGet("status/{identifier}")]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetStatusAsync(string identifier)
+    {
+        var result = await userService.GetProsumerStatusAsync(identifier);
+        if (result == null)
+            return NotFound(ApiResponse<UserResponseDto>.Fail("No prosumer record found for this NIC or email."));
+
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Status retrieved successfully."));
+    }
 }

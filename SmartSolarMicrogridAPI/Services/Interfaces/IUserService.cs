@@ -22,4 +22,5 @@ public interface IUserService
     Task<UserResponseDto> ActivateProsumerAsync(string nic, string activatedByUserId);
     Task<UserResponseDto> UpdateProsumerProfileAsync(string nic, UpdateProfileRequestDto dto);
     Task<UserResponseDto> DeactivateProsumerAsync(string nic, string deactivatedByUserId);
+    Task<UserResponseDto?> GetProsumerStatusAsync(string identifier);
 }
