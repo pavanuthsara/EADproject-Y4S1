@@ -1,7 +1,7 @@
 /*
  * File: JwtAuthExtensions.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Registers JWT authentication and authorization services.
  * Individual Contribution: Implemented JWT bearer authentication configuration.
  */

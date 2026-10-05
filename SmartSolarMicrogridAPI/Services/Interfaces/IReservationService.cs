@@ -1,7 +1,7 @@
 /*
  * File: IReservationService.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Contract for creating, updating and cancelling energy reservations.
  *
  * Individual Contribution: Defined the reservation service contract used by the

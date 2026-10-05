@@ -1,7 +1,7 @@
 /*
  * File: UserController.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Controller for user management endpoints.
  * Individual Contribution: Implemented the API endpoint for staff creation with role-based authorization.
  */

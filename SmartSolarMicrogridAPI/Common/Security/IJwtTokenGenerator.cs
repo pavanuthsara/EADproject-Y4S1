@@ -1,7 +1,7 @@
 /*
  * File: IJwtTokenGenerator.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Interface defining contract for generating signed JWT tokens.
  * Individual Contribution: Implemented the JWT token generator interface.
  */

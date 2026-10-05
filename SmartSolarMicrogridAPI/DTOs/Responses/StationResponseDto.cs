@@ -1,7 +1,7 @@
 /*
  * File: StationResponseDto.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: DTO for solar station data response.
  * Individual Contribution: Implemented the response DTO to standardize station data payload.
  */

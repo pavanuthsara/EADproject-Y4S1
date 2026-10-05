@@ -1,7 +1,7 @@
 /*
  * File: HealthStatusResponse.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Response DTO describing the API's database connection status.
  *
  * Individual Contribution: Implemented the health check response DTO.

@@ -1,7 +1,7 @@
 /*
  * File: TransferService.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Implementation of energy transfer QR verification and finalization business logic.
  * Individual Contribution: Implemented QR code cross-referencing and transfer job completion logic.
  */

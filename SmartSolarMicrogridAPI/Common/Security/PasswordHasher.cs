@@ -1,7 +1,7 @@
 /*
  * File: PasswordHasher.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Implementation of IPasswordHasher using PBKDF2 with SHA-256 and cryptographic salt.
  * Individual Contribution: Implemented password hashing and verification logic.
  */

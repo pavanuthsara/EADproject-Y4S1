@@ -1,7 +1,7 @@
 /*
  * File: JwtTokenGenerator.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Implementation of IJwtTokenGenerator using HMAC-SHA256 signed JWT tokens.
  * Individual Contribution: Implemented JWT token generation logic.
  */

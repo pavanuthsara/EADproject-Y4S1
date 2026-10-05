@@ -1,7 +1,7 @@
 /*
  * File: SlotRequestDto.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Request body for creating a booking slot at a station, and for replacing
  *              all of its details when editing it.
  *

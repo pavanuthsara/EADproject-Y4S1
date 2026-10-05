@@ -1,7 +1,7 @@
 /*
  * File: SolarStationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: MongoDB data access for the solarStations collection.
  *
  * Individual Contribution: Implemented the station repository on top of the generic

@@ -1,7 +1,7 @@
 /*
  * File: EnergyReservationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: MongoDB data access for the energyReservations collection, including a
  *              version-checked replace so concurrent changes cannot both be saved.
  *

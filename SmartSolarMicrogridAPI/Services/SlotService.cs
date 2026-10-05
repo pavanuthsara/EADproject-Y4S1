@@ -1,7 +1,7 @@
 /*
  * File: SlotService.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Business rules for booking slots inside a station: creating, editing and
  *              deleting them, opening and closing them, and what each role may see.
  *

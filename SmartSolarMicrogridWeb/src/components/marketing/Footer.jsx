@@ -104,7 +104,7 @@ export default function Footer({ onOpenStatusModal }) {
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
-                    <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 45. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 42. All rights reserved.</p>
                     <div className="flex items-center gap-6">
                         <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
                         <span className="hover:text-slate-300 cursor-pointer">Terms of Grid Interconnection</span>

@@ -1,7 +1,7 @@
 /*
  * File: EnergyBookingSlotRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: MongoDB data access for the energyBookingSlots collection, including a
  *              single atomic conditional update for the reserved capacity counters.
  *

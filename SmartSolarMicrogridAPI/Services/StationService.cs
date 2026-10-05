@@ -1,7 +1,7 @@
 /*
  * File: StationService.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Implementation of solar station management business logic.
  * Individual Contribution: Implemented station registration, schedule updates and
  *                          deactivation guarded by active energy reservations.

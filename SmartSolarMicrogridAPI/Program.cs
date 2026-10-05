@@ -1,7 +1,7 @@
 /*
  * File: Program.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Composes the API's services and request pipeline and runs startup tasks.
  *
  * Individual Contribution: Implemented the service composition, request pipeline and

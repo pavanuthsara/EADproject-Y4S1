@@ -1,7 +1,7 @@
 /*
  * File: ReservationsController.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: HTTP endpoints for creating, updating and cancelling energy reservations.
  *              Handles routing and status codes only; every rule lives in the service.
  *

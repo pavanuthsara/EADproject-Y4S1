@@ -1,7 +1,7 @@
 /*
  * File: ScheduleResponseDto.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: DTO for a station booking schedule (booking slot) response.
  * Individual Contribution: Implemented the response DTO for station schedules.
  */

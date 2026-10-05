@@ -1,7 +1,7 @@
 /*
  * File: ForbiddenException.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Signals that the caller is not allowed to perform an action and maps to
  *              HTTP 403.
  *

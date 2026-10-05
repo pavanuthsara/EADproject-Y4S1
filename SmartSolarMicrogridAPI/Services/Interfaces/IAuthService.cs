@@ -1,7 +1,7 @@
 /*
  * File: IAuthService.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Contract for user registration and authentication operations.
  * Individual Contribution: Implemented the authentication service interface.
  */

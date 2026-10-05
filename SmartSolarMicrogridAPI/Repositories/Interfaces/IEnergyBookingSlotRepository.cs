@@ -1,7 +1,7 @@
 /*
  * File: IEnergyBookingSlotRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Narrow data access contract for booking slots, including the atomic
  *              conditional update of the reserved capacity counters.
  *

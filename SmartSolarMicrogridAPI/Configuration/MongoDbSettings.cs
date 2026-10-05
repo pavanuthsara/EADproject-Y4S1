@@ -1,7 +1,7 @@
 /*
  * File: MongoDbSettings.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Strongly typed settings bound from the MongoDbSettings configuration
  *              section.
  *

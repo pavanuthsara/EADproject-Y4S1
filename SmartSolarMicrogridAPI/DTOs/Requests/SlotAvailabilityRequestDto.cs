@@ -1,7 +1,7 @@
 /*
  * File: SlotAvailabilityRequestDto.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Request body for opening or closing a slot to new bookings.
  *
  * Individual Contribution: Defined the slot availability request.

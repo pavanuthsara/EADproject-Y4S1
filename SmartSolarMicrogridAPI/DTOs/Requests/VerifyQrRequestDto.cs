@@ -1,7 +1,7 @@
 /*
  * File: VerifyQrRequestDto.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: DTO for validating scanned QR code tokens sent by the mobile app.
  * Individual Contribution: Implemented QR verification request data transfer object.
  */

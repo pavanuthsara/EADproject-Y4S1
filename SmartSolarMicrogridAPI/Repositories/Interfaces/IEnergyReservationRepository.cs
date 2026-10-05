@@ -1,7 +1,7 @@
 /*
  * File: IEnergyReservationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Narrow data access contract for energy reservations, including the
  *              version-checked replace used for optimistic concurrency.
  *

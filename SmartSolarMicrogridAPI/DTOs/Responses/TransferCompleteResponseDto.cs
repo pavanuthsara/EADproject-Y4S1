@@ -1,7 +1,7 @@
 /*
  * File: TransferCompleteResponseDto.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: DTO returned when an energy transfer job is marked as completed.
  * Individual Contribution: Implemented transfer completion response data transfer object.
  */

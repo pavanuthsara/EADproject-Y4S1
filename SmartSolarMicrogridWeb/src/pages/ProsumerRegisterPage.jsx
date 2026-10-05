@@ -155,7 +155,7 @@ export default function ProsumerRegisterPage() {
 
             {/* Simple Footer */}
             <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-                <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 45.</p>
+                <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 42.</p>
             </footer>
 
             {/* Status Check Modal */}

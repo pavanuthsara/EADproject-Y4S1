@@ -1,7 +1,7 @@
 /*
  * File: EnergyBookingSlot.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Entity mapped to the energyBookingSlots collection.
  *
  * Individual Contribution: Implemented the EnergyBookingSlot entity and its BSON

@@ -1,7 +1,7 @@
 /*
  * File: IPasswordHasher.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Interface defining contract for hashing and verifying passwords.
  * Individual Contribution: Implemented the password hasher interface.
  */

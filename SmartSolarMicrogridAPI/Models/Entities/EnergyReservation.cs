@@ -1,7 +1,7 @@
 /*
  * File: EnergyReservation.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Entity mapped to the energyReservations collection. C# time properties end
  *              in Utc while the stored field names stay unchanged.
  *

@@ -1,7 +1,7 @@
 /*
  * File: ReservationService.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Business rules and orchestration for energy reservations: the booking
  *              window, notice period, direction, duplicate and slot capacity rules, and
  *              the reserved counters that must always match the live bookings.

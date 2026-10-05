@@ -1,7 +1,7 @@
 /*
  * File: IUserService.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Interface for user management service.
  * Individual Contribution: Defined the user service interface for staff management.
  */

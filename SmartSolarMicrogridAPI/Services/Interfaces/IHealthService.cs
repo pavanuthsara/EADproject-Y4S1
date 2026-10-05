@@ -1,7 +1,7 @@
 /*
  * File: IHealthService.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Defines the contract for checking API and database health.
  *
  * Individual Contribution: Defined the health service contract.

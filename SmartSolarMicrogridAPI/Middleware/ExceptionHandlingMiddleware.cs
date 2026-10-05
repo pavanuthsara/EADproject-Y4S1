@@ -1,7 +1,7 @@
 /*
  * File: ExceptionHandlingMiddleware.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Converts unhandled exceptions into ApiResponse JSON with the matching
  *              HTTP status code.
  *

@@ -1,7 +1,7 @@
 /*
  * File: RejectReservationRequest.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Request body staff send when rejecting a reservation.
  *
  * Individual Contribution: Defined the reject reservation request.

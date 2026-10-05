@@ -1,7 +1,7 @@
 /*
  * File: ReservationMessages.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Holds the success messages and rule-specific error messages returned by the
  *              reservation endpoints, so every failure names the rule that rejected it.
  *

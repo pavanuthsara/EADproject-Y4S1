@@ -1,7 +1,7 @@
 /*
  * File: ReservationStatus.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Defines the lifecycle states of an energy reservation.
  *
  * Individual Contribution: Defined the ReservationStatus enum for the reservation

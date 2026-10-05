@@ -1,7 +1,7 @@
 /*
  * File: CollectionNames.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Holds the MongoDB collection names used across the API.
  *
  * Individual Contribution: Defined the MongoDB collection name constants.

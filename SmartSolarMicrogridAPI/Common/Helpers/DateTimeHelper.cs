@@ -1,7 +1,7 @@
 /*
  * File: DateTimeHelper.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Provides UTC date and time maths helpers with no business decisions.
  *
  * Individual Contribution: Implemented the UTC helpers, including the check that a

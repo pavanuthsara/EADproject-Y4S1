@@ -1,7 +1,7 @@
 /*
  * File: UserService.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Implementation of user management business logic.
  * Individual Contribution: Implemented staff user creation logic including validation and database insertion.
  */

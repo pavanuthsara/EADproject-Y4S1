@@ -1,7 +1,7 @@
 /*
  * File: ITransferService.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Interface for energy transfer verification and finalization service.
  * Individual Contribution: Defined the transfer service contract for QR verification and job completion.
  */

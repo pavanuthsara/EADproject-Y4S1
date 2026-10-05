@@ -1,7 +1,7 @@
 /*
  * File: UpdateReservationRequest.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Request body for updating an energy reservation. Every field is optional;
  *              only the fields sent are changed.
  *

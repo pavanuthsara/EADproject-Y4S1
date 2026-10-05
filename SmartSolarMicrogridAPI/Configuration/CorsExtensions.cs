@@ -1,7 +1,7 @@
 /*
  * File: CorsExtensions.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Extension methods that configure and apply the CORS policy for the web
  *              and mobile clients.
  *

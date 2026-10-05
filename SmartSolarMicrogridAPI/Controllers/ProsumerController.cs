@@ -1,7 +1,7 @@
 /*
  * File: ProsumerController.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Endpoints for prosumer mobile app interactions.
  * Individual Contribution: Implemented self-registration endpoint for prosumers.
  */

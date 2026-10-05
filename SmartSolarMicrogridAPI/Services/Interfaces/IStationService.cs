@@ -1,7 +1,7 @@
 /*
  * File: IStationService.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Interface for solar station management service.
  * Individual Contribution: Defined the station service interface for registration,
  *                          schedule updates and deactivation.

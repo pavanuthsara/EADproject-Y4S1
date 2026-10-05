@@ -1,7 +1,7 @@
 /*
  * File: ISolarStationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Narrow data access contract for solar stations, exposing only what the
  *              reservation service needs.
  *

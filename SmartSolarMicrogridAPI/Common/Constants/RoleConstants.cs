@@ -1,7 +1,7 @@
 /*
  * File: RoleConstants.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Holds role name strings matching the UserRole enum for use in attributes
  *              and comparisons.
  *

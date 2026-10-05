@@ -1,7 +1,7 @@
 /*
  * File: TransferController.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Endpoints for QR code verification and energy transfer finalization.
  * Individual Contribution: Implemented the transfer verification and completion endpoints with role authorization.
  */

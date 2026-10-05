@@ -1,7 +1,7 @@
 /*
  * File: EnergyDirection.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Defines whether a reservation injects energy into or draws energy from
  *              the grid.
  *
