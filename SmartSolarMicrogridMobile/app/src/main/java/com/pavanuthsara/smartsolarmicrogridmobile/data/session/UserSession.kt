@@ -34,6 +34,25 @@ class UserSession(context: Context) {
         if (sessionManager.isLoggedIn()) cachedUserDao.get() else null
 
     // Signs out: clears the token, the cached user and that user's cached reservations.
+    suspend fun updateCachedProfile(
+        fullName: String,
+        email: String,
+        phone: String,
+        address: String,
+        solarCapacityKw: Double
+    ) {
+        val current = cachedUserDao.get() ?: return
+        cachedUserDao.replace(
+            current.copy(
+                fullName = fullName,
+                email = email,
+                phone = phone,
+                address = address,
+                solarCapacityKw = solarCapacityKw
+            )
+        )
+    }
+
     suspend fun signOut() {
         sessionManager.clearToken()
         cachedUserDao.clear()

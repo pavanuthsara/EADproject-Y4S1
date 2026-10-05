@@ -17,5 +17,7 @@ public class UserResponseDto
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string AccountStatus { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public double SolarCapacityKw { get; set; }
     public DateTime CreatedAt { get; set; }
 }

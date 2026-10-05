@@ -2,9 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gridMapRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:colorBackground"
+    android:background="@color/background"
     tools:context=".ui.prosumer.GridMapActivity">
 
     <fragment
@@ -13,7 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -77,7 +78,7 @@
         app:strokeColor="@color/border"
         app:strokeWidth="1dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -85,14 +86,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
             <TextView
                 android:id="@+id/textStationName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Station Name"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:fontFamily="sans-serif-black"
                 android:textColor="@color/text" />
 
@@ -100,22 +101,38 @@
                 android:id="@+id/textStationDetails"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:lineSpacingExtra="4dp"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="3dp"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonBookStation"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="14dp"
                 android:text="View Slots and Book"
                 android:textColor="@color/on_primary"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:backgroundTint="@color/primary"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- Bottom Navigation Bar -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        app:elevation="8dp"
+        app:itemIconTint="@color/bottom_nav_colors"
+        app:itemTextColor="@color/bottom_nav_colors"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
