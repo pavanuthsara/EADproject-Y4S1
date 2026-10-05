@@ -14,7 +14,7 @@ object ApiErrors {
         val fromBody = errorBody?.takeIf { it.isNotBlank() }?.let(::readMessage)
         return fromBody ?: when (statusCode) {
             401 -> "Your session has expired. Please sign in again."
-            403 -> "Your account does not have access to this action."
+            403 -> "Your account is deactivated or lacks access. Contact Backoffice to approve reactivation."
             else -> fallback
         }
     }

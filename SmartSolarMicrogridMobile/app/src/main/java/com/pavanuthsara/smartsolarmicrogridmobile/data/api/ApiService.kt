@@ -12,6 +12,8 @@ import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.StationDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.TransferCompleteResponseDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.UpdateReservationRequest
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.VerifyQrRequestDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.UpdateProfileRequestDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.UserProfileDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -33,6 +35,20 @@ interface ApiService {
     suspend fun registerProsumer(
         @Body request: RegisterRequestDto
     ): Response<ApiResponse<AuthResponseDto>>
+
+    // Prosumer profile details
+    @GET("api/prosumer/profile")
+    suspend fun getProfile(): Response<ApiResponse<UserProfileDto>>
+
+    // Edit prosumer profile details
+    @PUT("api/prosumer/profile")
+    suspend fun updateProfile(
+        @Body request: UpdateProfileRequestDto
+    ): Response<ApiResponse<UserProfileDto>>
+
+    // Request account deactivation
+    @PUT("api/prosumer/deactivate")
+    suspend fun deactivateAccount(): Response<ApiResponse<UserProfileDto>>
 
     // Active stations within radiusMeters of the point, nearest first. Prosumer role only.
     @GET("api/stations/nearby")

@@ -33,6 +33,25 @@ class UserSession(context: Context) {
     suspend fun currentUser(): CachedUser? =
         if (sessionManager.isLoggedIn()) cachedUserDao.get() else null
 
+    suspend fun updateCachedProfile(
+        fullName: String,
+        email: String,
+        phone: String,
+        address: String,
+        solarCapacityKw: Double
+    ) {
+        val current = cachedUserDao.get() ?: return
+        cachedUserDao.replace(
+            current.copy(
+                fullName = fullName,
+                email = email,
+                phone = phone,
+                address = address,
+                solarCapacityKw = solarCapacityKw
+            )
+        )
+    }
+
     suspend fun signOut() {
         sessionManager.clearToken()
         cachedUserDao.clear()

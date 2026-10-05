@@ -316,6 +316,8 @@ public class UserService(
             Email = user.Email,
             Phone = user.Phone,
             AccountStatus = user.AccountStatus,
+            Address = user.Address,
+            SolarCapacityKw = user.SolarCapacityKw,
             CreatedAt = user.CreatedAt
         };
     }
@@ -336,6 +338,8 @@ public class UserService(
             Email = user.Email,
             Phone = user.Phone,
             AccountStatus = user.AccountStatus,
+            Address = user.Address,
+            SolarCapacityKw = user.SolarCapacityKw,
             CreatedAt = user.CreatedAt
         };
     }
