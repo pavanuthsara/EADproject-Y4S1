@@ -19,6 +19,7 @@ object ApiErrors {
         }
     }
 
+    // Pulls a readable error message out of an API error body; returns null if there is none.
     private fun readMessage(body: String): String? {
         val root = try {
             JsonParser.parseString(body)
@@ -42,6 +43,7 @@ object ApiErrors {
         return textOf(obj.get("title"))
     }
 
+    // Returns the element's text if it is a non-blank string, otherwise null.
     private fun textOf(element: JsonElement?): String? =
         element?.takeIf { it.isJsonPrimitive }?.asString?.takeIf { it.isNotBlank() }
 }

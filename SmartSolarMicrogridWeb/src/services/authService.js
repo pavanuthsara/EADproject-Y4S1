@@ -1,5 +1,6 @@
 import { API_BASE } from "../config";
 
+// Signs in and stores the token and role in localStorage.
 async function login(email, password) {
     const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
@@ -71,15 +72,18 @@ async function checkProsumerStatus(identifier) {
     return data.data;
 }
 
+// Signs out by removing the stored token and role.
 function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
 }
 
+// Returns the stored JWT, or null if signed out.
 function getToken() {
     return localStorage.getItem("token");
 }
 
+// Returns the signed-in user's role, or null if signed out.
 function getRole() {
     return localStorage.getItem("role");
 }

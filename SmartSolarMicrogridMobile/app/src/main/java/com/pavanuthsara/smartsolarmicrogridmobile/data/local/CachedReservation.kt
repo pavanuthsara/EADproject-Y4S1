@@ -28,6 +28,7 @@ data class CachedReservation(
     val qrToken: String?
 ) {
     companion object {
+        // Builds a cached row from a reservation returned by the API.
         fun from(dto: ReservationSummaryDto) = CachedReservation(
             reservationId = dto.reservationId,
             prosumerNic = dto.prosumerNic,

@@ -29,6 +29,7 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(ApiResponse<UserResponseDto>.Ok(result, "Staff user created successfully."));
     }
 
+    // Retrieves all Backoffice and Grid Operator accounts.
     [HttpGet("staff")]
     [Authorize(Roles = RoleConstants.Backoffice)]
     public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetAllStaffAsync()
@@ -37,6 +38,7 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserResponseDto>>.Ok(result, "Staff list retrieved successfully."));
     }
 
+    // Updates a staff member's profile details.
     [HttpPut("staff/{id}")]
     [Authorize(Roles = RoleConstants.Backoffice)]
     public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateStaffAsync(string id, [FromBody] UpdateStaffRequestDto dto)

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+// Landing page section explaining how the platform works, step by step.
 export default function HowItWorksSection() {
     const steps = [
         {

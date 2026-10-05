@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 // scans it to verify the booking.
 class ReservationSummaryActivity : AppCompatActivity() {
 
+    // Sets up the reservation summary screen.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -61,6 +62,7 @@ class ReservationSummaryActivity : AppCompatActivity() {
         }
     }
 
+    // Shows the reservation's details and the API's message.
     private fun show(reservation: CachedReservation, apiMessage: String?) {
         findViewById<TextView>(R.id.textReservationNo).text = reservation.reservationNo
 

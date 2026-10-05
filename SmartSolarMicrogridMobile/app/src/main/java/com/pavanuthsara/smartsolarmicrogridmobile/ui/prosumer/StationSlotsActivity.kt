@@ -37,6 +37,7 @@ class StationSlotsActivity : AppCompatActivity() {
     private lateinit var textSlotsMessage: TextView
     private lateinit var buttonRetrySlots: MaterialButton
 
+    // Sets up the screen listing a station's bookable slots.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -71,6 +72,7 @@ class StationSlotsActivity : AppCompatActivity() {
         loadSlots()
     }
 
+    // Loads the station's slots from the API.
     private fun loadSlots() {
         progressSlots.visibility = View.VISIBLE
         textSlotsMessage.visibility = View.GONE
@@ -93,6 +95,7 @@ class StationSlotsActivity : AppCompatActivity() {
         }
     }
 
+    // Shows a card for each slot, or a message when there are none.
     private fun showSlots(slots: List<SlotDto>) {
         progressSlots.visibility = View.GONE
         slotsContainer.removeAllViews()
@@ -118,6 +121,7 @@ class StationSlotsActivity : AppCompatActivity() {
         }
     }
 
+    // Builds the card for one slot, showing its time and whether it is full.
     private fun buildSlotCard(inflater: LayoutInflater, slot: SlotDto): View {
         val card = inflater.inflate(R.layout.item_slot, slotsContainer, false)
 

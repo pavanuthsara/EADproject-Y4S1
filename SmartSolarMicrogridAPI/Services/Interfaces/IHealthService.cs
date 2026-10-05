@@ -13,5 +13,6 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 
 public interface IHealthService
 {
+    // Pings MongoDB and reports whether it is reachable.
     Task<HealthStatusResponse> GetHealthAsync();
 }

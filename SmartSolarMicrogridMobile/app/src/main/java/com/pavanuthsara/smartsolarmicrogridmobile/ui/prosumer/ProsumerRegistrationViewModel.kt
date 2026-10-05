@@ -65,12 +65,16 @@ class ProsumerRegistrationViewModel(application: Application) : AndroidViewModel
         // Same range the API accepts for solarCapacityKw.
         private const val MAX_SOLAR_CAPACITY_KW = 1000.0
 
+        // True when the NIC is in the old (9 digits + V) or new (12 digits) Sri Lankan format.
         fun isValidNic(nic: String): Boolean = NIC_REGEX.matches(nic)
 
+        // True when the phone number is a Sri Lankan mobile number (07XXXXXXXX).
         fun isValidPhoneNumber(phone: String): Boolean = PHONE_REGEX.matches(phone)
 
+        // True when the email address is in a valid format.
         fun isValidEmail(email: String): Boolean = EMAIL_REGEX.matches(email)
 
+        // True when the password is at least 8 characters.
         fun isValidPassword(password: String): Boolean = password.length >= 8
 
         // Returns the capacity in kW, or null if it is not a number between 0 and 1000.

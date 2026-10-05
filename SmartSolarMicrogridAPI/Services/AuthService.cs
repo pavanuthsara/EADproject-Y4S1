@@ -24,6 +24,7 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
+    // Receives the user repository, password hasher and token generator.
     public AuthService(
         IMongoRepository<User> userRepository,
         IPasswordHasher passwordHasher,

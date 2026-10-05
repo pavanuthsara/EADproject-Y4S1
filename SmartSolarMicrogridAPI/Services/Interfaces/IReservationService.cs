@@ -16,10 +16,13 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 
 public interface IReservationService
 {
+    // Books a slot for a prosumer, subject to the booking rules.
     Task<ReservationSummaryResponse> CreateAsync(CreateReservationRequest request, string prosumerId, string prosumerNic);
 
+    // Changes a reservation's slot, direction or energy amount, subject to the booking rules.
     Task<ReservationSummaryResponse> UpdateAsync(string reservationId, UpdateReservationRequest request, string prosumerId);
 
+    // Cancels a reservation, subject to the notice rule.
     Task<ReservationSummaryResponse> CancelAsync(string reservationId, string prosumerId);
 
     // Staff decision: moves a Pending reservation to Approved.
@@ -28,6 +31,7 @@ public interface IReservationService
     // Staff decision: rejects a Pending or Approved reservation and releases its capacity.
     Task<ReservationSummaryResponse> RejectAsync(string reservationId, string staffUserId, string reason);
 
+    // Counts reservations by state for the staff dashboard.
     Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync();
 
     Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(

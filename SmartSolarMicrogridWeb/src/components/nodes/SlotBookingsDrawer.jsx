@@ -15,6 +15,7 @@ export default function SlotBookingsDrawer({ slot, onClose, onChanged }) {
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
 
+    // Loads the reservations booked on this slot.
     const load = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -31,6 +32,7 @@ export default function SlotBookingsDrawer({ slot, onClose, onChanged }) {
         load();
     }, [load]);
 
+    // Shows the outcome of an approve/reject decision and reloads the bookings.
     const handleDecided = async (updated) => {
         setNotice(`${updated.reservationNo}: ${updated.message}`);
         await load();

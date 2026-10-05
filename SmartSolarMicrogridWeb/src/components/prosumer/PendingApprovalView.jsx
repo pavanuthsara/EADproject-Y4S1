@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import QRCodeWidget from "../common/QRCodeWidget";
 import { checkProsumerStatus } from "../../services/authService";
 
+// Shown after registration while the account waits for Backoffice approval.
 export default function PendingApprovalView({
     prosumer,
     onReset,
@@ -12,6 +13,7 @@ export default function PendingApprovalView({
     const [isChecking, setIsChecking] = useState(false);
     const [checkMessage, setCheckMessage] = useState("");
 
+    // Checks the prosumer's current account status with the API.
     const handleCheckLiveStatus = async () => {
         if (!prosumer?.nic) return;
         setIsChecking(true);

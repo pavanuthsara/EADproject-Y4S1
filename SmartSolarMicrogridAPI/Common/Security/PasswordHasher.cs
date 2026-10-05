@@ -18,6 +18,7 @@ public class PasswordHasher : IPasswordHasher
     private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256; //hashing algorithm to use (SHA-256, a standard cryptographic hash function).
     private const char SegmentDelimiter = '.'; //delimiter used to separate the salt and hash in the stored password.
 
+    // Hashes a password with PBKDF2 and a random salt; stored as "salt.hash" in Base64.
     public string Hash(string password)
     {
         byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
@@ -26,6 +27,7 @@ public class PasswordHasher : IPasswordHasher
         return string.Join(SegmentDelimiter, Convert.ToBase64String(salt), Convert.ToBase64String(hash));
     }
 
+    // Re-hashes the password with the stored salt and compares it to the stored hash.
     public bool Verify(string password, string passwordHash)
     {
         string[] segments = passwordHash.Split(SegmentDelimiter);

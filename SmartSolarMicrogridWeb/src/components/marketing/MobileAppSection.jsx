@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import QRCodeWidget from "../common/QRCodeWidget";
 
+// Landing page section promoting the prosumer mobile app.
 export default function MobileAppSection({ qrCodeImageUrl = null }) {
     const [downloading, setDownloading] = useState(false);
 
+    // Shows download information for the Android app.
     const handleDownloadApk = () => {
         setDownloading(true);
         setTimeout(() => {

@@ -68,6 +68,7 @@ function describeSlot(slot, now, policy) {
     return { selectable: true, note: `${Number(available.toFixed(3))} kWh free` };
 }
 
+// Staff screen for listing, creating, updating and cancelling energy reservations.
 export default function ReservationManagement() {
     const [reservations, setReservations] = useState([]);
     const [stations, setStations] = useState([]);
@@ -110,6 +111,7 @@ export default function ReservationManagement() {
         return () => { cancelled = true; };
     }, [form.stationId]);
 
+    // Loads reservations, stations and the reservation policy in parallel.
     const loadAll = async () => {
         setIsLoading(true);
         try {
@@ -170,6 +172,7 @@ export default function ReservationManagement() {
         return { total: reservations.length, pending, approvedFuture, locked };
     }, [reservations, now, policy]);
 
+    // Closes the create/update panel and clears the form.
     const resetPanel = useCallback(() => {
         setMode(null);
         setEditingId(null);
@@ -177,6 +180,7 @@ export default function ReservationManagement() {
         setFieldErrors({});
     }, []);
 
+    // Opens an empty form for a new reservation.
     const openCreate = () => {
         setError('');
         setSummary('');
@@ -209,6 +213,7 @@ export default function ReservationManagement() {
         setMode('update');
     };
 
+    // Updates a form field and clears its error, resetting fields that depend on it.
     const handleFieldChange = (event) => {
         const { name, value } = event.target;
 
@@ -231,6 +236,7 @@ export default function ReservationManagement() {
         setFieldErrors((prev) => ({ ...prev, [name]: undefined, direction: undefined, form: undefined }));
     };
 
+    // Validates the form and creates the reservation.
     const handleCreateSubmit = async (event) => {
         event.preventDefault();
 
@@ -261,6 +267,7 @@ export default function ReservationManagement() {
         }
     };
 
+    // Validates the changes and updates the reservation being edited.
     const handleUpdateSubmit = async (event) => {
         event.preventDefault();
         if (!editingReservation) return;
@@ -300,6 +307,7 @@ export default function ReservationManagement() {
         await loadAll();
     };
 
+    // Cancels a reservation after the user confirms, re-checking the notice rule first.
     const handleCancelConfirmed = async (reservation) => {
         const eligibility = evaluateChangeEligibility(reservation, new Date(), policy);
         if (!eligibility.allowed) {
@@ -606,6 +614,7 @@ export default function ReservationManagement() {
 
 // --- Presentational pieces -------------------------------------------------
 
+// Small stat tile for the summary row.
 function SummaryTile({ label, value, tone = 'indigo' }) {
     const tones = {
         indigo: 'text-indigo-600',
@@ -622,6 +631,7 @@ function SummaryTile({ label, value, tone = 'indigo' }) {
     );
 }
 
+// Labelled form field with an optional error message.
 function Field({ label, error, children }) {
     return (
         <div>
@@ -675,6 +685,7 @@ function SlotRuleCheck({ slot, reservation, now, policy }) {
     );
 }
 
+// Card showing one reservation with its notice status and edit/cancel/decision actions.
 function ReservationCard({
     reservation, now, policy, isBusy, isConfirmingCancel,
     onEdit, onRequestCancel, onAbortCancel, onConfirmCancel, onDecided, onDecisionError,
@@ -777,6 +788,7 @@ function ReservationCard({
     );
 }
 
+// Label and value pair used inside a reservation card.
 function Detail({ label, value, mono = false }) {
     return (
         <div>

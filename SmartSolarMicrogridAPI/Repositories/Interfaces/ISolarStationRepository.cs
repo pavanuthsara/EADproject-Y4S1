@@ -15,6 +15,9 @@ namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 public interface ISolarStationRepository
 {
+    // Finds a station by its ID, or null if it does not exist.
     Task<SolarStation?> GetByIdAsync(string id);
+
+    // Finds active stations within the given distance of a point (longitude first, as in GeoJSON).
     Task<IReadOnlyList<SolarStation>> FindNearbyAsync(double longitude, double latitude, double maxDistanceMeters);
 }

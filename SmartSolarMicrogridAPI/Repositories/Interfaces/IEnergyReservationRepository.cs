@@ -16,8 +16,10 @@ namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 public interface IEnergyReservationRepository
 {
+    // Finds a reservation by its ID, or null if it does not exist.
     Task<EnergyReservation?> GetByIdAsync(string id);
 
+    // Inserts a new reservation.
     Task<EnergyReservation> CreateAsync(EnergyReservation reservation);
 
     // Replaces the reservation only if its stored version still matches; returns whether it was saved.
@@ -30,6 +32,7 @@ public interface IEnergyReservationRepository
         IReadOnlyCollection<ReservationStatus> statuses,
         string? excludeReservationId);
 
+    // Counts Approved, Pending and future Approved reservations for the dashboard.
     Task<(long Active, long Pending, long ApprovedFuture)> GetDashboardAnalyticsAsync(DateTime nowUtc);
 
     Task<IReadOnlyList<EnergyReservation>> GetBookingHistoryAsync(

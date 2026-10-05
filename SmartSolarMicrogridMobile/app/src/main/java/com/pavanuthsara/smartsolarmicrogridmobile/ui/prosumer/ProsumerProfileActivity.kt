@@ -21,6 +21,7 @@ class ProsumerProfileActivity : AppCompatActivity() {
     private lateinit var inputEmail: TextInputLayout
     private lateinit var inputPhone: TextInputLayout
 
+    // Sets up the prosumer profile screen.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

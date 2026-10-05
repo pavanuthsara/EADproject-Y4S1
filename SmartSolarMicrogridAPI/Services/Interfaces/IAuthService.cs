@@ -13,6 +13,9 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 
 public interface IAuthService
 {
+    // Registers a new user account.
     Task<AuthResponseDto> RegisterAsync(RegisterRequestDto dto);
+
+    // Checks the credentials and returns a JWT for the user.
     Task<AuthResponseDto> LoginAsync(LoginRequestDto dto);
 }

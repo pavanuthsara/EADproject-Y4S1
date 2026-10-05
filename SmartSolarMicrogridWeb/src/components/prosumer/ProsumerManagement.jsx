@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProsumers, createProsumer, updateProsumer, toggleProsumerStatus } from '../../services/prosumerService';
 
+// Backoffice screen for listing, creating, editing and (de)activating prosumers.
 export default function ProsumerManagement() {
     const [prosumers, setProsumers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +25,7 @@ export default function ProsumerManagement() {
         loadProsumers();
     }, []);
 
+    // Loads all prosumers from the API.
     const loadProsumers = async () => {
         setIsLoading(true);
         try {
@@ -37,11 +39,13 @@ export default function ProsumerManagement() {
         }
     };
 
+    // Updates a form field as the user types.
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Opens the form, pre-filled when editing an existing prosumer.
     const openForm = (prosumer = null) => {
         if (prosumer) {
             setFormData({
@@ -60,12 +64,14 @@ export default function ProsumerManagement() {
         setError('');
     };
 
+    // Closes the form and clears the editing state.
     const closeForm = () => {
         setIsFormOpen(false);
         setEditingNic(null);
         setError('');
     };
 
+    // Creates a new prosumer or saves changes to the one being edited.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -86,6 +92,7 @@ export default function ProsumerManagement() {
         }
     };
 
+    // Changes a prosumer's account status and reloads the list.
     const handleStatusChange = async (nic, newStatus) => {
         try {
             await toggleProsumerStatus(nic, newStatus);

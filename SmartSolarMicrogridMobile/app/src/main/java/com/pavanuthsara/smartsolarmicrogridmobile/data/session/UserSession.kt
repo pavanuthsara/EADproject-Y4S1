@@ -33,6 +33,7 @@ class UserSession(context: Context) {
     suspend fun currentUser(): CachedUser? =
         if (sessionManager.isLoggedIn()) cachedUserDao.get() else null
 
+    // Signs out: clears the token, the cached user and that user's cached reservations.
     suspend fun signOut() {
         sessionManager.clearToken()
         cachedUserDao.clear()

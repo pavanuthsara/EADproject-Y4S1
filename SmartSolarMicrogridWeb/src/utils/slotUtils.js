@@ -34,10 +34,13 @@ export function slotDirections(slot) {
 // Local calendar day of an instant, e.g. "2026-10-08", used to group slots by day.
 export function localDayKey(value) {
     const date = new Date(value);
+
+    // Left-pads a number to two digits.
     const pad = (n) => String(n).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+// Turns a "YYYY-MM-DD" day key into a long, localised date heading.
 export function formatDayHeading(dayKey) {
     const [year, month, day] = dayKey.split('-').map(Number);
     return new Date(year, month - 1, day).toLocaleDateString(undefined, {
@@ -45,10 +48,12 @@ export function formatDayHeading(dayKey) {
     });
 }
 
+// Formats a timestamp as a local hour and minute.
 export function formatTime(value) {
     return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
+// Formats a slot's start and end as a time range.
 export function formatTimeRange(slot) {
     return `${formatTime(slot.startTime)} – ${formatTime(slot.endTime)}`;
 }
@@ -67,6 +72,7 @@ export function batteryColor(percent, status) {
     return 'bg-green-500';
 }
 
+// Formats an energy amount with at most 2 decimals, e.g. "2.5 kWh".
 export function formatKwh(value) {
     return `${Number(Number(value).toFixed(2))} kWh`;
 }

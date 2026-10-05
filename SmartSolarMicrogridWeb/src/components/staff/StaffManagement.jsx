@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getStaff, createStaff, updateStaff, updateStaffStatus } from '../../services/staffService';
 
+// Backoffice screen for listing, creating, editing and (de)activating staff accounts.
 export default function StaffManagement() {
     const [staffList, setStaffList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,7 @@ export default function StaffManagement() {
         loadStaff();
     }, []);
 
+    // Loads all staff accounts from the API.
     const loadStaff = async () => {
         setIsLoading(true);
         try {
@@ -36,11 +38,13 @@ export default function StaffManagement() {
         }
     };
 
+    // Updates a form field as the user types.
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Opens the form, pre-filled when editing an existing staff member.
     const openForm = (staff = null) => {
         if (staff) {
             setFormData({
@@ -58,12 +62,14 @@ export default function StaffManagement() {
         setError('');
     };
 
+    // Closes the form and clears the editing state.
     const closeForm = () => {
         setIsFormOpen(false);
         setEditingId(null);
         setError('');
     };
 
+    // Creates a new staff member or saves changes to the one being edited.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -84,6 +90,7 @@ export default function StaffManagement() {
         }
     };
 
+    // Changes a staff member's account status and reloads the list.
     const handleStatusChange = async (id, newStatus) => {
         try {
             await updateStaffStatus(id, newStatus);

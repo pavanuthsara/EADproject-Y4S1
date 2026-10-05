@@ -5,6 +5,7 @@ import { API_BASE as API_ROOT } from "../config";
 
 const API_BASE = `${API_ROOT}/users`;
 
+// Fetches all staff accounts.
 export async function getStaff() {
     const response = await fetch(`${API_BASE}/staff`, {
         method: 'GET',
@@ -19,6 +20,7 @@ export async function getStaff() {
     return result.data; // The .NET API returns { success, message, data }
 }
 
+// Creates a staff account.
 export async function createStaff(data) {
     const response = await fetch(`${API_BASE}/staff`, {
         method: 'POST',
@@ -46,6 +48,7 @@ export async function createStaff(data) {
     return result.data;
 }
 
+// Updates a staff member's details.
 export async function updateStaff(id, data) {
     const response = await fetch(`${API_BASE}/staff/${id}`, {
         method: 'PUT',
@@ -69,6 +72,7 @@ export async function updateStaff(id, data) {
     return result.data;
 }
 
+// Sets a staff member's account status.
 export async function updateStaffStatus(id, newStatus) {
     const response = await fetch(`${API_BASE}/staff/${id}/status`, {
         method: 'PATCH',

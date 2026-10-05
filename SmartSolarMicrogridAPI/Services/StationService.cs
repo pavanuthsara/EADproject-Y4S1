@@ -158,12 +158,14 @@ public class StationService(
         return stations.Select(MapStation).ToList();
     }
 
+    // Returns every station, active or not.
     public async Task<IEnumerable<StationResponseDto>> GetAllStationsAsync()
     {
         var stations = await stationRepository.FindAsync(_ => true);
         return stations.Select(MapStation).ToList();
     }
 
+    // Maps a station entity to the response DTO returned by the API.
     private static StationResponseDto MapStation(SolarStation station) => new()
     {
         Id = station.Id,

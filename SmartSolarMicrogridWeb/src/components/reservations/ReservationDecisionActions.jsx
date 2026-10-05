@@ -23,6 +23,7 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
 
     const slotStarted = new Date(reservation.slotStartUtc).getTime() <= Date.now();
 
+    // Runs an approve or reject call and reports the result to the parent.
     const run = async (action) => {
         setIsBusy(true);
         onError?.('');
@@ -38,7 +39,10 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
         }
     };
 
+    // Approves the reservation.
     const handleApprove = () => run(() => approveReservation(reservation.reservationId));
+
+    // Rejects the reservation with the entered reason.
     const handleReject = () => run(() => rejectReservation(reservation.reservationId, reason.trim()));
 
     const reasonTooShort = reason.trim().length < MIN_REASON_LENGTH;

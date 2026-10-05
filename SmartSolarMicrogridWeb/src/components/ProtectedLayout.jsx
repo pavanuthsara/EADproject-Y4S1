@@ -7,6 +7,7 @@ const DASHBOARD_BY_ROLE = {
   GridOperator: '/operator',
 };
 
+// Layout for signed-in pages; redirects users who are signed out or lack an allowed role.
 const ProtectedLayout = ({ allowedRoles }) => {
   const role = getRole();
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const ProtectedLayout = ({ allowedRoles }) => {
     return <Navigate to={DASHBOARD_BY_ROLE[role] ?? '/login'} replace />;
   }
 
+  // Signs out and returns to the login page.
   const handleLogout = () => {
     logout();
     navigate('/login');

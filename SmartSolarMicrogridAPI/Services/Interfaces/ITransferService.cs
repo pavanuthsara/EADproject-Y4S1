@@ -13,6 +13,9 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 
 public interface ITransferService
 {
+    // Checks a scanned reservation QR token and returns the reservation it belongs to.
     Task<QrVerificationResponseDto> VerifyQrAsync(VerifyQrRequestDto dto);
+
+    // Marks a verified energy transfer as completed by the operator.
     Task<TransferCompleteResponseDto> CompleteTransferAsync(string reservationId, string operatorId);
 }

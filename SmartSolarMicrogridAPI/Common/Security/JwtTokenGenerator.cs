@@ -20,6 +20,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtSettings _jwtSettings;
 
+    // Reads the JWT settings from configuration.
     public JwtTokenGenerator(IOptions<JwtSettings> jwtOptions)
     {
         _jwtSettings = jwtOptions.Value;

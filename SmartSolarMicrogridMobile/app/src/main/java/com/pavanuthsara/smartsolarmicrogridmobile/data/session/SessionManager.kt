@@ -43,6 +43,7 @@ class SessionManager private constructor(context: Context) {
         @Volatile
         private var instance: SessionManager? = null
 
+        // Returns the single SessionManager, creating it on first use.
         fun getInstance(context: Context): SessionManager {
             return instance ?: synchronized(this) {
                 instance ?: SessionManager(context.applicationContext).also { instance = it }
@@ -58,6 +59,7 @@ class SessionManager private constructor(context: Context) {
             .apply()
     }
 
+    // Returns the stored JWT, or null if signed out.
     fun getAuthToken(): String? = securePrefs.getString(KEY_TOKEN, null)
 
     // True when a token is stored and has not reached its expiry. An unreadable expiry is
@@ -68,17 +70,21 @@ class SessionManager private constructor(context: Context) {
         return expiresAt == 0L || System.currentTimeMillis() < expiresAt
     }
 
+    // Removes the stored token and the rest of the secure session data.
     fun clearToken() {
         securePrefs.edit().clear().apply()
     }
 
+    // Returns the API base URL, or the default if none has been saved.
     fun getBaseUrl(): String = prefs.getString(KEY_BASE_URL, DEFAULT_BASE_URL) ?: DEFAULT_BASE_URL
 
+    // Saves the API base URL, adding a trailing slash if missing.
     fun setBaseUrl(url: String) {
         val formatted = if (url.endsWith("/")) url else "$url/"
         prefs.edit().putString(KEY_BASE_URL, formatted).apply()
     }
 
+    // Opens the encrypted preferences, resetting them if they cannot be decrypted.
     private fun openSecurePrefs(): SharedPreferences {
         return try {
             createSecurePrefs()
@@ -96,6 +102,7 @@ class SessionManager private constructor(context: Context) {
         return createSecurePrefs()
     }
 
+    // Creates encrypted preferences protected by an AES-256 master key.
     private fun createSecurePrefs(): SharedPreferences {
         val masterKey = MasterKey.Builder(appContext)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -110,6 +117,7 @@ class SessionManager private constructor(context: Context) {
         )
     }
 
+    // Removes session values that older app versions kept in plain preferences.
     private fun removeLegacySessionData() {
         val editor = prefs.edit()
         LEGACY_PLAIN_KEYS.forEach { editor.remove(it) }

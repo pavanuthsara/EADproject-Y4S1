@@ -112,6 +112,7 @@ class ReservationViewModel(application: Application) : AndroidViewModel(applicat
         return (slots + current).sortedBy { it.startTime }
     }
 
+    // Books a new reservation on the chosen slot.
     fun book(slotId: String, direction: String, kwh: Double) {
         runAction {
             when (val result = reservationRepository.create(CreateReservationRequest(stationId, slotId, direction, kwh))) {
@@ -142,6 +143,7 @@ class ReservationViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    // Cancels the reservation being edited.
     fun cancelReservation() {
         val current = existing ?: return
         runAction {
@@ -152,6 +154,7 @@ class ReservationViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    // Runs one API action at a time and publishes its outcome as an event.
     private fun runAction(action: suspend () -> FormEvent) {
         if (_busy.value == true) return
         _busy.value = true
@@ -162,6 +165,7 @@ class ReservationViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    // Turns an API failure into a session-expired or error event.
     private fun failure(result: ApiResult.Failure): FormEvent =
         if (result.sessionExpired) FormEvent.SessionExpired else FormEvent.Failed(result.message)
 
@@ -174,5 +178,6 @@ class ReservationViewModel(application: Application) : AndroidViewModel(applicat
 class ConsumableEvent<out T>(private val content: T) {
     private var handled = false
 
+    // Returns the content the first time only; later calls return null.
     fun consume(): T? = if (handled) null else { handled = true; content }
 }

@@ -26,8 +26,10 @@ const pinIcon = L.divIcon({
     iconAnchor: [16, 41],
 });
 
+// Rounds a coordinate to 6 decimal places (about 0.1 m).
 const round6 = (n) => Number(n.toFixed(6));
 
+// Parses the latitude/longitude strings into [lat, lng]; returns null if missing or out of range.
 function parseCoordinates(latitude, longitude) {
     if (latitude === '' || longitude === '') return null;
     const lat = Number(latitude);
@@ -47,6 +49,7 @@ function toAddress(result) {
     };
 }
 
+// Reports the clicked map position to onPick.
 function MapClickHandler({ onPick }) {
     useMapEvents({
         click: (e) => onPick(e.latlng.lat, e.latlng.lng),
@@ -83,6 +86,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
 
     useEffect(() => () => searchAbortRef.current?.abort(), []);
 
+    // Moves the pin by sending the rounded coordinates to the parent form.
     const setPin = (lat, lng) => onChange({ latitude: String(round6(lat)), longitude: String(round6(lng)) });
 
     // Direct map interaction supersedes any earlier search/geolocation notice.
@@ -91,6 +95,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
         setPin(lat, lng);
     };
 
+    // Searches Nominatim for the typed address, cancelling any earlier search and waiting out the rate limit.
     const handleSearch = async () => {
         const q = query.trim();
         if (!q) return;
@@ -123,6 +128,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
         }
     };
 
+    // Places the pin on a chosen search result, zooms to it and passes its address to the parent.
     const selectResult = (result) => {
         const lat = Number(result.lat);
         const lng = Number(result.lon);
@@ -136,6 +142,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
         setMessage({ text: 'Pin placed at the search result. Click the map or drag the pin to fine-tune.', tone: 'info' });
     };
 
+    // Places the pin at the browser's current location.
     const handleUseCurrentLocation = () => {
         if (!('geolocation' in navigator)) {
             setMessage({ text: 'Your browser does not support location access.', tone: 'warn' });
@@ -162,6 +169,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
         );
     };
 
+    // Updates latitude or longitude as the user types in the coordinate fields.
     const handleCoordinateChange = (e) => {
         const { name, value } = e.target;
         onChange({ latitude, longitude, [name]: value });

@@ -34,6 +34,7 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
     private val _completeState = MutableLiveData<CompleteState>(CompleteState.Idle)
     val completeState: LiveData<CompleteState> = _completeState
 
+    // Sends a scanned QR token to the API and publishes the verification result.
     fun verifyQrToken(qrToken: String) {
         _verifyState.value = VerifyState.Loading
         _completeState.value = CompleteState.Idle
@@ -63,6 +64,7 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // Marks the reservation's energy transfer as completed and publishes the result.
     fun completeTransfer(reservationId: String) {
         _completeState.value = CompleteState.Loading
 
@@ -91,6 +93,7 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // Resets the verify and complete states to idle.
     fun resetStates() {
         _verifyState.value = VerifyState.Idle
         _completeState.value = CompleteState.Idle

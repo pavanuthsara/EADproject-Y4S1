@@ -33,6 +33,8 @@ public class ReservationsController(
     IMongoRepository<User> userRepository,
     IOptions<ReservationPolicyOptions> policyOptions) : ControllerBase
 {
+    // Works out whose reservations a request acts on: a prosumer always acts on their own,
+    // while staff must name the prosumer by NIC.
     private async Task<(string? id, string? nic)> GetTargetProsumerAsync(string? explicitNic)
     {
         string? role = User.FindFirstValue(ClaimTypes.Role);

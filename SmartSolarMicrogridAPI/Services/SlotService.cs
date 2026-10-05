@@ -264,6 +264,7 @@ public class SlotService(
         }
     }
 
+    // Treats a time with no time zone as UTC, and converts any other time to UTC.
     private static DateTime ToUtc(DateTime value) =>
         value.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
@@ -273,6 +274,7 @@ public class SlotService(
     private static DateTime TruncateToMilliseconds(DateTime value) =>
         new(value.Ticks - value.Ticks % TimeSpan.TicksPerMillisecond, DateTimeKind.Utc);
 
+    // Maps a slot entity to the response DTO returned by the API.
     private static ScheduleResponseDto MapSlot(EnergyBookingSlot slot) => new()
     {
         Id = slot.Id,

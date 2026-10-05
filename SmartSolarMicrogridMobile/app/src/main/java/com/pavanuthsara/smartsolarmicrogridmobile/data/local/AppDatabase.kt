@@ -19,6 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
+            // Adds the prosumers table.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `prosumers` (`nic` TEXT NOT NULL, `fullName` TEXT NOT NULL, `email` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `password` TEXT NOT NULL, PRIMARY KEY(`nic`))"
@@ -27,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private val MIGRATION_2_3 = object : Migration(2, 3) {
+            // Adds the reservations table.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `reservations` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `prosumerNic` TEXT NOT NULL, `type` TEXT NOT NULL, `date` TEXT NOT NULL, `time` TEXT NOT NULL, `status` TEXT NOT NULL, `qrCodeData` TEXT)"
@@ -35,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private val MIGRATION_3_4 = object : Migration(3, 4) {
+            // Adds the cached_user table for the signed-in user.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `cached_user` (`userId` TEXT NOT NULL, `nic` TEXT NOT NULL, `fullName` TEXT NOT NULL, `email` TEXT NOT NULL, `role` TEXT NOT NULL, PRIMARY KEY(`userId`))"
@@ -45,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
         // Adds the phone number to the cached profile. Rows cached before this get an empty phone
         // until the user signs in again.
         private val MIGRATION_4_5 = object : Migration(4, 5) {
+            // Adds the phone column to cached_user.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `cached_user` ADD COLUMN `phone` TEXT NOT NULL DEFAULT ''")
             }
@@ -53,6 +57,7 @@ abstract class AppDatabase : RoomDatabase() {
         // Reservations now live in MongoDB and are only cached here. The old table held bookings made
         // on the phone alone (with a made-up Approved status and QR), so it is dropped, not converted.
         private val MIGRATION_5_6 = object : Migration(5, 6) {
+            // Replaces the old reservations table with cached_reservations.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DROP TABLE IF EXISTS `reservations`")
                 db.execSQL(
@@ -64,11 +69,13 @@ abstract class AppDatabase : RoomDatabase() {
         // Adds the QR token the API now sends for Approved reservations. Rows saved before this have none
         // until the next refresh from the API.
         private val MIGRATION_6_7 = object : Migration(6, 7) {
+            // Adds the qrToken column to cached_reservations.
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `cached_reservations` ADD COLUMN `qrToken` TEXT")
             }
         }
 
+        // Returns the single database instance, creating it on first use.
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(

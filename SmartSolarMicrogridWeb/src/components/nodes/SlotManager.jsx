@@ -44,6 +44,7 @@ export default function SlotManager({ node, canManage }) {
 
     const nodeIsActive = node.status === 'Active';
 
+    // Loads the hub's booking slots.
     const load = useCallback(async () => {
         try {
             setSlots(await getNodeSlots(node.id));
@@ -88,6 +89,7 @@ export default function SlotManager({ node, canManage }) {
         };
     }, [slots]);
 
+    // Closes the slot form after a save and reloads the slots.
     const handleSaved = async () => {
         const wasEdit = Boolean(formSlot);
         setFormSlot(undefined);
@@ -95,6 +97,7 @@ export default function SlotManager({ node, canManage }) {
         await load();
     };
 
+    // Opens or closes a slot to new bookings.
     const handleToggleOpen = async (slot) => {
         const open = slot.status === 'Closed';
         setBusySlotId(slot.id);
@@ -111,6 +114,7 @@ export default function SlotManager({ node, canManage }) {
         }
     };
 
+    // Deletes a slot after the user confirms.
     const handleDelete = async (slot) => {
         setBusySlotId(slot.id);
         setError('');
@@ -229,6 +233,7 @@ export default function SlotManager({ node, canManage }) {
     );
 }
 
+// Card for one slot: time, capacity used and the manage actions.
 function SlotCard({
     slot, canManage, isBusy, isConfirmingDelete,
     onEdit, onToggleOpen, onViewBookings, onRequestDelete, onAbortDelete, onConfirmDelete,

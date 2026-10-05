@@ -40,6 +40,7 @@ class ReservationListActivity : AppCompatActivity() {
 
     private var allReservations: List<CachedReservation> = emptyList()
 
+    // Sets up the reservation list with search and status filtering.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reservation_list)
@@ -59,16 +60,23 @@ class ReservationListActivity : AppCompatActivity() {
         }
 
         editSearch.addTextChangedListener(object : TextWatcher {
+            // Re-filters the list whenever the search text changes.
             override fun afterTextChanged(s: Editable?) { applyFilters() }
+
+            // Not needed; filtering happens after the text changes.
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            // Not needed; filtering happens after the text changes.
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
         spinnerFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            // Re-filters the list when a status filter is chosen.
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 applyFilters()
             }
 
+            // Nothing to do when no filter is selected.
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
@@ -79,6 +87,7 @@ class ReservationListActivity : AppCompatActivity() {
         loadReservations()
     }
 
+    // Shows cached reservations immediately, then refreshes them from the API.
     private fun loadReservations() {
         lifecycleScope.launch {
             allReservations = reservationRepository.cached()
@@ -101,6 +110,7 @@ class ReservationListActivity : AppCompatActivity() {
         }
     }
 
+    // Filters reservations by the search text and the chosen status.
     private fun applyFilters() {
         val query = editSearch.text.toString().trim().lowercase()
         val filterSelection = spinnerFilter.selectedItem?.toString() ?: FILTERS[0]
@@ -116,6 +126,7 @@ class ReservationListActivity : AppCompatActivity() {
         displayList(filtered)
     }
 
+    // Shows the reservation cards, or a message when the list is empty.
     private fun displayList(list: List<CachedReservation>) {
         reservationsLayout.removeAllViews()
 
@@ -136,6 +147,7 @@ class ReservationListActivity : AppCompatActivity() {
         }
     }
 
+    // Builds the card for one reservation.
     private fun buildCard(res: CachedReservation): View {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

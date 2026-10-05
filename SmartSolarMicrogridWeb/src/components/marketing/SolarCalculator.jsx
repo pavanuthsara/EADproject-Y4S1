@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Estimates daily and monthly generation and earnings from a rooftop capacity.
 export default function SolarCalculator() {
     const [capacityKw, setCapacityKw] = useState(5.0);
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function SolarCalculator() {
     // 0.85 kg CO2 offset per kWh solar
     const monthlyCo2 = (monthlyKwh * 0.85).toFixed(0);
 
+    // Opens registration with the chosen capacity pre-filled.
     const handleRegisterWithCapacity = () => {
         navigate(`/register?capacity=${capacityKw}`);
     };

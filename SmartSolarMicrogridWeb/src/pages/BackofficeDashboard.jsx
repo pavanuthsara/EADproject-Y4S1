@@ -4,6 +4,7 @@ import NodeManagement from '../components/nodes/NodeManagement';
 import ReservationManagement from '../components/reservations/ReservationManagement';
 import StaffManagement from '../components/staff/StaffManagement';
 
+// Backoffice dashboard: prosumers, staff, hubs and reservations.
 function BackofficeDashboard() {
     return (
         <div className="max-w-7xl mx-auto space-y-6">

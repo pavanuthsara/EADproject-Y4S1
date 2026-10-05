@@ -2,6 +2,7 @@ import React from 'react';
 import NodeManagement from '../components/nodes/NodeManagement';
 import ReservationManagement from '../components/reservations/ReservationManagement';
 
+// Grid Operator dashboard: hubs and reservations.
 function OperatorDashboard() {
     return (
         <div className="max-w-7xl mx-auto space-y-6">
