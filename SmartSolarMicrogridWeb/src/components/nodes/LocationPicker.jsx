@@ -19,8 +19,8 @@ const MIN_SEARCH_INTERVAL_MS = 1000;
 const pinIcon = L.divIcon({
     className: '',
     html: `<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 1C7.7 1 1 7.6 1 15.8 1 27 16 41 16 41s15-14 15-25.2C31 7.6 24.3 1 16 1z" fill="#4f46e5" stroke="#fff" stroke-width="2"/>
-        <circle cx="16" cy="15.5" r="5.5" fill="#fff"/>
+        <path d="M16 1C7.7 1 1 7.6 1 15.8 1 27 16 41 16 41s15-14 15-25.2C31 7.6 24.3 1 16 1z" fill="#F59E0B" stroke="#fff" stroke-width="2"/>
+        <circle cx="16" cy="15.5" r="5.5" fill="#0F172A"/>
     </svg>`,
     iconSize: [32, 42],
     iconAnchor: [16, 41],
@@ -202,7 +202,7 @@ export default function LocationPicker({ latitude, longitude, onChange, onPlaceS
                             placeholder="Search by address, e.g. Galle Fort"
                             aria-label="Search by address"
                         />
-                        <button type="button" onClick={handleSearch} disabled={isSearching || !query.trim()} className="px-4 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
+                        <button type="button" onClick={handleSearch} disabled={isSearching || !query.trim()} className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F59E0B] text-slate-950 hover:bg-[#d97706] disabled:opacity-50 transition-all cursor-pointer">
                             {isSearching ? 'Searching...' : 'Search'}
                         </button>
                         {results.length > 0 && (

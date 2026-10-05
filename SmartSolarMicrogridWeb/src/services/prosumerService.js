@@ -93,3 +93,12 @@ export async function deactivateProsumer(nic) {
     });
     return data;
 }
+
+/**
+ * Retrieves dashboard analytics counts for reservations.
+ * GET /api/backoffice/dashboard/analytics
+ */
+export async function getDashboardAnalytics() {
+    const { data } = await apiRequest("/backoffice/dashboard/analytics");
+    return data;
+}

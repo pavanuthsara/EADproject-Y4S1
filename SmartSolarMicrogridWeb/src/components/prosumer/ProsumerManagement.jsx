@@ -8,6 +8,7 @@ export default function ProsumerManagement() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingNic, setEditingNic] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     
     // Filters
     const [filterStatus, setFilterStatus] = useState('All'); // All, Pending, Active, Inactive
@@ -95,78 +96,130 @@ export default function ProsumerManagement() {
         }
     };
 
-    const filteredProsumers = prosumers.filter(p => filterStatus === 'All' || p.status === filterStatus);
+    const filteredProsumers = prosumers.filter(p => {
+        const matchesStatus = filterStatus === 'All' || p.status === filterStatus;
+        const q = searchQuery.toLowerCase().trim();
+        const matchesQuery = !q || 
+            (p.nic && p.nic.toLowerCase().includes(q)) || 
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.email && p.email.toLowerCase().includes(q));
+        return matchesStatus && matchesQuery;
+    });
 
     if (isLoading && prosumers.length === 0) {
-        return <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>;
+        return (
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200">
+                <div className="w-10 h-10 border-4 border-[#F59E0B] border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p className="text-sm font-medium text-slate-500">Loading Prosumer Registry...</p>
+            </div>
+        );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all">
             {/* Header Section */}
-            <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:justify-between md:items-center bg-gray-50 gap-4">
+            <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row md:justify-between md:items-center bg-slate-50/80 gap-4">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-800">Prosumer Management</h2>
-                    <p className="text-sm text-gray-500 mt-1">Manage user profiles, activations, and statuses.</p>
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+                        <h2 className="text-xl font-bold text-slate-900">Prosumer Management</h2>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                        Review, activate, and manage solar producer accounts and profiles.
+                    </p>
                 </div>
                 <button 
                     onClick={() => openForm()}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-2 bg-[#F59E0B] hover:bg-[#d97706] text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
                 >
-                    + Add Prosumer
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Prosumer
                 </button>
             </div>
 
-            {/* Filters */}
-            <div className="border-b border-gray-200 bg-white px-6 py-3 flex gap-4">
-                {['All', 'Pending', 'Active', 'Inactive'].map(status => (
-                    <button
-                        key={status}
-                        onClick={() => setFilterStatus(status)}
-                        className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
-                            filterStatus === status 
-                                ? 'border-indigo-600 text-indigo-600' 
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
-                    >
-                        {status}
-                        <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-                            {status === 'All' 
-                                ? prosumers.length 
-                                : prosumers.filter(p => p.status === status).length}
-                        </span>
-                    </button>
-                ))}
+            {/* Filter and Search Bar */}
+            <div className="border-b border-slate-200 bg-white px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                    {['All', 'Pending', 'Active', 'Inactive'].map(status => {
+                        const count = status === 'All' 
+                            ? prosumers.length 
+                            : prosumers.filter(p => p.status === status).length;
+                        const isSelected = filterStatus === status;
+                        return (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                                    isSelected 
+                                        ? 'bg-[#0F172A] text-white shadow-sm' 
+                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                }`}
+                            >
+                                {status}
+                                <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${
+                                    isSelected 
+                                        ? 'bg-white/20 text-white' 
+                                        : 'bg-slate-100 text-slate-600'
+                                }`}>
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="relative min-w-[240px]">
+                    <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search by NIC, name or email..."
+                        className="w-full pl-9 pr-3 py-1.5 text-xs sm:text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent transition-all"
+                    />
+                </div>
             </div>
 
             {/* Error Message Display */}
             {error && !isFormOpen && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 m-6">
-                    <p className="text-red-700">{error}</p>
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 m-6 rounded-r-xl">
+                    <p className="text-red-700 text-xs sm:text-sm font-medium">{error}</p>
                 </div>
             )}
 
-            {/* Form Section (Conditional) */}
+            {/* Form Section (Conditional Drawer/Panel) */}
             {isFormOpen && (
-                <div className="p-6 border-b border-gray-200 bg-indigo-50/30">
+                <div className="p-6 border-b border-slate-200 bg-amber-50/20">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-medium text-gray-800">
-                            {editingNic ? `Edit Prosumer: ${editingNic}` : 'Create New Prosumer'}
-                        </h3>
-                        <button onClick={closeForm} className="text-gray-500 hover:text-gray-700">
-                            ✕ Close
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                                {editingNic ? `Update Prosumer (${editingNic})` : 'Register New Prosumer'}
+                            </h3>
+                        </div>
+                        <button 
+                            onClick={closeForm} 
+                            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                        >
+                            ✕ Cancel
                         </button>
                     </div>
                     
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">
+                        <div className="bg-red-50 text-red-700 p-3 rounded-xl mb-4 text-xs font-semibold border border-red-100">
                             {error}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">NIC (Primary Key)</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                National Identity Card (NIC)
+                            </label>
                             <input 
                                 required
                                 type="text"
@@ -174,72 +227,80 @@ export default function ProsumerManagement() {
                                 value={formData.nic}
                                 onChange={handleInputChange}
                                 disabled={!!editingNic}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white disabled:bg-gray-100 disabled:text-gray-500"
-                                placeholder="e.g. 199012345678"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                                placeholder="e.g. 199512345678"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Full Name
+                            </label>
                             <input 
                                 required
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white"
-                                placeholder="John Doe"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                placeholder="e.g. Kasun Perera"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Email Address
+                            </label>
                             <input 
                                 required
                                 type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white"
-                                placeholder="john@example.com"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                placeholder="kasun@example.com"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Phone Number
+                            </label>
                             <input 
                                 required
                                 type="tel"
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white"
-                                placeholder="07XXXXXXXX"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                placeholder="0771234567"
                             />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Address & Solar Site Details
+                            </label>
                             <textarea 
                                 required
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
                                 rows="2"
-                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2 bg-white"
-                                placeholder="123 Street, City"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                placeholder="No. 45, Temple Road, Colombo 03"
                             ></textarea>
                         </div>
-                        <div className="md:col-span-2 flex justify-end gap-3 mt-2">
+                        <div className="md:col-span-2 flex justify-end gap-2.5 mt-2">
                             <button 
                                 type="button" 
                                 onClick={closeForm}
-                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 font-medium"
+                                className="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 bg-white hover:bg-slate-50 text-sm font-semibold transition-all cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button 
                                 type="submit" 
                                 disabled={isSubmitting}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium disabled:opacity-50"
+                                className="px-5 py-2 bg-[#F59E0B] text-slate-950 font-bold rounded-xl hover:bg-[#d97706] text-sm shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                             >
-                                {isSubmitting ? 'Saving...' : (editingNic ? 'Update Prosumer' : 'Create Prosumer')}
+                                {isSubmitting ? 'Saving...' : (editingNic ? 'Update Profile' : 'Save Prosumer')}
                             </button>
                         </div>
                     </form>
@@ -250,50 +311,58 @@ export default function ProsumerManagement() {
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">NIC</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                        <tr className="bg-slate-50 border-b border-slate-200">
+                            <th className="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">NIC</th>
+                            <th className="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Prosumer</th>
+                            <th className="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Contact Info</th>
+                            <th className="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Account Status</th>
+                            <th className="p-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-slate-100 bg-white text-sm">
                         {filteredProsumers.length === 0 ? (
                             <tr>
-                                <td colSpan="5" className="p-8 text-center text-gray-500">
-                                    No {filterStatus !== 'All' ? filterStatus.toLowerCase() : ''} prosumers found.
+                                <td colSpan="5" className="p-10 text-center text-slate-500">
+                                    <div className="max-w-xs mx-auto text-center space-y-1">
+                                        <p className="font-semibold text-slate-800">No prosumers found</p>
+                                        <p className="text-xs text-slate-400">
+                                            {searchQuery ? `No matches for "${searchQuery}"` : `No records under status "${filterStatus}".`}
+                                        </p>
+                                    </div>
                                 </td>
                             </tr>
                         ) : (
                             filteredProsumers.map((prosumer) => (
-                                <tr key={prosumer.nic} className="hover:bg-gray-50 transition-colors">
-                                    <td className="p-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr key={prosumer.nic} className="hover:bg-slate-50/70 transition-colors">
+                                    <td className="p-4 whitespace-nowrap text-xs font-mono font-bold text-slate-800">
                                         {prosumer.nic}
                                     </td>
                                     <td className="p-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{prosumer.name}</div>
-                                        <div className="text-xs text-gray-500">{prosumer.address}</div>
+                                        <div className="text-sm font-bold text-slate-900">{prosumer.name}</div>
+                                        <div className="text-xs text-slate-500 max-w-xs truncate">{prosumer.address}</div>
                                     </td>
                                     <td className="p-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{prosumer.email}</div>
-                                        <div className="text-xs text-gray-500">{prosumer.phone}</div>
+                                        <div className="text-xs font-medium text-slate-900">{prosumer.email}</div>
+                                        <div className="text-xs text-slate-500 font-mono">{prosumer.phone}</div>
                                     </td>
                                     <td className="p-4 whitespace-nowrap">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
                                             prosumer.status === 'Active' 
-                                                ? 'bg-green-100 text-green-800' 
+                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
                                                 : prosumer.status === 'Pending'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                                    : 'bg-rose-50 text-rose-700 border border-rose-200'
                                         }`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                                prosumer.status === 'Active' ? 'bg-[#10B981]' : prosumer.status === 'Pending' ? 'bg-[#F59E0B]' : 'bg-rose-500'
+                                            }`}></span>
                                             {prosumer.status}
                                         </span>
                                     </td>
-                                    <td className="p-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="p-4 whitespace-nowrap text-right text-xs font-semibold">
                                         <button 
                                             onClick={() => openForm(prosumer)}
-                                            className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                            className="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg mr-2 transition-all cursor-pointer"
                                         >
                                             Edit
                                         </button>
@@ -301,16 +370,16 @@ export default function ProsumerManagement() {
                                         {prosumer.status === 'Pending' && (
                                             <button 
                                                 onClick={() => handleStatusChange(prosumer.nic, 'Active')}
-                                                className="text-green-600 hover:text-green-900"
+                                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer font-bold"
                                             >
-                                                Activate
+                                                Approve & Activate
                                             </button>
                                         )}
                                         
                                         {prosumer.status === 'Active' && (
                                             <button 
                                                 onClick={() => handleStatusChange(prosumer.nic, 'Inactive')}
-                                                className="text-red-600 hover:text-red-900"
+                                                className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                                             >
                                                 Deactivate
                                             </button>
@@ -319,7 +388,7 @@ export default function ProsumerManagement() {
                                         {prosumer.status === 'Inactive' && (
                                             <button 
                                                 onClick={() => handleStatusChange(prosumer.nic, 'Active')}
-                                                className="text-blue-600 hover:text-blue-900"
+                                                className="bg-[#10B981] hover:bg-[#059669] text-white px-3 py-1.5 rounded-lg transition-all cursor-pointer font-bold shadow-xs"
                                             >
                                                 Reactivate
                                             </button>
