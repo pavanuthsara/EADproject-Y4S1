@@ -9,10 +9,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -21,8 +21,11 @@ import com.google.android.material.textfield.TextInputLayout
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiClient
 import com.pavanuthsara.smartsolarmicrogridmobile.data.session.SessionManager
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserRoles
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.main.MainActivity
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.operator.OperatorDashboardActivity
+import kotlinx.coroutines.launch
 
 class ProsumerLoginActivity : AppCompatActivity() {
 
@@ -40,6 +43,11 @@ class ProsumerLoginActivity : AppCompatActivity() {
     private lateinit var progressLoading: ProgressBar
 
     private var isOperatorMode = false
+
+    companion object {
+        // Set by the registration screen so the new prosumer only has to type their password.
+        const val EXTRA_REGISTERED_NIC = "registered_nic"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +68,8 @@ class ProsumerLoginActivity : AppCompatActivity() {
         textSubtitle = findViewById(R.id.textSubtitle)
         inputNic = findViewById(R.id.inputNic)
         inputEmail = findViewById(R.id.inputEmail)
+
+        intent.getStringExtra(EXTRA_REGISTERED_NIC)?.let { inputNic.editText?.setText(it) }
         inputPassword = findViewById(R.id.inputPassword)
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonRegisterRedirect = findViewById(R.id.buttonRegisterRedirect)
@@ -89,23 +99,14 @@ class ProsumerLoginActivity : AppCompatActivity() {
                 is LoginStatus.ProsumerSuccess -> {
                     progressLoading.visibility = View.GONE
                     buttonLogin.isEnabled = true
-                    Toast.makeText(this, "Welcome, Prosumer!", Toast.LENGTH_SHORT).show()
-
-                    val sharedPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                    sharedPrefs.edit().putString("logged_in_nic", status.nic).apply()
-
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    Toast.makeText(this, "Welcome, ${status.fullName}!", Toast.LENGTH_SHORT).show()
+                    openHome(UserRoles.PROSUMER)
                 }
                 is LoginStatus.OperatorSuccess -> {
                     progressLoading.visibility = View.GONE
                     buttonLogin.isEnabled = true
                     Toast.makeText(this, "Welcome, ${status.auth.fullName}!", Toast.LENGTH_SHORT).show()
-
-                    val intent = Intent(this, OperatorDashboardActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    openHome(status.auth.role)
                 }
                 is LoginStatus.Error -> {
                     progressLoading.visibility = View.GONE
@@ -118,6 +119,27 @@ class ProsumerLoginActivity : AppCompatActivity() {
                 }
             }
         }
+
+        skipLoginIfSignedIn()
+    }
+
+    // Opens the home screen straight away when an unexpired session is already stored on this device.
+    private fun skipLoginIfSignedIn() {
+        lifecycleScope.launch {
+            val user = UserSession(this@ProsumerLoginActivity).currentUser() ?: return@launch
+            openHome(user.role)
+        }
+    }
+
+    // Routes by the role the API returned: prosumers to their home, staff to the operator dashboard.
+    private fun openHome(role: String) {
+        val destination = if (UserRoles.isProsumer(role)) {
+            MainActivity::class.java
+        } else {
+            OperatorDashboardActivity::class.java
+        }
+        startActivity(Intent(this, destination))
+        finish()
     }
 
     private fun setupRoleToggle() {
@@ -131,8 +153,6 @@ class ProsumerLoginActivity : AppCompatActivity() {
                         inputNic.visibility = View.VISIBLE
                         inputEmail.visibility = View.GONE
                         buttonRegisterRedirect.visibility = View.VISIBLE
-                        inputNic.error = null
-                        inputPassword.error = null
                     }
                     R.id.buttonTabOperator -> {
                         isOperatorMode = true
@@ -141,32 +161,40 @@ class ProsumerLoginActivity : AppCompatActivity() {
                         inputNic.visibility = View.GONE
                         inputEmail.visibility = View.VISIBLE
                         buttonRegisterRedirect.visibility = View.GONE
-                        inputEmail.error = null
-                        inputPassword.error = null
                     }
                 }
+                inputNic.error = null
+                inputEmail.error = null
+                inputPassword.error = null
             }
         }
     }
 
+    // Prosumers sign in with NIC, staff with email; the format check here only catches typos,
+    // the API decides whether the credentials are valid.
     private fun attemptLogin() {
         val password = inputPassword.editText?.text?.toString().orEmpty()
         inputPassword.error = if (password.isEmpty()) getString(R.string.error_password_required) else null
 
+        val identifier: String
+        val identifierValid: Boolean
         if (isOperatorMode) {
-            val email = inputEmail.editText?.text?.toString()?.trim().orEmpty()
-            inputEmail.error = if (email.isEmpty()) getString(R.string.error_email_required) else null
-
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                viewModel.loginOperator(email, password)
-            }
+            identifier = inputEmail.editText?.text?.toString()?.trim().orEmpty()
+            inputEmail.error = if (identifier.isEmpty()) getString(R.string.error_email_required) else null
+            identifierValid = inputEmail.error == null
         } else {
-            val nic = inputNic.editText?.text?.toString()?.trim().orEmpty()
-            inputNic.error = if (nic.isEmpty()) getString(R.string.error_nic_required) else null
-
-            if (nic.isNotEmpty() && password.isNotEmpty()) {
-                viewModel.loginProsumer(nic, password)
+            identifier = inputNic.editText?.text?.toString()?.trim().orEmpty()
+            inputNic.error = when {
+                identifier.isEmpty() -> getString(R.string.error_nic_required)
+                !ProsumerRegistrationViewModel.isValidNic(identifier) -> getString(R.string.error_nic_invalid)
+                else -> null
             }
+            identifierValid = inputNic.error == null
+        }
+
+        if (identifierValid && password.isNotEmpty()) {
+            val portal = if (isOperatorMode) LoginPortal.OPERATOR else LoginPortal.PROSUMER
+            viewModel.login(identifier, password, portal)
         }
     }
 

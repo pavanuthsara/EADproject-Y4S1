@@ -1,6 +1,5 @@
 package com.pavanuthsara.smartsolarmicrogridmobile.ui.main
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
@@ -11,9 +10,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.GridMapActivity
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerLoginActivity
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerProfileActivity
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ReservationListActivity
 import kotlinx.coroutines.launch
@@ -22,6 +24,8 @@ class MainActivity : AppCompatActivity() {
 
     // Initializes the ViewModel tied to this Activity's lifecycle
     private val testUserViewModel: TestUserViewModel by viewModels()
+
+    private lateinit var userSession: UserSession
 
     private lateinit var textPendingCount: TextView
     private lateinit var textApprovedCount: TextView
@@ -36,6 +40,8 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        userSession = UserSession(this)
 
         textPendingCount = findViewById(R.id.textPendingCount)
         textApprovedCount = findViewById(R.id.textApprovedCount)
@@ -52,6 +58,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.buttonGridMap).setOnClickListener {
             startActivity(Intent(this, GridMapActivity::class.java))
         }
+
+        findViewById<MaterialButton>(R.id.buttonLogout).setOnClickListener {
+            confirmLogout()
+        }
     }
 
     override fun onResume() {
@@ -60,21 +70,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateDashboardStats() {
-        val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val loggedInNic = sharedPrefs.getString("logged_in_nic", "") ?: ""
-
-        if (loggedInNic.isNotEmpty()) {
-            val dao = AppDatabase.getDatabase(this).reservationDao()
-            lifecycleScope.launch {
-                val list = dao.getReservationsByNic(loggedInNic)
-                val pendingCount = list.count { it.status == "Pending" }
-                val approvedCount = list.count { it.status == "Approved" }
-                val totalCount = list.size
-
-                textPendingCount.text = "Pending Reservations: $pendingCount"
-                textApprovedCount.text = "Approved Reservations: $approvedCount"
-                textTotalCount.text = "Total Reservations: $totalCount"
+        lifecycleScope.launch {
+            val user = userSession.currentUser()
+            if (user == null) {
+                returnToLogin()
+                return@launch
             }
+
+            val list = AppDatabase.getDatabase(this@MainActivity).reservationDao().getReservationsByNic(user.nic)
+            val pendingCount = list.count { it.status == "Pending" }
+            val approvedCount = list.count { it.status == "Approved" }
+            val totalCount = list.size
+
+            textPendingCount.text = "Pending Reservations: $pendingCount"
+            textApprovedCount.text = "Approved Reservations: $approvedCount"
+            textTotalCount.text = "Total Reservations: $totalCount"
         }
+    }
+
+    private fun confirmLogout() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Log Out")
+            .setMessage("Are you sure you want to log out?")
+            .setPositiveButton("Log Out") { _, _ ->
+                lifecycleScope.launch {
+                    userSession.signOut()
+                    returnToLogin()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun returnToLogin() {
+        val intent = Intent(this, ProsumerLoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }

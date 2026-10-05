@@ -2,21 +2,39 @@ package com.pavanuthsara.smartsolarmicrogridmobile.data.session
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import java.io.IOException
+import java.security.GeneralSecurityException
 
-class SessionManager(context: Context) {
+// Device-level session storage: the JWT and its expiry in encrypted preferences, and the
+// server address in plain preferences. The signed-in user's profile is cached in Room
+// (see UserSession). Nothing stored here decides access; the API does.
+class SessionManager private constructor(context: Context) {
+
+    private val appContext = context.applicationContext
 
     private val prefs: SharedPreferences =
-        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        appContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+    private val securePrefs: SharedPreferences = openSecurePrefs()
+
+    init {
+        removeLegacySessionData()
+    }
 
     companion object {
         private const val PREF_NAME = "smart_solar_session"
+        private const val SECURE_PREF_NAME = "secure_session"
         private const val KEY_TOKEN = "auth_token"
-        private const val KEY_USER_ID = "user_id"
-        private const val KEY_FULL_NAME = "full_name"
-        private const val KEY_EMAIL = "email"
-        private const val KEY_ROLE = "role"
-        private const val KEY_STATION_ID = "active_station_id"
+        private const val KEY_TOKEN_EXPIRES_AT = "auth_token_expires_at"
         private const val KEY_BASE_URL = "custom_base_url"
+
+        // Older builds kept the session in plain preferences; it is removed on first run of this version.
+        private val LEGACY_PLAIN_KEYS =
+            listOf("auth_token", "user_id", "full_name", "email", "role", "active_station_id")
+        private const val LEGACY_APP_PREFS = "app_prefs"
+        private const val LEGACY_NIC_KEY = "logged_in_nic"
 
         // Default base URL: 10.0.2.2 is Android emulator localhost alias.
         // For physical device, user/developer can update it.
@@ -32,35 +50,26 @@ class SessionManager(context: Context) {
         }
     }
 
-    fun saveAuthSession(token: String, userId: String, fullName: String, email: String, role: String) {
-        prefs.edit().apply {
-            putString(KEY_TOKEN, token)
-            putString(KEY_USER_ID, userId)
-            putString(KEY_FULL_NAME, fullName)
-            putString(KEY_EMAIL, email)
-            putString(KEY_ROLE, role)
-            apply()
-        }
+    // Stores the token issued by the API together with the expiry read from it.
+    fun saveToken(token: String) {
+        securePrefs.edit()
+            .putString(KEY_TOKEN, token)
+            .putLong(KEY_TOKEN_EXPIRES_AT, JwtExpiry.epochMillis(token) ?: 0L)
+            .apply()
     }
 
-    fun getAuthToken(): String? = prefs.getString(KEY_TOKEN, null)
+    fun getAuthToken(): String? = securePrefs.getString(KEY_TOKEN, null)
 
-    fun getUserId(): String? = prefs.getString(KEY_USER_ID, null)
+    // True when a token is stored and has not reached its expiry. An unreadable expiry is
+    // treated as valid; the API rejects the token if it is not.
+    fun isLoggedIn(): Boolean {
+        if (getAuthToken().isNullOrBlank()) return false
+        val expiresAt = securePrefs.getLong(KEY_TOKEN_EXPIRES_AT, 0L)
+        return expiresAt == 0L || System.currentTimeMillis() < expiresAt
+    }
 
-    fun getFullName(): String? = prefs.getString(KEY_FULL_NAME, null)
-
-    fun getEmail(): String? = prefs.getString(KEY_EMAIL, null)
-
-    fun getRole(): String? = prefs.getString(KEY_ROLE, null)
-
-    fun isGridOperator(): Boolean = getRole().equals("GridOperator", ignoreCase = true)
-
-    fun isLoggedIn(): Boolean = !getAuthToken().isNullOrBlank()
-
-    fun getActiveStationId(): String? = prefs.getString(KEY_STATION_ID, null)
-
-    fun setActiveStationId(stationId: String?) {
-        prefs.edit().putString(KEY_STATION_ID, stationId).apply()
+    fun clearToken() {
+        securePrefs.edit().clear().apply()
     }
 
     fun getBaseUrl(): String = prefs.getString(KEY_BASE_URL, DEFAULT_BASE_URL) ?: DEFAULT_BASE_URL
@@ -70,15 +79,45 @@ class SessionManager(context: Context) {
         prefs.edit().putString(KEY_BASE_URL, formatted).apply()
     }
 
-    fun clearSession() {
-        prefs.edit().apply {
-            remove(KEY_TOKEN)
-            remove(KEY_USER_ID)
-            remove(KEY_FULL_NAME)
-            remove(KEY_EMAIL)
-            remove(KEY_ROLE)
-            remove(KEY_STATION_ID)
-            apply()
+    private fun openSecurePrefs(): SharedPreferences {
+        return try {
+            createSecurePrefs()
+        } catch (e: GeneralSecurityException) {
+            resetSecurePrefs()
+        } catch (e: IOException) {
+            resetSecurePrefs()
         }
+    }
+
+    // The encryption key lives in the Android Keystore. If the stored file can no longer be
+    // decrypted (for example after a restore onto a new device), start again with an empty one.
+    private fun resetSecurePrefs(): SharedPreferences {
+        appContext.deleteSharedPreferences(SECURE_PREF_NAME)
+        return createSecurePrefs()
+    }
+
+    private fun createSecurePrefs(): SharedPreferences {
+        val masterKey = MasterKey.Builder(appContext)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            appContext,
+            SECURE_PREF_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    private fun removeLegacySessionData() {
+        val editor = prefs.edit()
+        LEGACY_PLAIN_KEYS.forEach { editor.remove(it) }
+        editor.apply()
+
+        appContext.getSharedPreferences(LEGACY_APP_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .remove(LEGACY_NIC_KEY)
+            .apply()
     }
 }

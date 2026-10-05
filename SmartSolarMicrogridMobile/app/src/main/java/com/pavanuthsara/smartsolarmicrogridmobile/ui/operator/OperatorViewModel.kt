@@ -5,9 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiClient
-import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.ApiResponse
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiErrors
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.QrVerificationResponseDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.TransferCompleteResponseDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.VerifyQrRequestDto
@@ -17,14 +16,14 @@ sealed class VerifyState {
     object Idle : VerifyState()
     object Loading : VerifyState()
     data class Success(val data: QrVerificationResponseDto) : VerifyState()
-    data class Error(val message: String) : VerifyState()
+    data class Error(val message: String, val sessionExpired: Boolean = false) : VerifyState()
 }
 
 sealed class CompleteState {
     object Idle : CompleteState()
     object Loading : CompleteState()
     data class Success(val data: TransferCompleteResponseDto) : CompleteState()
-    data class Error(val message: String) : CompleteState()
+    data class Error(val message: String, val sessionExpired: Boolean = false) : CompleteState()
 }
 
 class OperatorViewModel(application: Application) : AndroidViewModel(application) {
@@ -53,8 +52,8 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    val errorMessage = parseErrorMessage(errorBody, response.code())
-                    _verifyState.value = VerifyState.Error(errorMessage)
+                    val errorMessage = ApiErrors.message(errorBody, response.code(), "Server error (${response.code()})")
+                    _verifyState.value = VerifyState.Error(errorMessage, sessionExpired = response.code() == 401)
                 }
             } catch (e: Exception) {
                 _verifyState.value = VerifyState.Error(
@@ -81,8 +80,8 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    val errorMessage = parseErrorMessage(errorBody, response.code())
-                    _completeState.value = CompleteState.Error(errorMessage)
+                    val errorMessage = ApiErrors.message(errorBody, response.code(), "Server error (${response.code()})")
+                    _completeState.value = CompleteState.Error(errorMessage, sessionExpired = response.code() == 401)
                 }
             } catch (e: Exception) {
                 _completeState.value = CompleteState.Error(
@@ -95,19 +94,5 @@ class OperatorViewModel(application: Application) : AndroidViewModel(application
     fun resetStates() {
         _verifyState.value = VerifyState.Idle
         _completeState.value = CompleteState.Idle
-    }
-
-    private fun parseErrorMessage(errorBody: String?, statusCode: Int): String {
-        return try {
-            if (!errorBody.isNullOrBlank()) {
-                val parsed = Gson().fromJson(errorBody, ApiResponse::class.java)
-                if (!parsed.message.isNullOrBlank()) {
-                    return parsed.message
-                }
-            }
-            "Server error ($statusCode)"
-        } catch (e: Exception) {
-            "Server error ($statusCode)"
-        }
     }
 }

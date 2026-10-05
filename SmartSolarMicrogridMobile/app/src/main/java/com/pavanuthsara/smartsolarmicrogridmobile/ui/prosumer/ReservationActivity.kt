@@ -1,6 +1,5 @@
 package com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -13,9 +12,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import com.pavanuthsara.smartsolarmicrogridmobile.R
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
+import kotlinx.coroutines.launch
 
 class ReservationActivity : AppCompatActivity() {
 
@@ -49,13 +51,14 @@ class ReservationActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, types)
         spinnerType.adapter = adapter
 
-        val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        loggedInNic = sharedPrefs.getString("logged_in_nic", "") ?: ""
-
-        if (loggedInNic.isEmpty()) {
-            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show()
-            finish()
-            return
+        lifecycleScope.launch {
+            val user = UserSession(this@ReservationActivity).currentUser()
+            if (user == null) {
+                Toast.makeText(this@ReservationActivity, "Please log in first", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                loggedInNic = user.nic
+            }
         }
 
         val reservationId = intent.getLongExtra("RESERVATION_ID", -1)
@@ -105,6 +108,8 @@ class ReservationActivity : AppCompatActivity() {
     }
 
     private fun attemptSave() {
+        if (loggedInNic.isEmpty()) return
+
         val type = spinnerType.selectedItem.toString()
         val date = inputDate.editText?.text?.toString()?.trim().orEmpty()
         val time = inputTime.editText?.text?.toString()?.trim().orEmpty()

@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.journeyapps.barcodescanner.ScanContract
@@ -25,12 +26,15 @@ import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.session.SessionManager
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerLoginActivity
+import kotlinx.coroutines.launch
 
 class OperatorDashboardActivity : AppCompatActivity() {
 
     private val viewModel: OperatorViewModel by viewModels()
     private lateinit var sessionManager: SessionManager
+    private lateinit var userSession: UserSession
 
     private lateinit var textOperatorName: TextView
     private lateinit var textOperatorEmail: TextView
@@ -39,6 +43,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
 
     private var activeVerificationDialog: AlertDialog? = null
     private var currentReservationId: String? = null
+    private var isSigningOut = false
 
     // Register ZXing barcode scanner contract
     private val barcodeLauncher = registerForActivityResult(ScanContract()) { result: ScanIntentResult ->
@@ -66,6 +71,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         setContentView(R.layout.activity_operator_dashboard)
 
         sessionManager = SessionManager.getInstance(this)
+        userSession = UserSession(this)
 
         // Session check: ensure operator is authenticated
         if (!sessionManager.isLoggedIn()) {
@@ -85,10 +91,17 @@ class OperatorDashboardActivity : AppCompatActivity() {
         badgeRole = findViewById(R.id.badgeRole)
         textLastActionStatus = findViewById(R.id.textLastActionStatus)
 
-        // Populate operator information
-        textOperatorName.text = sessionManager.getFullName() ?: "Grid Operator"
-        textOperatorEmail.text = sessionManager.getEmail() ?: "staff@microgrid.com"
-        badgeRole.text = (sessionManager.getRole() ?: "OPERATOR").uppercase()
+        // Populate operator information from the profile cached at sign-in
+        lifecycleScope.launch {
+            val user = userSession.currentUser()
+            if (user == null) {
+                redirectToLogin()
+                return@launch
+            }
+            textOperatorName.text = user.fullName
+            textOperatorEmail.text = user.email
+            badgeRole.text = user.role.uppercase()
+        }
 
         findViewById<MaterialButton>(R.id.buttonLogout).setOnClickListener {
             confirmLogout()
@@ -219,6 +232,11 @@ class OperatorDashboardActivity : AppCompatActivity() {
                     textStationId.text = dto.stationId
                 }
                 is VerifyState.Error -> {
+                    if (state.sessionExpired) {
+                        dialog.dismiss()
+                        endExpiredSession()
+                        return@observe
+                    }
                     containerLoading.visibility = View.GONE
                     containerError.visibility = View.VISIBLE
                     containerVerified.visibility = View.GONE
@@ -250,6 +268,11 @@ class OperatorDashboardActivity : AppCompatActivity() {
                     Toast.makeText(this, "Energy transfer finalized successfully!", Toast.LENGTH_SHORT).show()
                 }
                 is CompleteState.Error -> {
+                    if (state.sessionExpired) {
+                        dialog.dismiss()
+                        endExpiredSession()
+                        return@observe
+                    }
                     buttonConfirmFinalize.isEnabled = true
                     buttonConfirmFinalize.text = getString(R.string.finalize_transfer)
                     Toast.makeText(this, "Completion failed: ${state.message}", Toast.LENGTH_LONG).show()
@@ -267,11 +290,26 @@ class OperatorDashboardActivity : AppCompatActivity() {
             .setTitle("Confirm Logout")
             .setMessage("Are you sure you want to end your operator session?")
             .setPositiveButton("Logout") { _, _ ->
-                sessionManager.clearSession()
-                redirectToLogin()
+                signOutAndReturnToLogin()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    // The API rejected the token (401): clear the local session and ask the operator to sign in again.
+    private fun endExpiredSession() {
+        if (isSigningOut) return
+        Toast.makeText(this, "Your session has expired. Please sign in again.", Toast.LENGTH_LONG).show()
+        signOutAndReturnToLogin()
+    }
+
+    private fun signOutAndReturnToLogin() {
+        if (isSigningOut) return
+        isSigningOut = true
+        lifecycleScope.launch {
+            userSession.signOut()
+            redirectToLogin()
+        }
     }
 
     private fun redirectToLogin() {

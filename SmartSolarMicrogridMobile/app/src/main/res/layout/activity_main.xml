@@ -202,6 +202,20 @@
             app:icon="@drawable/ic_solar_power"
             app:iconGravity="textStart"
             app:iconTint="@color/primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonLogout"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="14dp"
+            android:text="Log Out"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:icon="@drawable/ic_logout"
+            app:iconGravity="textStart"
+            app:iconTint="@color/text" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,5 @@
 package com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -20,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase
 import com.pavanuthsara.smartsolarmicrogridmobile.data.local.Reservation
+import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
 import kotlinx.coroutines.launch
 
 class ReservationListActivity : AppCompatActivity() {
@@ -65,15 +65,11 @@ class ReservationListActivity : AppCompatActivity() {
     }
 
     private fun loadReservations() {
-        val sharedPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val loggedInNic = sharedPrefs.getString("logged_in_nic", "") ?: ""
-
-        if (loggedInNic.isEmpty()) return
-
         val dao = AppDatabase.getDatabase(this).reservationDao()
-        
+
         lifecycleScope.launch {
-            allReservations = dao.getReservationsByNic(loggedInNic)
+            val user = UserSession(this@ReservationListActivity).currentUser() ?: return@launch
+            allReservations = dao.getReservationsByNic(user.nic)
             applyFilters()
         }
     }
