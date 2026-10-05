@@ -14,7 +14,6 @@ import {
     formatKwh,
 } from '../../utils/slotUtils';
 
-// A dot is drawn per position up to this many; bigger slots show numbers only.
 const MAX_BAY_DOTS = 12;
 
 const VIEWS = [
@@ -23,13 +22,6 @@ const VIEWS = [
     { id: 'all', label: 'All' },
 ];
 
-// The slots inside one node, drawn as battery cards.
-//   Backoffice: add, edit and delete slots.
-//   Backoffice and Grid Operator: open or close a slot, and view / decide on its bookings.
-//
-// Props:
-//   node        - the station (battery)
-//   canManage   - true for Backoffice (create / edit / delete)
 export default function SlotManager({ node, canManage }) {
     const [slots, setSlots] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +70,6 @@ export default function SlotManager({ node, canManage }) {
         return [...byDay.entries()];
     }, [visibleSlots]);
 
-    // Totals for the battery header: energy booked across the upcoming slots.
     const upcomingTotals = useMemo(() => {
         const upcoming = slots.filter((s) => new Date(s.endTime).getTime() > now && s.status !== 'Closed');
         return {
@@ -129,15 +120,19 @@ export default function SlotManager({ node, canManage }) {
     };
 
     return (
-        <div className="border-t border-gray-100 pt-4 mt-2">
+        <div className="bg-slate-50/50 rounded-2xl p-4 sm:p-5 border border-slate-200">
             {/* Battery header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div>
-                    <h4 className="text-sm font-semibold text-gray-800">Booking slots</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                        Battery: {formatKwh(node.capacityKwh)} · {node.totalBays} bays
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>🔋 Trading Windows & Energy Slots</span>
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                        Battery: <strong className="text-slate-800">{formatKwh(node.capacityKwh)}</strong> · <strong className="text-slate-800">{node.totalBays}</strong> bays
                         {upcomingTotals.count > 0 && (
-                            <> · Upcoming: {upcomingTotals.count} slot(s), {formatKwh(upcomingTotals.reservedKwh)} of {formatKwh(upcomingTotals.capacityKwh)} booked</>
+                            <span className="text-emerald-700 ml-1">
+                                · Upcoming: {upcomingTotals.count} active, {formatKwh(upcomingTotals.reservedKwh)} booked
+                            </span>
                         )}
                     </p>
                 </div>
@@ -147,14 +142,14 @@ export default function SlotManager({ node, canManage }) {
                         onClick={() => { setNotice(''); setFormSlot(null); }}
                         disabled={!nodeIsActive}
                         title={nodeIsActive ? 'Add a booking slot' : 'Activate the node to add slots'}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        className="bg-[#10B981] hover:bg-[#059669] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-xs transition-all cursor-pointer"
                     >
-                        + Add slot
+                        + Add Time Slot
                     </button>
                 )}
             </div>
 
-            <div className="flex gap-1 mb-3" role="tablist">
+            <div className="flex gap-1.5 mb-4" role="tablist">
                 {VIEWS.map((v) => (
                     <button
                         key={v.id}
@@ -162,32 +157,39 @@ export default function SlotManager({ node, canManage }) {
                         role="tab"
                         aria-selected={view === v.id}
                         onClick={() => setView(v.id)}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${view === v.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            view === v.id 
+                                ? 'bg-slate-900 text-white shadow-xs' 
+                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                        }`}
                     >
                         {v.label}
                     </button>
                 ))}
             </div>
 
-            {error && <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 text-sm text-red-700">{error}</div>}
-            {notice && <div className="bg-green-50 border-l-4 border-green-500 p-3 mb-3 text-sm text-green-800">{notice}</div>}
+            {error && <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 text-xs text-red-700 rounded-r-lg font-medium">{error}</div>}
+            {notice && <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 mb-3 text-xs text-emerald-800 rounded-r-lg font-medium">{notice}</div>}
 
             {isLoading && (
-                <div className="flex justify-center p-4"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div></div>
+                <div className="flex justify-center p-6"><div className="animate-spin rounded-full h-6 w-6 border-2 border-[#F59E0B] border-t-transparent"></div></div>
             )}
 
             {!isLoading && groups.length === 0 && !error && (
-                <p className="text-sm text-gray-500 text-center py-6 bg-gray-50 rounded-md">
+                <p className="text-xs text-slate-500 text-center py-8 bg-white border border-dashed border-slate-200 rounded-xl">
                     {slots.length === 0
-                        ? (canManage ? 'No slots yet. Add one so prosumers can book this node.' : 'No slots have been added to this node yet.')
-                        : `No ${view} slots.`}
+                        ? (canManage ? 'No energy slots registered yet. Add one to open reservations.' : 'No slots configured for this node yet.')
+                        : `No ${view} slots found.`}
                 </p>
             )}
 
             <div className="space-y-4">
                 {groups.map(([dayKey, daySlots]) => (
                     <div key={dayKey}>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{formatDayHeading(dayKey)}</p>
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]"></span>
+                            {formatDayHeading(dayKey)}
+                        </p>
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                             {daySlots.map((slot) => (
                                 <SlotCard
@@ -239,24 +241,26 @@ function SlotCard({
     const isClosed = slot.status === 'Closed';
 
     return (
-        <div className={`border rounded-lg p-4 bg-white ${isClosed ? 'border-gray-200 opacity-80' : 'border-gray-200'}`}>
-            <div className="flex justify-between items-start mb-3">
-                <p className="font-semibold text-gray-900">{formatTimeRange(slot)}</p>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${SLOT_STATUS_STYLES[slot.status] ?? 'bg-gray-100 text-gray-700'}`}>
+        <div className={`border rounded-xl p-4 bg-white transition-all shadow-xs ${
+            isClosed ? 'border-slate-200 opacity-75' : 'border-slate-200 hover:border-slate-300'
+        }`}>
+            <div className="flex justify-between items-start mb-2.5">
+                <p className="font-bold text-xs sm:text-sm text-slate-900 font-mono">{formatTimeRange(slot)}</p>
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${SLOT_STATUS_STYLES[slot.status] ?? 'bg-slate-100 text-slate-700'}`}>
                     {slot.status}
                 </span>
             </div>
 
             {/* Battery bar: how much of the slot's energy is booked */}
-            <div className="flex items-center gap-2 mb-1">
-                <div className="flex-1 h-5 rounded-md border-2 border-gray-300 p-0.5 bg-gray-50" aria-label={`${Math.round(percent)}% of the energy is booked`}>
-                    <div className={`h-full rounded-sm transition-all ${batteryColor(percent, slot.status)}`} style={{ width: `${percent}%` }} />
+            <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex-1 h-4 rounded-md border border-slate-200 p-0.5 bg-slate-100" aria-label={`${Math.round(percent)}% of the energy is booked`}>
+                    <div className={`h-full rounded-xs transition-all ${batteryColor(percent, slot.status)}`} style={{ width: `${percent}%` }} />
                 </div>
-                <div className="w-1 h-2.5 bg-gray-300 rounded-r-sm -ml-1" aria-hidden="true" />
-                <span className="text-xs font-medium text-gray-700 w-10 text-right">{Math.round(percent)}%</span>
+                <div className="w-1 h-2 bg-slate-300 rounded-r-xs -ml-1.5" aria-hidden="true" />
+                <span className="text-[11px] font-bold text-slate-700 w-10 text-right">{Math.round(percent)}%</span>
             </div>
-            <p className="text-xs text-gray-600 mb-3">
-                {formatKwh(slot.reservedKwh)} booked of {formatKwh(slot.capacityKwh)} · {formatKwh(freeKwh)} free
+            <p className="text-[11px] text-slate-500 mb-2.5 font-medium">
+                {formatKwh(slot.reservedKwh)} booked of {formatKwh(slot.capacityKwh)} · <strong className="text-emerald-700">{formatKwh(freeKwh)} available</strong>
             </p>
 
             {/* Bays: one dot per position */}
@@ -264,47 +268,66 @@ function SlotCard({
                 {slot.totalPositions <= MAX_BAY_DOTS && (
                     <div className="flex gap-1" aria-hidden="true">
                         {Array.from({ length: slot.totalPositions }, (_, i) => (
-                            <span key={i} className={`w-3 h-3 rounded-full ${i < slot.reservedPositions ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+                            <span key={i} className={`w-2.5 h-2.5 rounded-full ${i < slot.reservedPositions ? 'bg-[#F59E0B]' : 'bg-slate-200'}`} />
                         ))}
                     </div>
                 )}
-                <span className="text-xs text-gray-600">
+                <span className="text-[11px] text-slate-600 font-medium">
                     {slot.reservedPositions} of {slot.totalPositions} bays booked · {freePositions} free
                 </span>
             </div>
 
             <div className="flex gap-1.5 mb-3 flex-wrap">
                 {slotDirections(slot).map((direction) => (
-                    <span key={direction} className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-xs font-medium">
+                    <span key={direction} className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold">
                         {DIRECTION_SHORT[direction] ?? direction}
                     </span>
                 ))}
             </div>
 
             {isConfirmingDelete ? (
-                <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                    <p className="text-sm text-red-800 mb-2">Delete this slot? This cannot be undone.</p>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                    <p className="text-xs font-semibold text-red-800 mb-2">Delete this slot permanently?</p>
                     <div className="flex gap-2 justify-end">
-                        <button type="button" onClick={onAbortDelete} disabled={isBusy} className="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50">Keep</button>
-                        <button type="button" onClick={onConfirmDelete} disabled={isBusy} className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50">
-                            {isBusy ? 'Deleting…' : 'Delete'}
+                        <button type="button" onClick={onAbortDelete} disabled={isBusy} className="px-2.5 py-1 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50">Keep</button>
+                        <button type="button" onClick={onConfirmDelete} disabled={isBusy} className="px-2.5 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 disabled:opacity-50">
+                            {isBusy ? 'Deleting…' : 'Confirm'}
                         </button>
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-wrap justify-end gap-1">
-                    <button type="button" onClick={onViewBookings} className="text-indigo-600 hover:bg-indigo-50 px-2.5 py-1 rounded text-sm font-medium">
-                        Bookings
+                <div className="flex flex-wrap justify-end gap-1.5 pt-2 border-t border-slate-100">
+                    <button 
+                        type="button" 
+                        onClick={onViewBookings} 
+                        className="text-emerald-700 hover:bg-emerald-50 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                    >
+                        View Bookings
                     </button>
-                    <button type="button" onClick={onToggleOpen} disabled={isBusy} className="text-gray-700 hover:bg-gray-100 px-2.5 py-1 rounded text-sm font-medium disabled:opacity-50">
-                        {isClosed ? 'Open' : 'Close'}
+                    <button 
+                        type="button" 
+                        onClick={onToggleOpen} 
+                        disabled={isBusy} 
+                        className="text-slate-700 hover:bg-slate-100 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                        {isClosed ? 'Open Slot' : 'Close Slot'}
                     </button>
                     {canManage && (
                         <>
-                            <button type="button" onClick={onEdit} disabled={isBusy} className="text-indigo-600 hover:bg-indigo-50 px-2.5 py-1 rounded text-sm font-medium disabled:opacity-50">
+                            <button 
+                                type="button" 
+                                onClick={onEdit} 
+                                disabled={isBusy} 
+                                className="text-amber-700 hover:bg-amber-50 px-2.5 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                            >
                                 Edit
                             </button>
-                            <button type="button" onClick={onRequestDelete} disabled={isBusy} className="text-red-600 hover:bg-red-50 px-2.5 py-1 rounded text-sm font-medium disabled:opacity-50">
+                            <button 
+                                type="button" 
+                                onClick={onRequestDelete} 
+                                disabled={isBusy} 
+                                className="text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer"
+                            >
                                 Delete
                             </button>
                         </>
