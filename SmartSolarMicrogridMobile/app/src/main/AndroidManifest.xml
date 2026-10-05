@@ -52,6 +52,9 @@
         <activity
             android:name=".ui.prosumer.GridMapActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.prosumer.StationSlotsActivity"
+            android:exported="false" />
        <activity
             android:name=".ui.operator.OperatorDashboardActivity"
             android:exported="false" />

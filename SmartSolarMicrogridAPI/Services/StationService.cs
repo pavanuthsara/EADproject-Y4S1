@@ -22,7 +22,6 @@ namespace SmartSolarMicrogridAPI.Services;
 
 public class StationService(
     IMongoRepository<SolarStation> stationRepository,
-    IMongoRepository<EnergyBookingSlot> slotRepository,
     IMongoRepository<EnergyReservation> reservationRepository,
     ISolarStationRepository solarStationQueryRepository) : IStationService
 {
@@ -64,81 +63,6 @@ public class StationService(
             // Two requests with the same code raced past the check above; the unique index caught it.
             throw new BusinessRuleException("A station with this code already exists.");
         }
-    }
-
-    // Replaces a booking slot's schedule while keeping existing reservations valid.
-    public async Task<ScheduleResponseDto> UpdateScheduleAsync(string stationId, string slotId, UpdateScheduleRequestDto dto)
-    {
-        var station = await stationRepository.GetByIdAsync(stationId);
-        if (station == null)
-            throw new NotFoundException($"Station {stationId} not found.");
-
-        if (station.Status != StationStatus.Active.ToString())
-            throw new BusinessRuleException("Schedules cannot be changed for an inactive station.");
-
-        var slot = await slotRepository.GetByIdAsync(slotId);
-        if (slot == null || slot.StationId != stationId)
-            throw new NotFoundException($"Schedule {slotId} not found for station {stationId}.");
-
-        if (dto.Status == SlotStatus.Full)
-            throw new BusinessRuleException("A schedule cannot be set to Full manually; it becomes Full when every position is reserved.");
-
-        DateTime start = ToUtc(dto.StartTime!.Value);
-        DateTime end = ToUtc(dto.EndTime!.Value);
-
-        if (end <= start)
-            throw new BusinessRuleException("The end time must be after the start time.");
-
-        if (dto.TotalPositions > station.TotalBays)
-            throw new BusinessRuleException($"Total positions cannot exceed the station's {station.TotalBays} battery storage slots.");
-
-        var activeReservations = await GetActiveReservationsForSlotAsync(slotId);
-
-        if (dto.TotalPositions < activeReservations.Count)
-            throw new BusinessRuleException($"Total positions cannot be lower than the {activeReservations.Count} active reservation(s) already booked on this schedule.");
-
-        bool timeWindowChanged = start != ToUtc(slot.StartTime) || end != ToUtc(slot.EndTime);
-        if (timeWindowChanged)
-        {
-            if (activeReservations.Count > 0)
-                throw new BusinessRuleException("The time window cannot be changed while the schedule has active reservations.");
-
-            if (start <= DateTime.UtcNow)
-                throw new BusinessRuleException("The start time must be in the future.");
-
-            bool overlaps = await slotRepository.ExistsAsync(s =>
-                s.StationId == stationId && s.Id != slotId && s.StartTime < end && s.EndTime > start);
-            if (overlaps)
-                throw new BusinessRuleException("This time window overlaps another schedule at the same station.");
-        }
-
-        // Each active reservation occupies one position.
-        SlotStatus newStatus = dto.Status == SlotStatus.Closed
-            ? SlotStatus.Closed
-            : activeReservations.Count >= dto.TotalPositions ? SlotStatus.Full : SlotStatus.Available;
-
-        slot.StartTime = start;
-        slot.EndTime = end;
-        slot.TotalPositions = dto.TotalPositions;
-        slot.Status = newStatus.ToString();
-        slot.UpdatedAt = DateTime.UtcNow;
-
-        await slotRepository.UpdateAsync(slot.Id, slot);
-
-        return new ScheduleResponseDto
-        {
-            Id = slot.Id,
-            StationId = slot.StationId,
-            StartTime = slot.StartTime,
-            EndTime = slot.EndTime,
-            TotalPositions = slot.TotalPositions,
-            ReservedPositions = slot.ReservedPositions,
-            CapacityKwh = slot.CapacityKwh,
-            ReservedKwh = slot.ReservedKwh,
-            SupportedDirections = slot.SupportedDirections,
-            Status = slot.Status,
-            UpdatedAt = slot.UpdatedAt
-        };
     }
 
     // Replaces a station's daily operating window ("HH:mm-HH:mm").
@@ -219,26 +143,12 @@ public class StationService(
             r.StationId == stationId && (r.Status == pending || r.Status == approved));
     }
 
-    private Task<IReadOnlyList<EnergyReservation>> GetActiveReservationsForSlotAsync(string slotId)
-    {
-        string pending = ReservationStatus.Pending.ToString();
-        string approved = ReservationStatus.Approved.ToString();
-
-        return reservationRepository.FindAsync(r =>
-            r.SlotId == slotId && (r.Status == pending || r.Status == approved));
-    }
-
     // The DTO already enforces the HH:mm-HH:mm format; this enforces the window itself.
     private static void EnsureValidOperatingWindow(string operatingSchedule)
     {
         if (!OperatingScheduleHelper.HasValidWindow(operatingSchedule))
             throw new BusinessRuleException("The operating schedule must close after it opens on the same day.");
     }
-
-    private static DateTime ToUtc(DateTime value) =>
-        value.Kind == DateTimeKind.Unspecified
-            ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            : value.ToUniversalTime();
 
     public async Task<IEnumerable<StationResponseDto>> GetNearbyStationsAsync(double latitude, double longitude, double maxDistanceMeters = 10000)
     {
@@ -252,25 +162,6 @@ public class StationService(
     {
         var stations = await stationRepository.FindAsync(_ => true);
         return stations.Select(MapStation).ToList();
-    }
-
-    public async Task<IEnumerable<ScheduleResponseDto>> GetStationSlotsAsync(string stationId)
-    {
-        var slots = await slotRepository.FindAsync(s => s.StationId == stationId);
-        return slots.Select(s => new ScheduleResponseDto
-        {
-            Id = s.Id,
-            StationId = s.StationId,
-            StartTime = s.StartTime,
-            EndTime = s.EndTime,
-            TotalPositions = s.TotalPositions,
-            ReservedPositions = s.ReservedPositions,
-            CapacityKwh = s.CapacityKwh,
-            ReservedKwh = s.ReservedKwh,
-            SupportedDirections = s.SupportedDirections,
-            Status = s.Status,
-            UpdatedAt = s.UpdatedAt
-        }).ToList();
     }
 
     private static StationResponseDto MapStation(SolarStation station) => new()

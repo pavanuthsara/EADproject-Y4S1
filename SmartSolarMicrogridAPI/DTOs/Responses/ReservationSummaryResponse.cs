@@ -30,5 +30,11 @@ public class ReservationSummaryResponse
     public DateTime UpdatedAtUtc { get; set; }
     public bool CanModify { get; set; }
     public bool CanCancel { get; set; }
+    public string? RejectionReason { get; set; }
+
+    // The text inside the reservation's QR code. Only sent to the prosumer who owns an Approved
+    // reservation, so a Pending, finished or someone else's booking never exposes it.
+    public string? QrToken { get; set; }
+
     public string Message { get; set; } = string.Empty;
 }

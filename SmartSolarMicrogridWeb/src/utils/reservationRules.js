@@ -210,7 +210,7 @@ export function validateCreateForm(form, slot, now, policy) {
     if (!form.slotId) {
         errors.slotId = 'Select a booking slot.';
     } else {
-        const window = validateSlotStart(slot?.startUtc, now, policy);
+        const window = validateSlotStart(slot?.startTime, now, policy);
         if (!window.valid) errors.slotId = window.message;
     }
     if (!ENERGY_DIRECTIONS.includes(form.direction)) {
@@ -245,7 +245,7 @@ export function validateUpdateForm(form, reservation, slot, now, policy) {
     }
 
     if (slotChanging) {
-        const window = validateSlotStart(slot?.startUtc, now, policy);
+        const window = validateSlotStart(slot?.startTime, now, policy);
         if (!window.valid) errors.slotId = window.message;
     }
 

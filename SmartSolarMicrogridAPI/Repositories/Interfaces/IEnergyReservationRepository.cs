@@ -37,5 +37,9 @@ public interface IEnergyReservationRepository
         DateTime? fromUtc,
         DateTime? toUtc,
         ReservationStatus? status,
-        string? stationId);
+        string? stationId,
+        string? slotId);
+
+    // Returns the Pending and Approved reservations on a slot.
+    Task<IReadOnlyList<EnergyReservation>> GetActiveBySlotAsync(string slotId);
 }

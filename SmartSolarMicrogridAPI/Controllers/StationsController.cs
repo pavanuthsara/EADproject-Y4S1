@@ -19,7 +19,7 @@ namespace SmartSolarMicrogridAPI.Controllers;
 
 [ApiController]
 [Route("api/stations")]
-public class StationsController(IStationService stationService) : ControllerBase
+public class StationsController(IStationService stationService, ISlotService slotService) : ControllerBase
 {
     // Registers a new solar station (GPS location, kWh capacity, battery storage slots).
     [HttpPost]
@@ -33,14 +33,44 @@ public class StationsController(IStationService stationService) : ControllerBase
         return Ok(ApiResponse<StationResponseDto>.Ok(result, "Station registered successfully."));
     }
 
-    // Lets Grid Operators and Backoffice staff update a station's booking schedule.
-    [HttpPut("{stationId}/schedules/{slotId}")]
-    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
-    public async Task<ActionResult<ApiResponse<ScheduleResponseDto>>> UpdateScheduleAsync(
-        string stationId, string slotId, [FromBody] UpdateScheduleRequestDto dto)
+    // Creates a booking slot inside a station (Backoffice).
+    [HttpPost("{stationId}/slots")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<ScheduleResponseDto>>> CreateSlotAsync(
+        string stationId, [FromBody] SlotRequestDto dto)
     {
-        var result = await stationService.UpdateScheduleAsync(stationId, slotId, dto);
-        return Ok(ApiResponse<ScheduleResponseDto>.Ok(result, "Schedule updated successfully."));
+        var result = await slotService.CreateSlotAsync(stationId, dto);
+        return StatusCode(StatusCodes.Status201Created, ApiResponse<ScheduleResponseDto>.Ok(result, SlotMessages.Created));
+    }
+
+    // Replaces the details of a slot (Backoffice).
+    [HttpPut("{stationId}/slots/{slotId}")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<ScheduleResponseDto>>> UpdateSlotAsync(
+        string stationId, string slotId, [FromBody] SlotRequestDto dto)
+    {
+        var result = await slotService.UpdateSlotAsync(stationId, slotId, dto);
+        return Ok(ApiResponse<ScheduleResponseDto>.Ok(result, SlotMessages.Updated));
+    }
+
+    // Deletes a slot that has no active reservations (Backoffice).
+    [HttpDelete("{stationId}/slots/{slotId}")]
+    [Authorize(Roles = RoleConstants.Backoffice)]
+    public async Task<ActionResult<ApiResponse<object>>> DeleteSlotAsync(string stationId, string slotId)
+    {
+        await slotService.DeleteSlotAsync(stationId, slotId);
+        return Ok(ApiResponse<object>.Ok(null, SlotMessages.Deleted));
+    }
+
+    // Opens or closes a slot to new bookings (Backoffice and Grid Operator).
+    [HttpPatch("{stationId}/slots/{slotId}/availability")]
+    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
+    public async Task<ActionResult<ApiResponse<ScheduleResponseDto>>> SetSlotAvailabilityAsync(
+        string stationId, string slotId, [FromBody] SlotAvailabilityRequestDto dto)
+    {
+        bool open = dto.Open!.Value;
+        var result = await slotService.SetAvailabilityAsync(stationId, slotId, open);
+        return Ok(ApiResponse<ScheduleResponseDto>.Ok(result, open ? SlotMessages.Opened : SlotMessages.Closed));
     }
 
     // Lets Grid Operators and Backoffice staff change a station's daily operating hours.
@@ -95,12 +125,13 @@ public class StationsController(IStationService stationService) : ControllerBase
         return Ok(ApiResponse<IEnumerable<StationResponseDto>>.Ok(result, "Stations retrieved."));
     }
 
-    // Retrieves all booking slots for a given station.
+    // Retrieves a station's booking slots: every slot for staff, only bookable slots for prosumers.
     [HttpGet("{stationId}/slots")]
     [Authorize]
     public async Task<ActionResult<ApiResponse<IEnumerable<ScheduleResponseDto>>>> GetStationSlotsAsync(string stationId)
     {
-        var result = await stationService.GetStationSlotsAsync(stationId);
+        bool isStaff = User.IsInRole(RoleConstants.Backoffice) || User.IsInRole(RoleConstants.GridOperator);
+        var result = await slotService.GetSlotsAsync(stationId, isStaff);
         return Ok(ApiResponse<IEnumerable<ScheduleResponseDto>>.Ok(result, "Station slots retrieved."));
     }
 }
