@@ -41,4 +41,13 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
+    <string name="map_loading">Loading solar stations…</string>
+    <string name="map_default_location">Location is off, so stations near Colombo are shown.</string>
+    <string name="no_slots_available">No slots are open for booking at this station right now. Please check again later.</string>
+    <string name="reservation_locked">This reservation can no longer be changed or cancelled.</string>
+    <string name="hint_pending">Waiting for staff approval. You will see the new status here once it is decided.</string>
+    <string name="hint_approved">Approved. Show this QR code to the grid operator at the station when you arrive.</string>
+    <string name="hint_approved_no_qr">Approved. Your QR code could not be loaded yet. Go back and open this booking again.</string>
+    <string name="hint_rejected">This reservation was rejected.</string>
+    <string name="hint_cancelled">This reservation was cancelled and its capacity was released.</string>
 </resources>

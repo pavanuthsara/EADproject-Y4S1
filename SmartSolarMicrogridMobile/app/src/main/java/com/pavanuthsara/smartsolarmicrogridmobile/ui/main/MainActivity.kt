@@ -12,8 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pavanuthsara.smartsolarmicrogridmobile.R
-import com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiResult
+import com.pavanuthsara.smartsolarmicrogridmobile.data.repository.ReservationRepository
 import com.pavanuthsara.smartsolarmicrogridmobile.data.session.UserSession
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.endExpiredSession
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.GridMapActivity
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerLoginActivity
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.prosumer.ProsumerProfileActivity
@@ -77,15 +79,26 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
-            val list = AppDatabase.getDatabase(this@MainActivity).reservationDao().getReservationsByNic(user.nic)
-            val pendingCount = list.count { it.status == "Pending" }
-            val approvedCount = list.count { it.status == "Approved" }
-            val totalCount = list.size
+            val repository = ReservationRepository(this@MainActivity)
 
-            textPendingCount.text = "Pending Reservations: $pendingCount"
-            textApprovedCount.text = "Approved Reservations: $approvedCount"
-            textTotalCount.text = "Total Reservations: $totalCount"
+            // Show what the phone remembers straight away, then replace it with the API's list.
+            showCounts(repository.cached().map { it.status })
+
+            when (val result = repository.refresh()) {
+                is ApiResult.Success -> showCounts(result.data.map { it.status })
+                is ApiResult.Failure -> if (result.sessionExpired) endExpiredSession()
+            }
         }
+    }
+
+    private fun showCounts(statuses: List<String>) {
+        val pendingCount = statuses.count { it == "Pending" }
+        val approvedCount = statuses.count { it == "Approved" }
+        val totalCount = statuses.size
+
+        textPendingCount.text = "Pending Reservations: $pendingCount"
+        textApprovedCount.text = "Approved Reservations: $approvedCount"
+        textTotalCount.text = "Total Reservations: $totalCount"
     }
 
     private fun confirmLogout() {

@@ -11,7 +11,8 @@ import com.pavanuthsara.smartsolarmicrogridmobile.data.local.CachedUser
 class UserSession(context: Context) {
 
     private val sessionManager = SessionManager.getInstance(context)
-    private val cachedUserDao = AppDatabase.getDatabase(context).cachedUserDao()
+    private val database = AppDatabase.getDatabase(context)
+    private val cachedUserDao = database.cachedUserDao()
 
     // Saves a successful login. The profile is cached first so a stored token always has a user.
     suspend fun signIn(auth: AuthResponseDto) {
@@ -35,5 +36,7 @@ class UserSession(context: Context) {
     suspend fun signOut() {
         sessionManager.clearToken()
         cachedUserDao.clear()
+        // The next person to sign in on this phone must not see this user's reservations.
+        database.cachedReservationDao().clear()
     }
 }

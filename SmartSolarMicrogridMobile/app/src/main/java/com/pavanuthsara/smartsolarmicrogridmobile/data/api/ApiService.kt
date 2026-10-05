@@ -2,15 +2,24 @@ package com.pavanuthsara.smartsolarmicrogridmobile.data.api
 
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.ApiResponse
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.AuthResponseDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.CreateReservationRequest
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.LoginRequestDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.QrVerificationResponseDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.RegisterRequestDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.ReservationSummaryDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.SlotDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.StationDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.TransferCompleteResponseDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.UpdateReservationRequest
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.VerifyQrRequestDto
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -24,6 +33,41 @@ interface ApiService {
     suspend fun registerProsumer(
         @Body request: RegisterRequestDto
     ): Response<ApiResponse<AuthResponseDto>>
+
+    // Active stations within radiusMeters of the point, nearest first. Prosumer role only.
+    @GET("api/stations/nearby")
+    suspend fun getNearbyStations(
+        @Query("lat") latitude: Double,
+        @Query("lng") longitude: Double,
+        @Query("radiusMeters") radiusMeters: Double
+    ): Response<ApiResponse<List<StationDto>>>
+
+    // For a prosumer the API returns only slots that can still be booked.
+    @GET("api/stations/{stationId}/slots")
+    suspend fun getStationSlots(
+        @Path("stationId") stationId: String
+    ): Response<ApiResponse<List<SlotDto>>>
+
+    @POST("api/reservations")
+    suspend fun createReservation(
+        @Body request: CreateReservationRequest
+    ): Response<ApiResponse<ReservationSummaryDto>>
+
+    @PUT("api/reservations/{reservationId}")
+    suspend fun updateReservation(
+        @Path("reservationId") reservationId: String,
+        @Body request: UpdateReservationRequest
+    ): Response<ApiResponse<ReservationSummaryDto>>
+
+    // A soft cancel: the reservation stays in the history as Cancelled.
+    @DELETE("api/reservations/{reservationId}")
+    suspend fun cancelReservation(
+        @Path("reservationId") reservationId: String
+    ): Response<ApiResponse<ReservationSummaryDto>>
+
+    // The signed-in prosumer's own reservations, newest first.
+    @GET("api/reservations/history")
+    suspend fun getReservationHistory(): Response<ApiResponse<List<ReservationSummaryDto>>>
 
     @POST("api/transfers/verify")
     suspend fun verifyQr(

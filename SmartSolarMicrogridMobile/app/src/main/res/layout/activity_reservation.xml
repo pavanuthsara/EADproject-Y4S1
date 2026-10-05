@@ -22,76 +22,115 @@
             android:text="Book a Slot"
             android:textColor="?attr/colorOnSurface"
             android:textSize="32sp"
-            android:fontFamily="sans-serif-black"
-            android:layout_marginBottom="32dp" />
+            android:fontFamily="sans-serif-black" />
 
         <TextView
+            android:id="@+id/textStationName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reservation Type"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
 
-        <Spinner
-            android:id="@+id/spinnerType"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
-            android:background="@android:drawable/btn_dropdown" />
+        <ProgressBar
+            android:id="@+id/progressForm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:indeterminateTint="@color/primary" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputDate"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <TextView
+            android:id="@+id/textFormMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Date (YYYY-MM-DD)">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="date"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputTime"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
-            android:hint="Time (HH:MM)">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="time"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonBook"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Confirm Booking"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonCancel"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="16dp"
-            android:text="Cancel Reservation"
-            android:textColor="@android:color/holo_red_dark"
-            app:strokeColor="@android:color/holo_red_dark"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
+            android:textColor="@color/status_error"
+            android:textSize="14sp"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/formContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Time slot"
+                android:textColor="@color/text" />
+
+            <Spinner
+                android:id="@+id/spinnerSlot"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:drawable/btn_dropdown" />
+
+            <TextView
+                android:id="@+id/textSlotInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="20dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Direction"
+                android:textColor="@color/text" />
+
+            <RadioGroup
+                android:id="@+id/radioDirections"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/inputKwh"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:hint="Energy amount (kWh)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editKwh"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonBook"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Confirm Booking"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:text="Cancel Reservation"
+                android:textColor="@android:color/holo_red_dark"
+                app:strokeColor="@android:color/holo_red_dark"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                android:visibility="gone" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

@@ -17,6 +17,54 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Loading / empty / error banner at the top of the map -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMapStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/surface"
+        app:strokeColor="@color/border"
+        app:strokeWidth="1dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp">
+
+            <ProgressBar
+                android:id="@+id/progressMap"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:indeterminateTint="@color/primary" />
+
+            <TextView
+                android:id="@+id/textMapStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonRetry"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Retry"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- Station Details Bottom Card (Hidden by default) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardStationDetails"
@@ -52,7 +100,6 @@
                 android:id="@+id/textStationDetails"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status: Active\nAvailable Capacity: 50kW"
                 android:layout_marginTop="8dp"
                 android:lineSpacingExtra="4dp"
                 android:textColor="@color/text_secondary"
@@ -63,7 +110,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="16dp"
-                android:text="Book This Station"
+                android:text="View Slots and Book"
                 android:textColor="@color/on_primary"
                 android:textSize="15sp"
                 android:textStyle="bold"
