@@ -181,9 +181,11 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Sign In"
+            android:textColor="@color/on_primary"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="12dp" />
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="14dp" />
 
         <!-- Prosumer Registration Redirect -->
         <com.google.android.material.button.MaterialButton
@@ -193,7 +195,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Don't have an account? Register"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="@color/primary" />
 
     </LinearLayout>
 </ScrollView>

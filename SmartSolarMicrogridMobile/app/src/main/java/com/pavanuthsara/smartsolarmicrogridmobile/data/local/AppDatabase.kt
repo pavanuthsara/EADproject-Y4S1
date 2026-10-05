@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [TestUser::class, Prosumer::class, CachedReservation::class, CachedUser::class], version = 7)
+@Database(entities = [TestUser::class, Prosumer::class, CachedReservation::class, CachedUser::class], version = 8)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun testUserDao(): TestUserDao
     abstract fun prosumerDao(): ProsumerDao
@@ -69,6 +69,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // Adds address and solarCapacityKw to cached_user for prosumer profile editing.
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `cached_user` ADD COLUMN `address` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE `cached_user` ADD COLUMN `solarCapacityKw` REAL NOT NULL DEFAULT 0.0")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -76,7 +84,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build()
                 INSTANCE = instance
                 instance
