@@ -18,7 +18,9 @@ export default function ProsumerManagement() {
         name: '',
         email: '',
         phone: '',
-        address: ''
+        address: '',
+        solarCapacityKw: '',
+        password: ''
     });
 
     useEffect(() => {
@@ -50,11 +52,13 @@ export default function ProsumerManagement() {
                 name: prosumer.name,
                 email: prosumer.email,
                 phone: prosumer.phone,
-                address: prosumer.address
+                address: prosumer.address ?? '',
+                solarCapacityKw: prosumer.solarCapacityKw ?? '',
+                password: ''
             });
             setEditingNic(prosumer.nic);
         } else {
-            setFormData({ nic: '', name: '', email: '', phone: '', address: '' });
+            setFormData({ nic: '', name: '', email: '', phone: '', address: '', solarCapacityKw: '', password: '' });
             setEditingNic(null);
         }
         setIsFormOpen(true);
@@ -72,11 +76,15 @@ export default function ProsumerManagement() {
         setIsSubmitting(true);
         setError('');
 
+        // The password is only set when a prosumer is registered; editing never changes it.
+        const { password, ...profile } = formData;
+        const details = { ...profile, solarCapacityKw: Number(formData.solarCapacityKw) };
+
         try {
             if (editingNic) {
-                await updateProsumer(editingNic, formData);
+                await updateProsumer(editingNic, details);
             } else {
-                await createProsumer(formData);
+                await createProsumer({ ...details, password });
             }
             await loadProsumers();
             closeForm();
@@ -92,7 +100,8 @@ export default function ProsumerManagement() {
             await toggleProsumerStatus(nic, newStatus);
             await loadProsumers();
         } catch (err) {
-            alert('Failed to update status.');
+            // The API says why (for example the prosumer is already active), so show its message.
+            alert(err.message || 'Failed to update status.');
         }
     };
 
@@ -271,6 +280,43 @@ export default function ProsumerManagement() {
                                 onChange={handleInputChange}
                                 className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
                                 placeholder="0771234567"
+                            />
+                        </div>
+                        {!editingNic && (
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                    Password
+                                </label>
+                                <input
+                                    required
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    minLength={8}
+                                    maxLength={100}
+                                    autoComplete="new-password"
+                                    className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                    placeholder="At least 8 characters"
+                                />
+                                <p className="text-xs text-slate-500 mt-1">The prosumer signs in with this password. The account is active straight away.</p>
+                            </div>
+                        )}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                                Solar Capacity (kW)
+                            </label>
+                            <input
+                                required
+                                type="number"
+                                name="solarCapacityKw"
+                                value={formData.solarCapacityKw}
+                                onChange={handleInputChange}
+                                min="0"
+                                max="1000"
+                                step="any"
+                                className="w-full border-slate-200 rounded-xl shadow-xs focus:ring-2 focus:ring-[#F59E0B] focus:outline-none border p-2.5 text-sm bg-white"
+                                placeholder="e.g. 5.5"
                             />
                         </div>
                         <div className="md:col-span-2">
