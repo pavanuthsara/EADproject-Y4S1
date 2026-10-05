@@ -42,11 +42,13 @@ object DisplayFormats {
     // Group key that sorts by date: the calendar day in the phone's time zone.
     fun dayKey(iso: String): String = format(iso, "yyyy-MM-dd")
 
+    // Formats an energy amount to at most 2 decimals, e.g. "5 kWh" or "2.75 kWh".
     fun kwh(value: Double): String {
         val rounded = Math.round(value * 100) / 100.0
         return if (rounded % 1.0 == 0.0) "${rounded.toLong()} kWh" else "$rounded kWh"
     }
 
+    // Formats a UTC ISO timestamp in local time; returns the input unchanged if it cannot be parsed.
     private fun format(iso: String, pattern: String): String {
         val date = parseUtc(iso) ?: return iso
         return SimpleDateFormat(pattern, Locale.getDefault()).format(date)

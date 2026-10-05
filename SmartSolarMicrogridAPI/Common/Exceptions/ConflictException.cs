@@ -1,7 +1,7 @@
 /*
  * File: ConflictException.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Signals that a request conflicts with the current state of a resource and
  *              maps to HTTP 409.
  *

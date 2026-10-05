@@ -1,7 +1,7 @@
 /*
  * File: IEntity.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Marks a MongoDB entity that exposes its document id so repositories can
  *              manage it.
  *

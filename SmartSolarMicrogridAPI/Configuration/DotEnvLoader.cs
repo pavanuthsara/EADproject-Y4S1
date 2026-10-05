@@ -1,7 +1,7 @@
   /*
  * File: DotEnvLoader.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Loads the optional .env file into the process environment before the
  *              configuration system is built.
  *

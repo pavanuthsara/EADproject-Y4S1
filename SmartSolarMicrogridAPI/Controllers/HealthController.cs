@@ -1,7 +1,7 @@
 /*
  * File: HealthController.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Exposes the health check endpoint used to verify the API and database
  *              are reachable.
  *

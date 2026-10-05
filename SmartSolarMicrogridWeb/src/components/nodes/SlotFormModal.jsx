@@ -20,6 +20,7 @@ export default function SlotFormModal({ node, slot, onClose, onSaved }) {
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    // Updates a form field, suggesting a one-hour end time when the start is picked.
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => {
@@ -31,6 +32,7 @@ export default function SlotFormModal({ node, slot, onClose, onSaved }) {
         });
     };
 
+    // Adds or removes an energy direction the slot accepts.
     const toggleDirection = (direction) => {
         setForm((prev) => ({
             ...prev,
@@ -40,6 +42,7 @@ export default function SlotFormModal({ node, slot, onClose, onSaved }) {
         }));
     };
 
+    // Validates the times and creates or updates the slot.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');

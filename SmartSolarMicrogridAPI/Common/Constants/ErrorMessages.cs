@@ -1,7 +1,7 @@
 /*
  * File: ErrorMessages.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Holds placeholder error messages returned to API clients.
  *
  * Individual Contribution: Defined the shared error messages returned to API clients.

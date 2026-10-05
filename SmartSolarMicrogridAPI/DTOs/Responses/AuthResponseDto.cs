@@ -1,7 +1,7 @@
 /*
  * File: AuthResponseDto.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: DTO for authentication responses returning JWT token and user details.
  * Individual Contribution: Implemented the authentication response DTO.
  */

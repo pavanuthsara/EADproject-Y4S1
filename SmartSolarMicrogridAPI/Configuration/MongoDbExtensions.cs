@@ -1,7 +1,7 @@
 /*
  * File: MongoDbExtensions.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Extension methods that register MongoDB services and verify the
  *              connection at startup.
  *

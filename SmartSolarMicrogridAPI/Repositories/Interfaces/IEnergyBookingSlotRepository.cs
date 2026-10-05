@@ -1,7 +1,7 @@
 /*
  * File: IEnergyBookingSlotRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Narrow data access contract for booking slots, including the atomic
  *              conditional update of the reserved capacity counters.
  *
@@ -16,11 +16,13 @@ namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 public interface IEnergyBookingSlotRepository
 {
+    // Finds a slot by its ID, or null if it does not exist.
     Task<EnergyBookingSlot?> GetByIdAsync(string id);
 
     // Returns every slot of a station, earliest first.
     Task<IReadOnlyList<EnergyBookingSlot>> FindByStationAsync(string stationId);
 
+    // Inserts a new slot.
     Task<EnergyBookingSlot> CreateAsync(EnergyBookingSlot slot);
 
     // Reports whether another slot at the station overlaps the time window.

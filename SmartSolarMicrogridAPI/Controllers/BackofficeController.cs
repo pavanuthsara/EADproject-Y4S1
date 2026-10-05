@@ -1,7 +1,7 @@
 /*
  * File: BackofficeController.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Endpoints for Backoffice web app administration.
  * Individual Contribution: Implemented endpoints for prosumer creation and activation.
  */

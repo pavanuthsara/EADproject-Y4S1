@@ -1,7 +1,7 @@
 /*
  * File: SolarStationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: MongoDB data access for the solarStations collection.
  *
  * Individual Contribution: Implemented the station repository on top of the generic
@@ -18,6 +18,7 @@ namespace SmartSolarMicrogridAPI.Repositories;
 public class SolarStationRepository(MongoDbContext context)
     : MongoRepository<SolarStation>(context.SolarStations), ISolarStationRepository
 {
+    // Finds active stations within the given distance of a point, nearest first.
     public async Task<IReadOnlyList<SolarStation>> FindNearbyAsync(double longitude, double latitude, double maxDistanceMeters)
     {
         var point = MongoDB.Driver.GeoJsonObjectModel.GeoJson.Point(

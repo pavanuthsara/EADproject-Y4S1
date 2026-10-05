@@ -1,7 +1,7 @@
 /*
  * File: SlotMessages.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Success and rule-specific error messages for the booking slot endpoints.
  *
  * Individual Contribution: Defined the slot messages, one per business rule.

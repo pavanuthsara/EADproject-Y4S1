@@ -1,7 +1,7 @@
 /*
  * File: SlotStatus.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Defines the availability states of an energy booking slot.
  *
  * Individual Contribution: Defined the SlotStatus enum for booking slot availability.

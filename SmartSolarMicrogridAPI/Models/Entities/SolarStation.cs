@@ -1,7 +1,7 @@
 /*
  * File: SolarStation.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Entity mapped to the solarStations collection.
  *
  * Individual Contribution: Implemented the SolarStation entity, including its GeoJSON

@@ -47,6 +47,7 @@ class ReservationActivity : AppCompatActivity() {
     private var slots: List<SlotDto> = emptyList()
     private var preferredDirection: String? = null
 
+    // Sets up the booking form for a new reservation or an edit of an existing one.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -76,10 +77,12 @@ class ReservationActivity : AppCompatActivity() {
         buttonBook.text = if (isEditing) "Save Changes" else "Confirm Booking"
 
         spinnerSlot.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            // Shows the details of the newly selected slot.
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 slots.getOrNull(position)?.let { showSlot(it) }
             }
 
+            // Nothing to do when no slot is selected.
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
@@ -96,6 +99,7 @@ class ReservationActivity : AppCompatActivity() {
         )
     }
 
+    // Updates the screen as the view model's state changes.
     private fun observeViewModel() {
         viewModel.state.observe(this) { state ->
             when (state) {
@@ -144,6 +148,7 @@ class ReservationActivity : AppCompatActivity() {
         }
     }
 
+    // Fills the form with the available slots, or shows a message when there are none.
     private fun showForm(state: FormState.Ready) {
         textStationName.text = state.stationName
         slots = state.slots
@@ -213,12 +218,14 @@ class ReservationActivity : AppCompatActivity() {
         }
     }
 
+    // Returns the chosen direction's value, or null if none is chosen.
     private fun selectedDirection(): String? {
         val checkedId = radioDirections.checkedRadioButtonId
         if (checkedId == -1) return null
         return radioDirections.findViewById<RadioButton>(checkedId)?.tag as? String
     }
 
+    // Checks the form and books a new reservation or saves changes to an existing one.
     private fun submit() {
         val slot = slots.getOrNull(spinnerSlot.selectedItemPosition)
         val direction = selectedDirection()
@@ -235,6 +242,7 @@ class ReservationActivity : AppCompatActivity() {
         }
     }
 
+    // Asks for confirmation before cancelling the reservation.
     private fun confirmCancel() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Cancel Reservation")

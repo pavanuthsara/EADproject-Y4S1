@@ -13,6 +13,7 @@ class StationRepository(context: Context) {
 
     private val appContext = context.applicationContext
 
+    // Stations within the given radius of a point, from the API.
     suspend fun nearbyStations(latitude: Double, longitude: Double, radiusMeters: Double): ApiResult<List<StationDto>> =
         safeApiCall("Could not load the solar stations.") {
             ApiClient.getService(appContext).getNearbyStations(latitude, longitude, radiusMeters)

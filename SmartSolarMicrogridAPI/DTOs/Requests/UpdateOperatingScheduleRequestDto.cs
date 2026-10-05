@@ -1,7 +1,7 @@
 /*
  * File: UpdateOperatingScheduleRequestDto.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: DTO for changing a solar station's daily operating hours.
  * Individual Contribution: Implemented DTO for operating schedule updates.
  */

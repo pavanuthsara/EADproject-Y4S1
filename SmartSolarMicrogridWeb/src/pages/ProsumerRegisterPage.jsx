@@ -5,6 +5,7 @@ import PendingApprovalView from "../components/prosumer/PendingApprovalView";
 import StatusCheckModal from "../components/prosumer/StatusCheckModal";
 import QRCodeWidget from "../components/common/QRCodeWidget";
 
+// Standalone prosumer registration page.
 export default function ProsumerRegisterPage() {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [registeredProsumer, setRegisteredProsumer] = useState(() => {
@@ -12,12 +13,14 @@ export default function ProsumerRegisterPage() {
         return cached ? JSON.parse(cached) : null;
     });
 
+    // Remembers the newly registered prosumer and scrolls to the top.
     const handleSuccess = (data) => {
         setRegisteredProsumer(data);
         localStorage.setItem("solarix_prosumer_pending", JSON.stringify(data));
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    // Forgets the remembered registration so the form shows again.
     const handleReset = () => {
         setRegisteredProsumer(null);
         localStorage.removeItem("solarix_prosumer_pending");
@@ -152,7 +155,7 @@ export default function ProsumerRegisterPage() {
 
             {/* Simple Footer */}
             <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-                <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 45.</p>
+                <p>© {new Date().getFullYear()} Solarix Microgrid Energy Operations. Group 42.</p>
             </footer>
 
             {/* Status Check Modal */}

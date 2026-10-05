@@ -10,6 +10,7 @@ import ProsumerRegisterForm from "../components/prosumer/ProsumerRegisterForm";
 import PendingApprovalView from "../components/prosumer/PendingApprovalView";
 import StatusCheckModal from "../components/prosumer/StatusCheckModal";
 
+// Public landing page with registration and status check.
 export default function HomePage() {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [registeredProsumer, setRegisteredProsumer] = useState(() => {
@@ -17,6 +18,7 @@ export default function HomePage() {
         return cached ? JSON.parse(cached) : null;
     });
 
+    // Remembers the newly registered prosumer and scrolls to their status card.
     const handleRegistrationSuccess = (prosumerData) => {
         setRegisteredProsumer(prosumerData);
         localStorage.setItem("solarix_prosumer_pending", JSON.stringify(prosumerData));
@@ -25,6 +27,7 @@ export default function HomePage() {
         if (section) section.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Forgets the remembered registration so the form shows again.
     const handleResetRegistration = () => {
         setRegisteredProsumer(null);
         localStorage.removeItem("solarix_prosumer_pending");

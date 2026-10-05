@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textTotalNumber: TextView
     private lateinit var bottomNavigation: BottomNavigationView
 
+    // Sets up the prosumer home screen.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -96,7 +97,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateDashboard() {
+    // Refreshes the reservation counts whenever the screen comes back into view.
+    override fun onResume() {
+        super.onResume()
+        updateDashboardStats()
+    }
+
+    // Loads the signed-in prosumer's reservations and shows the counts.
+    private fun updateDashboardStats() {
         lifecycleScope.launch {
             val user = userSession.currentUser()
             if (user == null) {
@@ -119,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Shows the pending, approved and total reservation counts.
     private fun showCounts(statuses: List<String>) {
         val pendingCount = statuses.count { it == "Pending" }
         val approvedCount = statuses.count { it == "Approved" }
@@ -129,6 +138,7 @@ class MainActivity : AppCompatActivity() {
         textTotalNumber.text = totalCount.toString()
     }
 
+    // Asks for confirmation, then signs out and returns to the login screen.
     private fun confirmLogout() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Sign Out")
@@ -143,6 +153,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // Opens the login screen and clears the back stack.
     private fun returnToLogin() {
         val intent = Intent(this, ProsumerLoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

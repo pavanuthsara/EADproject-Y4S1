@@ -18,6 +18,7 @@ object ApiClient {
     @Volatile
     private var currentBaseUrl: String? = null
 
+    // Returns the Retrofit service, rebuilding it when the saved base URL has changed.
     fun getService(context: Context): ApiService {
         val sessionManager = SessionManager.getInstance(context)
         val baseUrl = sessionManager.getBaseUrl()
@@ -80,6 +81,7 @@ object ApiClient {
         }
     }
 
+    // Drops the cached service so the next call builds a fresh one.
     fun resetClient() {
         synchronized(this) {
             apiService = null

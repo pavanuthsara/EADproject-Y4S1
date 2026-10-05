@@ -35,6 +35,7 @@ function BrandMark({ className = "h-11 w-11" }) {
     );
 }
 
+// Envelope icon for the email field.
 function MailIcon({ className = "h-5 w-5" }) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -44,6 +45,7 @@ function MailIcon({ className = "h-5 w-5" }) {
     );
 }
 
+// Padlock icon for the password field.
 function LockIcon({ className = "h-5 w-5" }) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -53,6 +55,7 @@ function LockIcon({ className = "h-5 w-5" }) {
     );
 }
 
+// Eye icon for the show/hide password toggle.
 function EyeIcon({ open, className = "h-5 w-5" }) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -63,6 +66,7 @@ function EyeIcon({ open, className = "h-5 w-5" }) {
     );
 }
 
+// Warning icon for error messages.
 function AlertIcon({ className = "h-5 w-5" }) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -73,6 +77,7 @@ function AlertIcon({ className = "h-5 w-5" }) {
     );
 }
 
+// Tick icon.
 function CheckIcon({ className = "h-4 w-4" }) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className={className} aria-hidden="true">
@@ -81,6 +86,7 @@ function CheckIcon({ className = "h-4 w-4" }) {
     );
 }
 
+// Labelled input wrapper with an optional hint, icon and error message.
 function Field({ id, label, hint, icon, error, children }) {
     return (
         <div className="space-y-2">
@@ -106,6 +112,7 @@ function Field({ id, label, hint, icon, error, children }) {
     );
 }
 
+// Staff login page.
 function LoginPage() {
     const [email, setEmail] = useState(() => localStorage.getItem(REMEMBERED_EMAIL_KEY) ?? "");
     const [password, setPassword] = useState("");
@@ -115,6 +122,7 @@ function LoginPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
+    // Returns the first problem with the entered email or password, or an empty string.
     function validate() {
         if (!email.trim()) return "Enter the email address registered with the microgrid.";
         if (!EMAIL_PATTERN.test(email.trim())) return "That email address does not look valid.";
@@ -122,6 +130,7 @@ function LoginPage() {
         return "";
     }
 
+    // Validates the form, signs in and opens the dashboard for the user's role.
     async function handleSubmit(e) {
         e.preventDefault(); // stop the page reload
 

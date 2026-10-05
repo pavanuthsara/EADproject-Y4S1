@@ -1,7 +1,7 @@
 /*
  * File: ReservationSummaryResponse.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Summary of an energy reservation returned by the create, update and cancel
  *              endpoints. All times are UTC.
  *

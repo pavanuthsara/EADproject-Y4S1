@@ -1,7 +1,7 @@
 /*
  * File: CreateProsumerRequestDto.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: DTO for backoffice to create a prosumer.
  * Individual Contribution: Implemented DTO for prosumer creation by backoffice.
  */

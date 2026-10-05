@@ -59,6 +59,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
             onLocationDecided()
         }
 
+    // Sets up the station map screen and its status card.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_grid_map)
@@ -91,6 +92,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // Wires up marker and map taps once the map is ready.
     override fun onResume() {
         super.onResume()
         bottomNavigation.selectedItemId = R.id.nav_stations
@@ -129,6 +131,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         loadStations()
     }
 
+    // Loads stations near the user (or a default location) and shows them on the map.
     private fun loadStations() {
         showStatus(getString(R.string.map_loading), loading = true, canRetry = false)
         val origin = userLocation ?: DEFAULT_LOCATION
@@ -146,6 +149,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // Shows the stations as map markers, or a message when none were found.
     private fun showStations(stations: List<StationDto>, origin: LatLng) {
         val googleMap = map ?: return
         googleMap.clear()
@@ -189,6 +193,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, CAMERA_PADDING_PX))
     }
 
+    // Shows the details card for the tapped station.
     private fun showStation(station: StationDto) {
         selectedStation = station
         textStationName.text = station.stationName
@@ -204,6 +209,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         cardStationDetails.visibility = View.VISIBLE
     }
 
+    // Shows a status message, with an optional spinner and retry button.
     private fun showStatus(message: String, loading: Boolean, canRetry: Boolean) {
         textMapStatus.text = message
         progressMap.visibility = if (loading) View.VISIBLE else View.GONE
@@ -211,6 +217,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         cardMapStatus.visibility = View.VISIBLE
     }
 
+    // True when fine or coarse location permission has been granted.
     private fun hasLocationPermission(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED

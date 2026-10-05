@@ -1,7 +1,7 @@
 /*
  * File: AuthService.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: Handles user registration and login.
  * Individual Contribution: Implemented register and login logic.
  */
@@ -24,6 +24,7 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
+    // Receives the user repository, password hasher and token generator.
     public AuthService(
         IMongoRepository<User> userRepository,
         IPasswordHasher passwordHasher,

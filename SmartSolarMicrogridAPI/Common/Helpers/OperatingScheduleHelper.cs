@@ -1,7 +1,7 @@
 /*
  * File: OperatingScheduleHelper.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Format and window checks for a station's daily operating schedule ("HH:mm-HH:mm").
  * Individual Contribution: Implemented the shared operating schedule format and window validation.
  */

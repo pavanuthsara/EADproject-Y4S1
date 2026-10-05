@@ -1,7 +1,7 @@
 /*
  * File: IEnergyReservationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Narrow data access contract for energy reservations, including the
  *              version-checked replace used for optimistic concurrency.
  *
@@ -16,8 +16,10 @@ namespace SmartSolarMicrogridAPI.Repositories.Interfaces;
 
 public interface IEnergyReservationRepository
 {
+    // Finds a reservation by its ID, or null if it does not exist.
     Task<EnergyReservation?> GetByIdAsync(string id);
 
+    // Inserts a new reservation.
     Task<EnergyReservation> CreateAsync(EnergyReservation reservation);
 
     // Replaces the reservation only if its stored version still matches; returns whether it was saved.
@@ -30,6 +32,7 @@ public interface IEnergyReservationRepository
         IReadOnlyCollection<ReservationStatus> statuses,
         string? excludeReservationId);
 
+    // Counts Approved, Pending and future Approved reservations for the dashboard.
     Task<(long Active, long Pending, long ApprovedFuture)> GetDashboardAnalyticsAsync(DateTime nowUtc);
 
     Task<IReadOnlyList<EnergyReservation>> GetBookingHistoryAsync(

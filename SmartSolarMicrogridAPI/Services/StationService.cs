@@ -1,7 +1,7 @@
 /*
  * File: StationService.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Implementation of solar station management business logic.
  * Individual Contribution: Implemented station registration, schedule updates and
  *                          deactivation guarded by active energy reservations.
@@ -158,12 +158,14 @@ public class StationService(
         return stations.Select(MapStation).ToList();
     }
 
+    // Returns every station, active or not.
     public async Task<IEnumerable<StationResponseDto>> GetAllStationsAsync()
     {
         var stations = await stationRepository.FindAsync(_ => true);
         return stations.Select(MapStation).ToList();
     }
 
+    // Maps a station entity to the response DTO returned by the API.
     private static StationResponseDto MapStation(SolarStation station) => new()
     {
         Id = station.Id,

@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 
+// Operating schedule picker. Emits the "HH:mm-HH:mm" (24h) string the hub
+// registration payload expects, so no manual formatting is left to the user.
+
+// Left-pads a number to two digits ("6" -> "06").
 const pad = (n) => String(n).padStart(2, '0');
 const HOURS = Array.from({ length: 24 }, (_, i) => pad(i));
 const MINUTES = ['00', '15', '30', '45'];
@@ -11,22 +15,26 @@ const PRESETS = [
     { label: 'Extended', value: '05:00-20:00' },
 ];
 
+// Splits "HH:mm-HH:mm" into { start, end }; returns null if the format is invalid.
 function parseTimeRange(value) {
     const match = /^([01]\d|2[0-3]):([0-5]\d)-([01]\d|2[0-3]):([0-5]\d)$/.exec(value ?? '');
     return match ? { start: `${match[1]}:${match[2]}`, end: `${match[3]}:${match[4]}` } : null;
 }
 
+// Converts "HH:mm" to minutes since midnight.
 const toMinutes = (time) => {
     const [h, m] = time.split(':').map(Number);
     return h * 60 + m;
 };
 
+// Formats a minute count as "12h" or "7h 30m".
 function formatDuration(totalMinutes) {
     const h = Math.floor(totalMinutes / 60);
     const m = totalMinutes % 60;
     return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
+// Hour and minute dropdowns for one end of the time range.
 function TimeSelect({ label, time, onChange, hourRef }) {
     const [hour, minute] = time.split(':');
     const minuteOptions = MINUTES.includes(minute) ? MINUTES : [...MINUTES, minute].sort();
@@ -48,6 +56,7 @@ function TimeSelect({ label, time, onChange, hourRef }) {
     );
 }
 
+// Start/end time picker with presets; reports the range as "HH:mm-HH:mm" via onChange.
 export default function TimeRangePicker({ value, onChange }) {
     const { start, end } = parseTimeRange(value) ?? DEFAULT_RANGE;
     const duration = toMinutes(end) - toMinutes(start);

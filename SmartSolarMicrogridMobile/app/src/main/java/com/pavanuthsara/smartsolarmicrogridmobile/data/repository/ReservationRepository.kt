@@ -25,6 +25,7 @@ class ReservationRepository(context: Context) {
         return dao.getByNic(user.nic)
     }
 
+    // Returns the remembered copy of a reservation, or null if there is none.
     suspend fun cachedById(reservationId: String): CachedReservation? = dao.getById(reservationId)
 
     // Downloads the whole history and replaces what was remembered.
@@ -44,16 +45,19 @@ class ReservationRepository(context: Context) {
         }
     }
 
+    // Creates a reservation and remembers the result.
     suspend fun create(request: CreateReservationRequest): ApiResult<ReservationSummaryDto> =
         remember(safeApiCall("Could not create the reservation.") {
             ApiClient.getService(appContext).createReservation(request)
         })
 
+    // Updates a reservation and remembers the result.
     suspend fun update(reservationId: String, request: UpdateReservationRequest): ApiResult<ReservationSummaryDto> =
         remember(safeApiCall("Could not update the reservation.") {
             ApiClient.getService(appContext).updateReservation(reservationId, request)
         })
 
+    // Cancels a reservation and remembers the result.
     suspend fun cancel(reservationId: String): ApiResult<ReservationSummaryDto> =
         remember(safeApiCall("Could not cancel the reservation.") {
             ApiClient.getService(appContext).cancelReservation(reservationId)

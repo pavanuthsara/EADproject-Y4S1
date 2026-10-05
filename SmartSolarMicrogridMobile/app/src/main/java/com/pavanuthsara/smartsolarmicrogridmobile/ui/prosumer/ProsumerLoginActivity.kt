@@ -49,6 +49,7 @@ class ProsumerLoginActivity : AppCompatActivity() {
         const val EXTRA_REGISTERED_NIC = "registered_nic"
     }
 
+    // Sets up the login screen for prosumers and operators.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -142,6 +143,7 @@ class ProsumerLoginActivity : AppCompatActivity() {
         finish()
     }
 
+    // Switches the form between prosumer (NIC) and operator (email) sign-in.
     private fun setupRoleToggle() {
         toggleRoleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
@@ -198,6 +200,7 @@ class ProsumerLoginActivity : AppCompatActivity() {
         }
     }
 
+    // Lets the user change the API base URL.
     private fun showServerSettingsDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_server_settings, null)
         val editBaseUrl = dialogView.findViewById<TextInputEditText>(R.id.editBaseUrl)

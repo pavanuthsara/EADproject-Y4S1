@@ -5,6 +5,7 @@ import ReservationManagement from '../components/reservations/ReservationManagem
 import { getNodes } from '../services/nodeService';
 import { getReservations } from '../services/reservationService';
 
+// Grid Operator dashboard: hubs and reservations.
 function OperatorDashboard() {
     const { activeTab = 'overview', handleSelectTab } = useOutletContext() || {};
 

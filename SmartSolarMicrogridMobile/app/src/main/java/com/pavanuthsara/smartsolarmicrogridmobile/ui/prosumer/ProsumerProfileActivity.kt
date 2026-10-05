@@ -53,6 +53,7 @@ class ProsumerProfileActivity : AppCompatActivity() {
     private lateinit var progressProfile: ProgressBar
     private lateinit var bottomNavigation: BottomNavigationView
 
+    // Sets up the prosumer profile screen.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

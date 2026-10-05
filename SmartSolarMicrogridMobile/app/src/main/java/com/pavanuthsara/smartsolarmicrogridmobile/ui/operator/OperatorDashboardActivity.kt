@@ -65,6 +65,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
             }
         }
 
+    // Sets up the operator dashboard; returns to login if the session is missing or expired.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -112,6 +113,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         }
     }
 
+    // Starts the QR scanner, asking for camera permission first if needed.
     private fun checkCameraPermissionAndScan() {
         when {
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
@@ -133,6 +135,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         }
     }
 
+    // Opens the camera to scan a prosumer reservation QR code.
     private fun launchScanner() {
         val options = ScanOptions().apply {
             setDesiredBarcodeFormats(ScanOptions.QR_CODE)
@@ -145,12 +148,14 @@ class OperatorDashboardActivity : AppCompatActivity() {
         barcodeLauncher.launch(options)
     }
 
+    // Starts verifying a scanned QR token and shows the verification dialog.
     private fun handleScannedQrToken(qrToken: String) {
         viewModel.resetStates()
         showVerificationDialog(qrToken)
         viewModel.verifyQrToken(qrToken)
     }
 
+    // Shows the dialog that follows QR verification and transfer completion.
     private fun showVerificationDialog(qrToken: String) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_verify_transfer, null)
 
@@ -285,6 +290,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         }
     }
 
+    // Asks for confirmation before signing the operator out.
     private fun confirmLogout() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Confirm Logout")
@@ -303,6 +309,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         signOutAndReturnToLogin()
     }
 
+    // Signs out once (ignoring repeat taps) and returns to the login screen.
     private fun signOutAndReturnToLogin() {
         if (isSigningOut) return
         isSigningOut = true
@@ -312,6 +319,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         }
     }
 
+    // Opens the login screen and clears the back stack.
     private fun redirectToLogin() {
         val intent = Intent(this, ProsumerLoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -319,6 +327,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         finish()
     }
 
+    // Closes any open verification dialog so it does not leak.
     override fun onDestroy() {
         super.onDestroy()
         activeVerificationDialog?.dismiss()

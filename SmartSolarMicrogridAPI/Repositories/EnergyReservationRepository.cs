@@ -1,7 +1,7 @@
 /*
  * File: EnergyReservationRepository.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: MongoDB data access for the energyReservations collection, including a
  *              version-checked replace so concurrent changes cannot both be saved.
  *
@@ -66,6 +66,7 @@ public class EnergyReservationRepository(MongoDbContext context)
         return await Collection.Find(filter).Limit(1).AnyAsync();
     }
 
+    // Counts Approved, Pending and future Approved reservations for the dashboard.
     public async Task<(long Active, long Pending, long ApprovedFuture)> GetDashboardAnalyticsAsync(DateTime nowUtc)
     {
         var pendingFilter = Builders<EnergyReservation>.Filter.Eq(r => r.Status, ReservationStatus.Pending.ToString());
@@ -80,6 +81,7 @@ public class EnergyReservationRepository(MongoDbContext context)
         return (activeCount, pendingCount, approvedFutureCount);
     }
 
+    // Finds reservations matching the optional NIC, date range, status, station and slot filters.
     public async Task<IReadOnlyList<EnergyReservation>> GetBookingHistoryAsync(
         string? prosumerNic,
         DateTime? fromUtc,

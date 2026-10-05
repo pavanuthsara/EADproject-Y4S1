@@ -19,6 +19,7 @@ const EMPTY_FORM = {
     operatingSchedule: DEFAULT_SCHEDULE
 };
 
+// Shows a coordinate to 5 decimal places, or a dash when it is missing.
 const formatCoordinate = (value) => (typeof value === 'number' ? value.toFixed(5) : '—');
 
 export default function NodeManagement() {
@@ -46,6 +47,7 @@ export default function NodeManagement() {
         loadNodes();
     }, []);
 
+    // Loads all hubs from the API.
     const loadNodes = async () => {
         setIsLoading(true);
         try {
@@ -59,11 +61,13 @@ export default function NodeManagement() {
         }
     };
 
+    // Updates a create-form field as the user types.
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Stores the coordinates picked on the map in the create form.
     const handleLocationChange = ({ latitude, longitude }) => {
         setFormData(prev => ({ ...prev, latitude, longitude }));
     };
@@ -76,6 +80,7 @@ export default function NodeManagement() {
         }));
     };
 
+    // Registers a new hub from the form and reloads the list.
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -102,6 +107,7 @@ export default function NodeManagement() {
         }
     };
 
+    // Deactivates a hub and reloads the list.
     const handleDeactivate = async (id) => {
         setError('');
         try {
@@ -112,6 +118,7 @@ export default function NodeManagement() {
         }
     };
 
+    // Activates a hub and reloads the list.
     const handleActivate = async (id) => {
         setError('');
         try {
@@ -122,6 +129,7 @@ export default function NodeManagement() {
         }
     };
 
+    // Shows or hides a hub's booking slots panel.
     const toggleSlots = (id) => {
         setExpandedNodeIds(prev => {
             const next = new Set(prev);
@@ -130,11 +138,13 @@ export default function NodeManagement() {
         });
     };
 
+    // Opens the schedule editor pre-filled with the hub's current hours.
     const startEditingSchedule = (node) => {
         setEditingScheduleId(node.id);
         setNewSchedule(node.operatingSchedule || DEFAULT_SCHEDULE);
     };
 
+    // Saves the edited operating schedule for a hub and reloads the list.
     const handleSaveSchedule = async (e, id) => {
         e.preventDefault();
         setError('');

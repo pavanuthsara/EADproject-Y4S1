@@ -1,7 +1,7 @@
 /*
  * File: UpdateProfileRequestDto.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: DTO for updating a prosumer profile.
  * Individual Contribution: Implemented DTO for profile updates.
  */

@@ -6,6 +6,7 @@ import BackofficeDashboard from "./pages/BackofficeDashboard";
 import OperatorDashboard from "./pages/OperatorDashboard";
 import ProtectedLayout from "./components/ProtectedLayout";
 
+// Defines the public pages and the role-protected dashboards.
 function App() {
   return (
     <Routes>

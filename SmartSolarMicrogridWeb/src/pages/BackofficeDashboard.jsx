@@ -7,6 +7,7 @@ import StaffManagement from '../components/staff/StaffManagement';
 import { getDashboardAnalytics, getProsumers } from '../services/prosumerService';
 import { getNodes } from '../services/nodeService';
 
+// Backoffice dashboard: prosumers, staff, hubs and reservations.
 function BackofficeDashboard() {
     const { activeTab = 'overview', handleSelectTab } = useOutletContext() || {};
 

@@ -1,7 +1,7 @@
 /*
  * File: DependencyInjectionExtensions.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Extension methods that register business services with the DI container.
  *
  * Individual Contribution: Implemented the dependency injection registration extension

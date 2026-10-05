@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { checkProsumerStatus } from "../../services/authService";
 import QRCodeWidget from "../common/QRCodeWidget";
 
+// Modal for checking a registration status by NIC or email.
 export default function StatusCheckModal({ isOpen, onClose }) {
     const [identifier, setIdentifier] = useState("");
     const [statusData, setStatusData] = useState(null);
@@ -10,6 +11,7 @@ export default function StatusCheckModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
+    // Looks up the account status for the entered NIC or email.
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!identifier.trim()) {
@@ -31,6 +33,7 @@ export default function StatusCheckModal({ isOpen, onClose }) {
         }
     };
 
+    // Clears the result so another lookup can be made.
     const handleReset = () => {
         setStatusData(null);
         setIdentifier("");

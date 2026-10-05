@@ -25,6 +25,7 @@ import retrofit2.http.Query
 
 interface ApiService {
 
+    // Signs in with NIC or email and password; returns a JWT.
     @POST("api/auth/login")
     suspend fun login(
         @Body request: LoginRequestDto
@@ -64,11 +65,13 @@ interface ApiService {
         @Path("stationId") stationId: String
     ): Response<ApiResponse<List<SlotDto>>>
 
+    // Books a slot for the signed-in prosumer.
     @POST("api/reservations")
     suspend fun createReservation(
         @Body request: CreateReservationRequest
     ): Response<ApiResponse<ReservationSummaryDto>>
 
+    // Changes a reservation's slot, direction or energy amount.
     @PUT("api/reservations/{reservationId}")
     suspend fun updateReservation(
         @Path("reservationId") reservationId: String,
@@ -85,11 +88,13 @@ interface ApiService {
     @GET("api/reservations/history")
     suspend fun getReservationHistory(): Response<ApiResponse<List<ReservationSummaryDto>>>
 
+    // Checks a scanned reservation QR token (Grid Operator).
     @POST("api/transfers/verify")
     suspend fun verifyQr(
         @Body request: VerifyQrRequestDto
     ): Response<ApiResponse<QrVerificationResponseDto>>
 
+    // Marks the energy transfer for a reservation as completed (Grid Operator).
     @POST("api/transfers/{reservationId}/complete")
     suspend fun completeTransfer(
         @Path("reservationId") reservationId: String

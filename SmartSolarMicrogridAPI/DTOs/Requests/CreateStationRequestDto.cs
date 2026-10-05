@@ -1,7 +1,7 @@
 /*
  * File: CreateStationRequestDto.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: DTO for registering a new solar station.
  * Individual Contribution: Implemented DTO for solar station registration.
  */

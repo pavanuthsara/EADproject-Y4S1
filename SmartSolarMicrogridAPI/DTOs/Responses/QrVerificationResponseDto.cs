@@ -1,7 +1,7 @@
 /*
  * File: QrVerificationResponseDto.cs
  * Author: Damith Chandrathilaka (IT23168336)
- * Group: 45
+ * Group: 42
  * Description: DTO containing reservation details returned upon successful QR code verification.
  * Individual Contribution: Implemented QR verification response data transfer object.
  */

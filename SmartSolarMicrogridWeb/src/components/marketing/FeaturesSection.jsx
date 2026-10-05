@@ -1,5 +1,6 @@
 import React from "react";
 
+// Landing page section listing the platform features.
 export default function FeaturesSection() {
     const features = [
         {

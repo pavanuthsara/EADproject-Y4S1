@@ -1,7 +1,7 @@
 /*
  * File: CreateReservationRequest.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Request body for creating an energy reservation. Carries only what the
  *              prosumer chooses; the prosumer identity, status and timestamps are set by
  *              the server.

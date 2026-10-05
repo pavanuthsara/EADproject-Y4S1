@@ -1,7 +1,7 @@
 /*
  * File: UserService.cs
  * Author: Pavan Uthsara (IT23158986)
- * Group: 45
+ * Group: 42
  * Description: Implementation of user management business logic.
  * Individual Contribution: Implemented staff user creation logic including validation and database insertion.
  */
@@ -22,6 +22,7 @@ public class UserService(
     IMongoRepository<User> userRepository,
     IPasswordHasher passwordHasher) : IUserService
 {
+    // Returns every prosumer account.
     public async Task<IEnumerable<UserResponseDto>> GetAllProsumersAsync()
     {
         var prosumers = await userRepository.FindAsync(u => u.Role == RoleConstants.Prosumer);
@@ -40,6 +41,7 @@ public class UserService(
         });
     }
 
+    // Creates a Backoffice or Grid Operator account; the NIC and email must be unused.
     public async Task<UserResponseDto> CreateStaffAsync(CreateStaffRequestDto dto)
     {
         if (dto.Role != UserRole.Backoffice && dto.Role != UserRole.GridOperator)
@@ -78,6 +80,7 @@ public class UserService(
         };
     }
 
+    // Returns every Backoffice and Grid Operator account.
     public async Task<IEnumerable<UserResponseDto>> GetAllStaffAsync()
     {
         var staffRoles = new[] { RoleConstants.Backoffice, RoleConstants.GridOperator };
@@ -96,6 +99,7 @@ public class UserService(
         });
     }
 
+    // Updates a staff member's profile details; refuses non-staff users.
     public async Task<UserResponseDto> UpdateStaffProfileAsync(string id, UpdateStaffRequestDto dto)
     {
         var users = await userRepository.FindAsync(u => u.Id == id);
@@ -137,6 +141,7 @@ public class UserService(
         };
     }
 
+    // Activates or deactivates a staff account; refuses non-staff users.
     public async Task<UserResponseDto> UpdateStaffStatusAsync(string id, string status, string updatedBy)
     {
         var users = await userRepository.FindAsync(u => u.Id == id);
@@ -177,6 +182,7 @@ public class UserService(
         };
     }
 
+    // Creates a prosumer account on behalf of the prosumer; the NIC and email must be unused.
     public async Task<UserResponseDto> CreateProsumerByBackofficeAsync(CreateProsumerRequestDto dto)
     {
         bool userExists = await userRepository.ExistsAsync(u => u.Nic == dto.Nic || u.Email == dto.Email);
@@ -213,6 +219,7 @@ public class UserService(
         };
     }
 
+    // Activates a prosumer account that is not already active.
     public async Task<UserResponseDto> ActivateProsumerAsync(string nic, string activatedByUserId)
     {
         var users = await userRepository.FindAsync(u => u.Nic == nic && u.Role == RoleConstants.Prosumer);
@@ -253,6 +260,7 @@ public class UserService(
         };
     }
 
+    // Deactivates a prosumer account that is not already deactivated.
     public async Task<UserResponseDto> DeactivateProsumerAsync(string nic, string deactivatedByUserId)
     {
         var users = await userRepository.FindAsync(u => u.Nic == nic && u.Role == RoleConstants.Prosumer);
@@ -284,6 +292,7 @@ public class UserService(
         };
     }
 
+    // Updates a prosumer's profile; a new email must not belong to another user.
     public async Task<UserResponseDto> UpdateProsumerProfileAsync(string nic, UpdateProfileRequestDto dto)
     {
         var users = await userRepository.FindAsync(u => u.Nic == nic && u.Role == RoleConstants.Prosumer);
@@ -324,6 +333,7 @@ public class UserService(
         };
     }
 
+    // Looks up a prosumer by NIC or email; returns null if not found.
     public async Task<UserResponseDto?> GetProsumerStatusAsync(string identifier)
     {
         var users = await userRepository.FindAsync(u =>

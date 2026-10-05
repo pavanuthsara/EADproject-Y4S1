@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { registerProsumer } from "../../services/authService";
 
+// Prosumer self-registration form with client-side validation.
 export default function ProsumerRegisterForm({ onSuccess }) {
     const location = useLocation();
 
@@ -35,6 +36,7 @@ export default function ProsumerRegisterForm({ onSuccess }) {
         }
     }, [location.search]);
 
+    // Updates a form field and clears its error.
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
@@ -123,6 +125,7 @@ export default function ProsumerRegisterForm({ onSuccess }) {
     const strengthLabels = ["Very Weak", "Weak", "Medium", "Good", "Strong"];
     const strengthColors = ["bg-slate-200", "bg-red-500", "bg-amber-500", "bg-yellow-500", "bg-emerald-500"];
 
+    // Validates the form and submits the registration.
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errors = validate();

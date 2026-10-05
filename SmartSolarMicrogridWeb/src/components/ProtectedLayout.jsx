@@ -7,6 +7,7 @@ const DASHBOARD_BY_ROLE = {
   GridOperator: '/operator',
 };
 
+// Layout for signed-in pages; redirects users who are signed out or lack an allowed role.
 const BACKOFFICE_NAV_ITEMS = [
   {
     id: 'overview',
@@ -111,6 +112,7 @@ const ProtectedLayout = ({ allowedRoles }) => {
     return <Navigate to={DASHBOARD_BY_ROLE[role] ?? '/login'} replace />;
   }
 
+  // Signs out and returns to the login page.
   const navItems = role === 'Backoffice' ? BACKOFFICE_NAV_ITEMS : OPERATOR_NAV_ITEMS;
   const activeTab = searchParams.get('tab') || 'overview';
 

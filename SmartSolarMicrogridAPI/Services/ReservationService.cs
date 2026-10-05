@@ -1,7 +1,7 @@
 /*
  * File: ReservationService.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Business rules and orchestration for energy reservations: the booking
  *              window, notice period, direction, duplicate and slot capacity rules, and
  *              the reserved counters that must always match the live bookings.
@@ -540,6 +540,7 @@ public class ReservationService(
             ? DateTime.SpecifyKind(value, DateTimeKind.Utc)
             : value.ToUniversalTime();
 
+    // Counts Active, Pending and future Approved reservations for the staff dashboard.
     public async Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync()
     {
         var counts = await reservationRepository.GetDashboardAnalyticsAsync(UtcNow);
@@ -551,6 +552,7 @@ public class ReservationService(
         };
     }
 
+    // Returns reservations matching the filters, with station names and, if requested, QR tokens.
     public async Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(
         string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId, string? slotId = null,
         bool includeQrToken = false)

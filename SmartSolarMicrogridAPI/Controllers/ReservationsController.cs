@@ -1,7 +1,7 @@
 /*
  * File: ReservationsController.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: HTTP endpoints for creating, updating and cancelling energy reservations.
  *              Handles routing and status codes only; every rule lives in the service.
  *
@@ -33,6 +33,8 @@ public class ReservationsController(
     IMongoRepository<User> userRepository,
     IOptions<ReservationPolicyOptions> policyOptions) : ControllerBase
 {
+    // Works out whose reservations a request acts on: a prosumer always acts on their own,
+    // while staff must name the prosumer by NIC.
     private async Task<(string? id, string? nic)> GetTargetProsumerAsync(string? explicitNic)
     {
         string? role = User.FindFirstValue(ClaimTypes.Role);

@@ -1,7 +1,7 @@
 /*
  * File: ReservationPolicyOptions.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Strongly typed reservation policy values bound from the ReservationPolicy
  *              configuration section, so the booking window and notice period are
  *              changed in configuration rather than in code.

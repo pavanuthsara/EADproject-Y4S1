@@ -1,7 +1,7 @@
 /*
  * File: SuccessMessages.cs
  * Author: Dulsara Manakal (IT23214552)
- * Group: 45
+ * Group: 42
  * Description: Holds success messages returned to API clients.
  *
  * Individual Contribution: Defined the shared success messages returned to API clients.

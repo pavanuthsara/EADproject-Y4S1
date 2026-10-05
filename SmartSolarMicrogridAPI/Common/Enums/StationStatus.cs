@@ -1,7 +1,7 @@
 /*
  * File: StationStatus.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Defines the lifecycle states of a solar station.
  *
  * Individual Contribution: Defined the StationStatus enum for the solar station

@@ -1,7 +1,7 @@
 /*
  * File: StationsController.cs
  * Author: Ransilu Samaraweera
- * Group: 45
+ * Group: 42
  * Description: Endpoints for solar station registration, schedule updates and deactivation.
  * Individual Contribution: Implemented the station endpoints with role-based authorization.
  */

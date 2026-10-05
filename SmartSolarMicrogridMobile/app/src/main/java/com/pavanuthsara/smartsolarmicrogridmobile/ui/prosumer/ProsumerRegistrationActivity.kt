@@ -27,6 +27,7 @@ class ProsumerRegistrationActivity : AppCompatActivity() {
     private lateinit var inputConfirmPassword: TextInputLayout
     private lateinit var buttonRegister: MaterialButton
 
+    // Sets up the prosumer registration form.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
