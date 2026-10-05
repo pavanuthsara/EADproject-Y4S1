@@ -10,15 +10,33 @@
 
 import { apiRequest } from "./apiClient";
 
+// The API describes a prosumer with `fullName` and `accountStatus` ("Pending", "Active" or
+// "Deactivated"). The prosumer screen is written around `name` and `status` ("Pending",
+// "Active" or "Inactive"), so every response is converted here, in one place. The original
+// API fields are kept as well.
+const STATUS_LABELS = { Pending: "Pending", Active: "Active", Deactivated: "Inactive" };
+
+function toScreenProsumer(user) {
+    return {
+        ...user,
+        name: user.fullName,
+        status: STATUS_LABELS[user.accountStatus] ?? user.accountStatus,
+    };
+}
+
+// The screen's form calls the name field `name`; the API expects `fullName`.
+function toApiProfile({ name, ...rest }) {
+    return { fullName: name, ...rest };
+}
+
 /**
  * Fetches every prosumer registered through backoffice or the mobile app.
  * GET /api/backoffice/prosumers
- * NOTE: this endpoint does not exist yet on the API, so this will 404 until
- * a list route is added. Callers should handle the rejection.
+ * Each prosumer also carries `name` and `status` for the screen (see above).
  */
 export async function getProsumers() {
     const { data } = await apiRequest("/backoffice/prosumers");
-    return data ?? [];
+    return (data ?? []).map(toScreenProsumer);
 }
 
 /**
@@ -31,9 +49,9 @@ export async function getProsumers() {
 export async function createProsumer(data) {
     const { data: created } = await apiRequest("/backoffice/prosumers", {
         method: "POST",
-        body: data,
+        body: toApiProfile(data),
     });
-    return created;
+    return toScreenProsumer(created);
 }
 
 /**
@@ -47,9 +65,9 @@ export async function createProsumer(data) {
 export async function updateProsumer(nic, data) {
     const { data: updated } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}`, {
         method: "PUT",
-        body: data,
+        body: toApiProfile(data),
     });
-    return updated;
+    return toScreenProsumer(updated);
 }
 
 /**
@@ -69,7 +87,7 @@ export async function toggleProsumerStatus(nic, isActive) {
         `/backoffice/prosumers/${encodeURIComponent(nic)}/${action}`,
         { method: "PUT" }
     );
-    return updated;
+    return toScreenProsumer(updated);
 }
 
 /**
@@ -80,7 +98,7 @@ export async function activateProsumer(nic) {
     const { data } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}/activate`, {
         method: "PUT",
     });
-    return data;
+    return toScreenProsumer(data);
 }
 
 /**
@@ -91,7 +109,7 @@ export async function deactivateProsumer(nic) {
     const { data } = await apiRequest(`/backoffice/prosumers/${encodeURIComponent(nic)}/deactivate`, {
         method: "PUT",
     });
-    return data;
+    return toScreenProsumer(data);
 }
 
 /**

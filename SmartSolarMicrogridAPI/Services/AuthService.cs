@@ -57,12 +57,11 @@ public class AuthService : IAuthService
         };
 
         var created = await _userRepository.CreateAsync(user);
-        var (token, expires) = _jwtTokenGenerator.GenerateToken(created);
-
+        // A new prosumer is Pending until Backoffice approves it, so no token is issued. Signing in comes after approval.
         return new AuthResponseDto
         {
-            Token = token,
-            ExpiresAtUtc = expires,
+            Token = string.Empty,
+            ExpiresAtUtc = DateTime.UtcNow,
             UserId = created.Id,
             Nic = created.Nic,
             FullName = created.FullName,
@@ -89,6 +88,10 @@ public class AuthService : IAuthService
 
         if (user.AccountStatus == AccountStatus.Deactivated.ToString())
             throw new ForbiddenException("Account is deactivated.");
+
+        // Checked after the password, so an unknown account and a wrong password still look the same.
+        if (user.Role == RoleConstants.Prosumer && user.AccountStatus == AccountStatus.Pending.ToString())
+            throw new ForbiddenException("Your account is waiting for backoffice approval. You can sign in once it is approved.");
 
         var (token, expires) = _jwtTokenGenerator.GenerateToken(user);
 

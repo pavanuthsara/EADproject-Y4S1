@@ -34,6 +34,8 @@ public class UserService(
             Email = u.Email,
             Phone = u.Phone,
             AccountStatus = u.AccountStatus,
+            Address = u.Address,
+            SolarCapacityKw = u.SolarCapacityKw,
             CreatedAt = u.CreatedAt
         });
     }
