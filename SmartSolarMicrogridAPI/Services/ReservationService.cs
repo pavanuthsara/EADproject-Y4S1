@@ -144,6 +144,60 @@ public class ReservationService(
         return BuildSummary(reservation, stationName, ReservationMessages.Cancelled);
     }
 
+    // Approves a Pending reservation whose slot has not started yet; the 12-hour notice rule does not apply to staff.
+    public async Task<ReservationSummaryResponse> ApproveAsync(string reservationId, string staffUserId)
+    {
+        var reservation = await GetReservationAsync(reservationId);
+
+        if (reservation.StatusValue != ReservationStatus.Pending)
+        {
+            throw new ConflictException(ReservationMessages.CannotApprove(reservation.Status));
+        }
+
+        if (!IsInFuture(reservation.SlotStartUtc))
+        {
+            throw new BusinessRuleException(ReservationMessages.ApproveSlotStarted);
+        }
+
+        DateTime now = UtcNow;
+        reservation.StatusValue = ReservationStatus.Approved;
+        reservation.ApprovedBy = staffUserId;
+        reservation.ApprovedAtUtc = now;
+        reservation.UpdatedAtUtc = now;
+
+        await SaveOrRollbackAsync(reservation, rollback: null);
+
+        string stationName = await GetStationNameAsync(reservation.StationId);
+        return BuildSummary(reservation, stationName, ReservationMessages.Approved);
+    }
+
+    // Rejects a Pending or Approved reservation, then gives its position and kWh back to the slot.
+    // Saving the new status comes first, so capacity is only released for a rejection that was really saved.
+    public async Task<ReservationSummaryResponse> RejectAsync(string reservationId, string staffUserId, string reason)
+    {
+        var reservation = await GetReservationAsync(reservationId);
+
+        if (!IsModifiableState(reservation.StatusValue))
+        {
+            throw new ConflictException(ReservationMessages.CannotReject(reservation.Status));
+        }
+
+        DateTime now = UtcNow;
+        reservation.StatusValue = ReservationStatus.Rejected;
+        reservation.RejectedBy = staffUserId;
+        reservation.RejectedAtUtc = now;
+        reservation.RejectionReason = reason.Trim();
+        reservation.ApprovedBy = null;
+        reservation.ApprovedAtUtc = null;
+        reservation.UpdatedAtUtc = now;
+
+        await SaveOrRollbackAsync(reservation, rollback: null);
+        await ReleaseCapacityAsync(reservation.SlotId, PositionsPerReservation, reservation.RequestedKwh);
+
+        string stationName = await GetStationNameAsync(reservation.StationId);
+        return BuildSummary(reservation, stationName, ReservationMessages.Rejected);
+    }
+
     // Moves a reservation to a different slot: re-runs every create rule, reserves on the new slot, then releases the old one.
     private async Task<string> MoveToSlotAsync(
         EnergyReservation reservation, string newSlotId, EnergyDirection direction, double kwh, string prosumerId)
@@ -250,6 +304,18 @@ public class ReservationService(
         }
 
         return slot;
+    }
+
+    // Loads a reservation by id, whoever owns it; used by staff decisions.
+    private async Task<EnergyReservation> GetReservationAsync(string reservationId)
+    {
+        var reservation = await reservationRepository.GetByIdAsync(reservationId);
+        if (reservation == null)
+        {
+            throw new NotFoundException(ReservationMessages.ReservationNotFound(reservationId));
+        }
+
+        return reservation;
     }
 
     // Loads a reservation and requires it to belong to the calling prosumer.
@@ -436,7 +502,8 @@ public class ReservationService(
     }
 
     // Builds the summary returned by every endpoint, including whether the reservation can still be changed.
-    private ReservationSummaryResponse BuildSummary(EnergyReservation reservation, string stationName, string message)
+    private ReservationSummaryResponse BuildSummary(
+        EnergyReservation reservation, string stationName, string message, bool includeQrToken = false)
     {
         bool changeable = IsModifiableState(reservation.StatusValue) && HasSufficientNotice(reservation.SlotStartUtc);
 
@@ -457,6 +524,8 @@ public class ReservationService(
             UpdatedAtUtc = reservation.UpdatedAtUtc,
             CanModify = changeable,
             CanCancel = changeable,
+            RejectionReason = reservation.RejectionReason,
+            QrToken = includeQrToken && reservation.StatusValue == ReservationStatus.Approved ? reservation.QrToken : null,
             Message = message
         };
     }
@@ -483,15 +552,16 @@ public class ReservationService(
     }
 
     public async Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(
-        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId)
+        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId, string? slotId = null,
+        bool includeQrToken = false)
     {
-        var reservations = await reservationRepository.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId);
+        var reservations = await reservationRepository.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId, slotId);
         
         var results = new List<ReservationSummaryResponse>();
         foreach (var res in reservations)
         {
             string stationName = await GetStationNameAsync(res.StationId);
-            results.Add(BuildSummary(res, stationName, ""));
+            results.Add(BuildSummary(res, stationName, "", includeQrToken));
         }
 
         return results;

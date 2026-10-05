@@ -85,7 +85,8 @@ public class EnergyReservationRepository(MongoDbContext context)
         DateTime? fromUtc,
         DateTime? toUtc,
         ReservationStatus? status,
-        string? stationId)
+        string? stationId,
+        string? slotId)
     {
         var filter = Builders<EnergyReservation>.Filter.Empty;
 
@@ -114,6 +115,22 @@ public class EnergyReservationRepository(MongoDbContext context)
             filter &= Builders<EnergyReservation>.Filter.Eq(r => r.StationId, stationId);
         }
 
+        if (!string.IsNullOrEmpty(slotId))
+        {
+            filter &= Builders<EnergyReservation>.Filter.Eq(r => r.SlotId, slotId);
+        }
+
         return await Collection.Find(filter).SortByDescending(r => r.CreatedAtUtc).ToListAsync();
+    }
+
+    // Returns the Pending and Approved reservations on a slot.
+    public async Task<IReadOnlyList<EnergyReservation>> GetActiveBySlotAsync(string slotId)
+    {
+        var activeStatuses = new[] { ReservationStatus.Pending.ToString(), ReservationStatus.Approved.ToString() };
+
+        return await Collection
+            .Find(Builders<EnergyReservation>.Filter.Eq(r => r.SlotId, slotId)
+                & Builders<EnergyReservation>.Filter.In(r => r.Status, activeStatuses))
+            .ToListAsync();
     }
 }

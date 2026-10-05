@@ -65,6 +65,12 @@ public class EnergyReservation : IEntity
     [BsonElement("rejectedAt")]
     public DateTime? RejectedAtUtc { get; set; }
 
+    [BsonElement("rejectedBy")]
+    public string? RejectedBy { get; set; }
+
+    [BsonElement("rejectionReason")]
+    public string? RejectionReason { get; set; }
+
     [BsonElement("completedBy")]
     public string? CompletedBy { get; set; }
 

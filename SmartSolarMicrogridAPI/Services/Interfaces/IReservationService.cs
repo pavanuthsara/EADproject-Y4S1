@@ -22,8 +22,15 @@ public interface IReservationService
 
     Task<ReservationSummaryResponse> CancelAsync(string reservationId, string prosumerId);
 
+    // Staff decision: moves a Pending reservation to Approved.
+    Task<ReservationSummaryResponse> ApproveAsync(string reservationId, string staffUserId);
+
+    // Staff decision: rejects a Pending or Approved reservation and releases its capacity.
+    Task<ReservationSummaryResponse> RejectAsync(string reservationId, string staffUserId, string reason);
+
     Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync();
 
     Task<IEnumerable<ReservationSummaryResponse>> GetBookingHistoryAsync(
-        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId);
+        string? nic, DateTime? fromUtc, DateTime? toUtc, ReservationStatus? status, string? stationId, string? slotId = null,
+        bool includeQrToken = false);
 }

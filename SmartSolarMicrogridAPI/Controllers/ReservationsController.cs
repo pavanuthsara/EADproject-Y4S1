@@ -97,6 +97,7 @@ public class ReservationsController(
         [FromQuery] DateTime? toUtc,
         [FromQuery] ReservationStatus? status,
         [FromQuery] string? stationId,
+        [FromQuery] string? slotId, // Staff use this to list the bookings on one slot
         [FromQuery] string? prosumerNic) // Added for staff to filter by NIC
     {
         string? role = User.FindFirstValue(ClaimTypes.Role);
@@ -105,8 +106,34 @@ public class ReservationsController(
         if (role == RoleConstants.Prosumer && string.IsNullOrEmpty(nic))
             return Unauthorized(ApiResponse<IEnumerable<ReservationSummaryResponse>>.Fail(ReservationMessages.MissingClaims));
 
-        var history = await reservationService.GetBookingHistoryAsync(nic, fromUtc, toUtc, status, stationId);
+        var history = await reservationService.GetBookingHistoryAsync(
+            nic, fromUtc, toUtc, status, stationId, slotId, includeQrToken: role == RoleConstants.Prosumer);
         return Ok(ApiResponse<IEnumerable<ReservationSummaryResponse>>.Ok(history, "History retrieved."));
+    }
+
+    // Approves a Pending reservation (Backoffice or Grid Operator).
+    [HttpPut("{id}/approve")]
+    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
+    public async Task<ActionResult<ApiResponse<ReservationSummaryResponse>>> ApproveAsync(string id)
+    {
+        string? staffUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(staffUserId)) return Unauthorized();
+
+        var summary = await reservationService.ApproveAsync(id, staffUserId);
+        return Ok(ApiResponse<ReservationSummaryResponse>.Ok(summary, summary.Message));
+    }
+
+    // Rejects a Pending or Approved reservation with a reason and releases its slot capacity (Backoffice or Grid Operator).
+    [HttpPut("{id}/reject")]
+    [Authorize(Roles = $"{RoleConstants.Backoffice},{RoleConstants.GridOperator}")]
+    public async Task<ActionResult<ApiResponse<ReservationSummaryResponse>>> RejectAsync(
+        string id, [FromBody] RejectReservationRequest request)
+    {
+        string? staffUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(staffUserId)) return Unauthorized();
+
+        var summary = await reservationService.RejectAsync(id, staffUserId, request.Reason);
+        return Ok(ApiResponse<ReservationSummaryResponse>.Ok(summary, summary.Message));
     }
 
     // Retrieves the current reservation policy configuration

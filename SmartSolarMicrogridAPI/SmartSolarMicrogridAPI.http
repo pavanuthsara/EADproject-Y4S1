@@ -25,16 +25,64 @@ Content-Type: application/json
   "operatingSchedule": "06:00-18:00"
 }
 
-### Update a station schedule (Backoffice or GridOperator token)
-PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/schedules/{{slotId}}
+### Create a slot inside a station (Backoffice token) - 201
+POST {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/slots
+Authorization: Bearer {{backofficeToken}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-10-08T09:00:00Z",
+  "endTime": "2026-10-08T10:00:00Z",
+  "totalPositions": 3,
+  "capacityKwh": 50,
+  "supportedDirections": ["Inject", "Draw"]
+}
+
+### Edit a slot (Backoffice token) - replaces every field
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/slots/{{slotId}}
+Authorization: Bearer {{backofficeToken}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-10-08T09:00:00Z",
+  "endTime": "2026-10-08T10:00:00Z",
+  "totalPositions": 4,
+  "capacityKwh": 60,
+  "supportedDirections": ["Inject"]
+}
+
+### Close a slot to new bookings (Backoffice or GridOperator token)
+PATCH {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/slots/{{slotId}}/availability
 Authorization: Bearer {{gridOperatorToken}}
 Content-Type: application/json
 
 {
-  "startTime": "2026-10-01T08:00:00Z",
-  "endTime": "2026-10-01T10:00:00Z",
-  "totalPositions": 3,
-  "status": "Available"
+  "open": false
+}
+
+### Delete a slot (Backoffice token) - 400 while it has Pending/Approved reservations
+DELETE {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/slots/{{slotId}}
+Authorization: Bearer {{backofficeToken}}
+
+### List a station's slots (any signed-in token; prosumers only see bookable ones)
+GET {{SmartSolarMicrogridAPI_HostAddress}}/api/stations/{{stationId}}/slots
+Authorization: Bearer {{gridOperatorToken}}
+
+### List the bookings on one slot (staff token)
+GET {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/history?slotId={{slotId}}
+Authorization: Bearer {{gridOperatorToken}}
+
+### Approve a reservation (Backoffice or GridOperator token)
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/{{reservationId}}/approve
+Authorization: Bearer {{gridOperatorToken}}
+
+### Reject a reservation with a reason (Backoffice or GridOperator token) - releases the slot capacity
+PUT {{SmartSolarMicrogridAPI_HostAddress}}/api/reservations/{{reservationId}}/reject
+Authorization: Bearer {{gridOperatorToken}}
+Content-Type: application/json
+
+{
+  "reason": "Battery maintenance that day"
 }
 
 ### Update a station's daily operating hours (Backoffice or GridOperator token)
