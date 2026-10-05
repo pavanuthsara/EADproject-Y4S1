@@ -3,6 +3,7 @@ import { getNodes, createNode, updateNodeOperatingSchedule, deactivateNode, acti
 import { getRole } from '../../services/authService';
 import TimeRangePicker from './TimeRangePicker';
 import LocationPicker from './LocationPicker';
+import SlotManager from './SlotManager';
 
 const DEFAULT_SCHEDULE = '06:00-18:00';
 
@@ -33,6 +34,9 @@ export default function NodeManagement() {
     const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState(EMPTY_FORM);
+
+    // Which node cards have their booking slots panel open
+    const [expandedNodeIds, setExpandedNodeIds] = useState(() => new Set());
 
     // Operating schedule update state
     const [editingScheduleId, setEditingScheduleId] = useState(null);
@@ -120,6 +124,14 @@ export default function NodeManagement() {
         }
     };
 
+    const toggleSlots = (id) => {
+        setExpandedNodeIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
     const startEditingSchedule = (node) => {
         setEditingScheduleId(node.id);
         setNewSchedule(node.operatingSchedule || DEFAULT_SCHEDULE);
@@ -154,8 +166,8 @@ export default function NodeManagement() {
                     <h2 className="text-xl font-semibold text-gray-800">Microgrid Node Management</h2>
                     <p className="text-sm text-gray-500 mt-1">
                         {canManageHubs
-                            ? 'Register solar hubs, manage capacity, and update operating schedules.'
-                            : 'View solar hubs and update their operating schedules.'}
+                            ? 'Register solar hubs (batteries), then add the booking slots prosumers can reserve inside each hub.'
+                            : 'View solar hubs, open or close their booking slots, and handle reservations.'}
                     </p>
                 </div>
                 {canManageHubs && (
@@ -193,7 +205,7 @@ export default function NodeManagement() {
                             <input required id="hub-capacity" type="number" min="0.01" step="any" name="capacityKwh" value={formData.capacityKwh} onChange={handleInputChange} className={inputClass} placeholder="e.g. 50" />
                         </div>
                         <div>
-                            <label htmlFor="hub-bays" className="block text-sm font-medium text-gray-700 mb-1">Battery Slots</label>
+                            <label htmlFor="hub-bays" className="block text-sm font-medium text-gray-700 mb-1">Battery Bays</label>
                             <input required id="hub-bays" type="number" min="1" max="1000" name="totalBays" value={formData.totalBays} onChange={handleInputChange} className={inputClass} placeholder="e.g. 5" />
                         </div>
                         <fieldset className="md:col-span-2 lg:col-span-4">
@@ -225,7 +237,7 @@ export default function NodeManagement() {
             <div className="overflow-x-auto p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {nodes.map(node => (
-                        <div key={node.id} className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white flex flex-col relative">
+                        <div key={node.id} className={`border border-gray-200 rounded-lg p-5 shadow-sm bg-white flex flex-col relative ${expandedNodeIds.has(node.id) ? 'lg:col-span-2' : ''}`}>
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">{node.stationName}</h3>
@@ -250,7 +262,7 @@ export default function NodeManagement() {
                                     <span className="font-medium">{node.capacityKwh} kW/h</span>
                                 </div>
                                 <div>
-                                    <span className="block text-gray-500 text-xs uppercase tracking-wider">Battery Slots</span>
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wider">Battery Bays</span>
                                     <span className="font-medium">{node.totalBays}</span>
                                 </div>
                             </div>
@@ -279,9 +291,23 @@ export default function NodeManagement() {
                                 )}
                             </div>
 
+                            {/* Booking slots inside this node */}
+                            <div className="flex justify-between items-center border-t border-gray-100 pt-4">
+                                <span className="text-sm text-gray-600">Booking slots</span>
+                                <button
+                                    onClick={() => toggleSlots(node.id)}
+                                    className="text-indigo-600 text-sm font-medium hover:underline"
+                                >
+                                    {expandedNodeIds.has(node.id) ? 'Hide slots' : 'Manage slots'}
+                                </button>
+                            </div>
+                            {expandedNodeIds.has(node.id) && (
+                                <SlotManager node={node} canManage={canManageHubs} />
+                            )}
+
                             {/* Actions */}
                             {canManageHubs && (
-                                <div className="mt-auto flex justify-end">
+                                <div className="mt-4 flex justify-end">
                                     {node.status === 'Active' ? (
                                         <button
                                             onClick={() => handleDeactivate(node.id)}

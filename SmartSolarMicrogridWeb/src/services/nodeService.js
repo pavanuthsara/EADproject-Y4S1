@@ -4,7 +4,11 @@
 //   GET  /api/stations                                  -> Backoffice, GridOperator
 //   POST /api/stations                                  -> CreateStationRequestDto (Backoffice)
 //   PUT  /api/stations/{stationId}/operating-schedule   -> UpdateOperatingScheduleRequestDto
-//   PUT  /api/stations/{stationId}/schedules/{slotId}   -> UpdateScheduleRequestDto
+//   GET    /api/stations/{stationId}/slots                       -> any signed-in role (staff see every slot)
+//   POST   /api/stations/{stationId}/slots                       -> SlotRequestDto (Backoffice)
+//   PUT    /api/stations/{stationId}/slots/{slotId}              -> SlotRequestDto (Backoffice)
+//   DELETE /api/stations/{stationId}/slots/{slotId}              -> Backoffice
+//   PATCH  /api/stations/{stationId}/slots/{slotId}/availability -> Backoffice, GridOperator
 //   PUT  /api/stations/{stationId}/deactivate           -> Backoffice
 //   PUT  /api/stations/{stationId}/activate             -> Backoffice
 //   GET  /api/stations/nearby?lat&lng&radiusMeters      -> Prosumer only
@@ -71,22 +75,67 @@ export async function updateNodeOperatingSchedule(stationId, operatingSchedule) 
 }
 
 /**
- * Replaces a station slot's schedule. This is a full replacement, so the API marks
- * every field required.
- * PUT /api/stations/{stationId}/schedules/{slotId}
- * @param {string} stationId - Owning station.
- * @param {string} slotId - Booking slot to update.
- * @param {object} newSchedule - UpdateScheduleRequestDto
- *   { startTime, endTime, totalPositions, status }
- *   `status` is the SlotStatus enum name: "Available", "Full" or "Closed".
- *   Only Available or Closed can be requested; Full is derived server-side.
- * @returns the updated ScheduleResponseDto.
- * @param {string} [operatorId] - unused; the API reads the operator from the JWT.
+ * Lists every booking slot of a node, earliest first. Staff receive all slots.
+ * GET /api/stations/{stationId}/slots
+ * @returns an array of ScheduleResponseDto.
  */
-export async function updateNodeSchedule(stationId, slotId, newSchedule) {
+export async function getNodeSlots(stationId) {
+    const { data } = await apiRequest(`/stations/${encodeURIComponent(stationId)}/slots`);
+    return data ?? [];
+}
+
+/**
+ * Adds a booking slot inside a node. The node is the battery, so the API checks that
+ * the slot fits inside the node's bays and capacity.
+ * POST /api/stations/{stationId}/slots  (Backoffice role)
+ * @param {string} stationId
+ * @param {object} slot - SlotRequestDto
+ *   { startTime, endTime, totalPositions, capacityKwh, supportedDirections }
+ *   Times are UTC ISO strings; `supportedDirections` holds "Inject" and/or "Draw".
+ * @returns the created ScheduleResponseDto.
+ */
+export async function createSlot(stationId, slot) {
+    const { data: created } = await apiRequest(`/stations/${encodeURIComponent(stationId)}/slots`, {
+        method: "POST",
+        body: slot,
+    });
+    return created;
+}
+
+/**
+ * Replaces every detail of a slot (same body as createSlot).
+ * PUT /api/stations/{stationId}/slots/{slotId}  (Backoffice role)
+ * @returns the updated ScheduleResponseDto.
+ */
+export async function updateSlot(stationId, slotId, slot) {
     const { data: updated } = await apiRequest(
-        `/stations/${encodeURIComponent(stationId)}/schedules/${encodeURIComponent(slotId)}`,
-        { method: "PUT", body: newSchedule }
+        `/stations/${encodeURIComponent(stationId)}/slots/${encodeURIComponent(slotId)}`,
+        { method: "PUT", body: slot }
+    );
+    return updated;
+}
+
+/**
+ * Deletes a slot. The API refuses while the slot has Pending or Approved reservations.
+ * DELETE /api/stations/{stationId}/slots/{slotId}  (Backoffice role)
+ */
+export async function deleteSlot(stationId, slotId) {
+    await apiRequest(
+        `/stations/${encodeURIComponent(stationId)}/slots/${encodeURIComponent(slotId)}`,
+        { method: "DELETE" }
+    );
+}
+
+/**
+ * Opens or closes a slot to new bookings. Existing bookings are not affected.
+ * PATCH /api/stations/{stationId}/slots/{slotId}/availability  (Backoffice or GridOperator role)
+ * @param {boolean} open - true to accept bookings, false to close the slot.
+ * @returns the updated ScheduleResponseDto.
+ */
+export async function setSlotAvailability(stationId, slotId, open) {
+    const { data: updated } = await apiRequest(
+        `/stations/${encodeURIComponent(stationId)}/slots/${encodeURIComponent(slotId)}/availability`,
+        { method: "PATCH", body: { open } }
     );
     return updated;
 }
