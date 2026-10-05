@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiResult
@@ -23,6 +24,7 @@ import com.pavanuthsara.smartsolarmicrogridmobile.data.local.CachedReservation
 import com.pavanuthsara.smartsolarmicrogridmobile.data.repository.ReservationRepository
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.DirectionLabels
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.DisplayFormats
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.NavigationUtils
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.StatusColors
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.endExpiredSession
 import kotlinx.coroutines.launch
@@ -37,6 +39,7 @@ class ReservationListActivity : AppCompatActivity() {
     private lateinit var editSearch: EditText
     private lateinit var spinnerFilter: Spinner
     private lateinit var textListStatus: TextView
+    private lateinit var bottomNavigation: BottomNavigationView
 
     private var allReservations: List<CachedReservation> = emptyList()
 
@@ -51,6 +54,9 @@ class ReservationListActivity : AppCompatActivity() {
         editSearch = findViewById(R.id.editSearch)
         spinnerFilter = findViewById(R.id.spinnerFilter)
         textListStatus = findViewById(R.id.textListStatus)
+        bottomNavigation = findViewById(R.id.bottomNavigation)
+
+        NavigationUtils.setupBottomNav(bottomNavigation, this, R.id.nav_reservations)
 
         spinnerFilter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, FILTERS)
 
@@ -84,6 +90,7 @@ class ReservationListActivity : AppCompatActivity() {
     // Runs every time the screen is shown, so changes made on the web (approved, rejected) appear.
     override fun onResume() {
         super.onResume()
+        bottomNavigation.selectedItemId = R.id.nav_reservations
         loadReservations()
     }
 

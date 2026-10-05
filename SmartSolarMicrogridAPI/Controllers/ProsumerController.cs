@@ -29,6 +29,20 @@ public class ProsumerController(IAuthService authService, IUserService userServi
         return Ok(ApiResponse<AuthResponseDto>.Ok(result, "Registration submitted successfully. Please wait for backoffice activation."));
     }
 
+    // Retrieves prosumer profile data
+    [HttpGet("profile")]
+    [Authorize(Roles = RoleConstants.Prosumer)]
+    public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetProfileAsync()
+    {
+        string? nic = User.FindFirstValue("nic");
+        if (string.IsNullOrEmpty(nic)) return Unauthorized(ApiResponse<UserResponseDto>.Fail("NIC claim missing in token."));
+
+        var result = await userService.GetProsumerStatusAsync(nic);
+        if (result == null) return NotFound(ApiResponse<UserResponseDto>.Fail("Prosumer not found."));
+
+        return Ok(ApiResponse<UserResponseDto>.Ok(result, "Profile retrieved successfully."));
+    }
+
     // Allows prosumers to edit their own profile data
     [HttpPut("profile")]
     [Authorize(Roles = RoleConstants.Prosumer)]

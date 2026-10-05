@@ -22,12 +22,14 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.pavanuthsara.smartsolarmicrogridmobile.R
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiResult
 import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.StationDto
 import com.pavanuthsara.smartsolarmicrogridmobile.data.repository.StationRepository
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.DisplayFormats
+import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.NavigationUtils
 import com.pavanuthsara.smartsolarmicrogridmobile.ui.common.endExpiredSession
 import kotlinx.coroutines.launch
 
@@ -49,6 +51,7 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var textStationName: TextView
     private lateinit var textStationDetails: TextView
     private lateinit var buttonBookStation: MaterialButton
+    private lateinit var bottomNavigation: BottomNavigationView
 
     private val locationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -71,6 +74,9 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
         textStationName = findViewById(R.id.textStationName)
         textStationDetails = findViewById(R.id.textStationDetails)
         buttonBookStation = findViewById(R.id.buttonBookStation)
+        bottomNavigation = findViewById(R.id.bottomNavigation)
+
+        NavigationUtils.setupBottomNav(bottomNavigation, this, R.id.nav_stations)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -87,6 +93,11 @@ class GridMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // Wires up marker and map taps once the map is ready.
+    override fun onResume() {
+        super.onResume()
+        bottomNavigation.selectedItemId = R.id.nav_stations
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 

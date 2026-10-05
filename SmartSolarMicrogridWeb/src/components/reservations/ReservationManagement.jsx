@@ -27,26 +27,23 @@ import ReservationDecisionActions from './ReservationDecisionActions';
 
 const EMPTY_FORM = { prosumerNic: '', stationId: '', slotId: '', direction: 'Inject', requestedKwh: '' };
 
-// The clock is re-read on this interval so a booking locks itself on screen as
-// soon as it crosses the twelve-hour notice deadline.
 const CLOCK_TICK_MS = 30_000;
 
 const STATUS_STYLES = {
-    Pending: 'bg-amber-100 text-amber-800',
-    Approved: 'bg-green-100 text-green-800',
-    Rejected: 'bg-red-100 text-red-800',
-    Completed: 'bg-blue-100 text-blue-800',
-    Cancelled: 'bg-gray-200 text-gray-700',
+    Pending: 'bg-amber-50 text-amber-700 border border-amber-200',
+    Approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    Rejected: 'bg-rose-50 text-rose-700 border border-rose-200',
+    Completed: 'bg-sky-50 text-sky-700 border border-sky-200',
+    Cancelled: 'bg-slate-100 text-slate-600 border border-slate-200',
 };
 
 const NOTICE_STYLES = {
-    ok: 'text-green-700',
+    ok: 'text-emerald-700',
     warning: 'text-amber-700',
-    expired: 'text-red-700',
-    neutral: 'text-gray-500',
+    expired: 'text-rose-700',
+    neutral: 'text-slate-500',
 };
 
-// Why a slot may not be booked, or how much room it has left if it may.
 function describeSlot(slot, now, policy) {
     if (slot.status === 'Closed') {
         return { selectable: false, note: 'closed by operator' };
@@ -82,7 +79,6 @@ export default function ReservationManagement() {
 
     const [now, setNow] = useState(() => new Date());
 
-    // 'create' | 'update' | null
     const [mode, setMode] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
@@ -100,8 +96,6 @@ export default function ReservationManagement() {
         return () => clearInterval(timer);
     }, []);
 
-    // Slots are per node, so they are refetched whenever the chosen node changes.
-    // An empty node yields an empty list, which clears any previous node's slots.
     useEffect(() => {
         let cancelled = false;
         getSlots(form.stationId)
@@ -139,7 +133,6 @@ export default function ReservationManagement() {
 
     const windowBounds = useMemo(() => bookingWindowBounds(now, policy), [now, policy]);
 
-    // A slot may only accept one direction; an empty list means it accepts both.
     const allowedDirections = useMemo(() => directionsForSlot(selectedSlot), [selectedSlot]);
 
     const validation = useMemo(() => {
@@ -190,8 +183,6 @@ export default function ReservationManagement() {
         setMode('create');
     };
 
-    // The notice rule is re-checked here so a booking that has since crossed the
-    // deadline cannot be opened for editing at all.
     const openUpdate = (reservation) => {
         const eligibility = evaluateChangeEligibility(reservation, now, policy);
         if (!eligibility.allowed) {
@@ -220,12 +211,8 @@ export default function ReservationManagement() {
         setForm((prev) => {
             const next = { ...prev, [name]: value };
 
-            // Changing the node invalidates the chosen slot.
             if (name === 'stationId') next.slotId = '';
 
-            // A slot may accept only one direction. Snapping the direction here keeps
-            // the stored value equal to what the select actually shows, which would
-            // otherwise drift and send a direction the slot rejects.
             if (name === 'slotId') {
                 const allowed = directionsForSlot(slots.find((s) => s.id === value));
                 if (!allowed.includes(next.direction)) next.direction = allowed[0];
@@ -272,8 +259,6 @@ export default function ReservationManagement() {
         event.preventDefault();
         if (!editingReservation) return;
 
-        // Validated against a fresh clock, not the ticking state, so a deadline that
-        // passed between the last tick and this click still blocks the request.
         const checkedNow = new Date();
         const result = validateUpdateForm(form, editingReservation, selectedSlot, checkedNow, policy);
         if (!result.valid) {
@@ -300,7 +285,6 @@ export default function ReservationManagement() {
         }
     };
 
-    // Called after staff approve or reject a reservation; the list is reloaded from the API.
     const handleDecided = async (updated) => {
         setError('');
         setSummary(`${updated.reservationNo} — ${updated.message}`);
@@ -333,78 +317,95 @@ export default function ReservationManagement() {
 
     if (isLoading && reservations.length === 0) {
         return (
-            <div className="flex justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200">
+                <div className="w-10 h-10 border-4 border-[#F59E0B] border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p className="text-sm font-medium text-slate-500">Loading Power Trading Reservations...</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all">
             {/* Header */}
-            <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:justify-between md:items-center bg-gray-50 gap-4">
+            <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row md:justify-between md:items-center bg-slate-50/80 gap-4">
                 <div>
-                    <h2 className="text-xl font-semibold text-gray-800">Power Trading Reservations</h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        View, create, update and cancel energy slot bookings.
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+                        <h2 className="text-xl font-bold text-slate-900">Power Trading Reservations</h2>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                        Dispatch approvals, monitor injection/drawing quotas, and resolve trading requests.
                     </p>
                 </div>
                 <button
                     onClick={mode === 'create' ? resetPanel : openCreate}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-2 bg-[#F59E0B] hover:bg-[#d97706] text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
                 >
-                    {mode === 'create' ? 'Cancel Booking Form' : '+ New Reservation'}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    {mode === 'create' ? 'Close Form' : 'New Reservation'}
                 </button>
             </div>
 
-            {/* Policy notice: the two rules this screen enforces */}
-            <div className="bg-indigo-50 border-b border-indigo-100 px-6 py-4 grid gap-2 md:grid-cols-2 text-sm">
-                <p className="text-indigo-900">
-                    <span className="font-semibold">{policy.bookingWindowDays}-day booking window:</span>{' '}
-                    slots must start before{' '}
-                    <span className="font-medium">{formatDateTime(windowBounds.latest)}</span>.
+            {/* Policy notice banner */}
+            <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3.5 grid gap-3 md:grid-cols-2 text-xs font-medium">
+                <p className="text-amber-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+                    <span><strong className="font-bold">{policy.bookingWindowDays}-Day Window Rule:</strong> Slots must start before {formatDateTime(windowBounds.latest)}.</span>
                 </p>
-                <p className="text-indigo-900">
-                    <span className="font-semibold">{policy.minimumNoticeHours}-hour notice:</span>{' '}
-                    updates and cancellations close {policy.minimumNoticeHours} hours before the slot starts.
+                <p className="text-amber-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                    <span><strong className="font-bold">{policy.minimumNoticeHours}-Hour Lockout:</strong> Modifications freeze {policy.minimumNoticeHours}h before scheduled slot.</span>
                 </p>
             </div>
 
             {/* Counts */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-gray-200">
-                <SummaryTile label="Total Bookings" value={counts.total} />
-                <SummaryTile label="Pending Approval" value={counts.pending} tone="amber" />
-                <SummaryTile label="Approved (Future)" value={counts.approvedFuture} tone="green" />
-                <SummaryTile label="Locked by Notice Rule" value={counts.locked} tone="red" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-slate-200 bg-white">
+                <SummaryTile label="Total Reservations" value={counts.total} />
+                <SummaryTile label="Pending Review" value={counts.pending} tone="amber" />
+                <SummaryTile label="Approved & Active" value={counts.approvedFuture} tone="green" />
+                <SummaryTile label="Locked By Notice" value={counts.locked} tone="red" />
             </div>
 
             {/* Action summary / error */}
             {summary && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 mx-6 mt-6">
-                    <p className="text-green-800 text-sm">{summary}</p>
+                <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 mx-6 mt-6 rounded-r-xl">
+                    <p className="text-emerald-800 text-xs sm:text-sm font-semibold">{summary}</p>
                 </div>
             )}
             {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-6">
-                    <p className="text-red-700 text-sm">{error}</p>
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-6 rounded-r-xl">
+                    <p className="text-red-700 text-xs sm:text-sm font-semibold">{error}</p>
                 </div>
             )}
 
             {/* Create / Update form */}
             {mode && (
-                <div className="p-6 border-b border-gray-200 bg-indigo-50/30">
-                    <h3 className="text-lg font-medium text-gray-800 mb-1">
-                        {mode === 'create' ? 'Create Reservation' : `Update ${editingReservation?.reservationNo ?? ''}`}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-4">
+                <div className="p-6 border-b border-slate-200 bg-amber-50/20">
+                    <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                                {mode === 'create' ? 'Create Power Reservation' : `Update Reservation ${editingReservation?.reservationNo ?? ''}`}
+                            </h3>
+                        </div>
+                        <button 
+                            onClick={resetPanel} 
+                            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                        >
+                            ✕ Cancel
+                        </button>
+                    </div>
+                    <p className="text-xs text-slate-500 mb-4">
                         {mode === 'create'
-                            ? `Only slots starting within the next ${policy.bookingWindowDays} days can be booked.`
-                            : `Slot, direction and kWh can be changed until ${formatDateTime(noticeDeadline(editingReservation?.slotStartUtc, policy))}.`}
+                            ? `Only microgrid slots within the next ${policy.bookingWindowDays} days are eligible for booking.`
+                            : `Parameters can be modified until lock deadline: ${formatDateTime(noticeDeadline(editingReservation?.slotStartUtc, policy))}.`}
                     </p>
 
                     {fieldErrors.form && (
-                        <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
-                            <p className="text-red-700 text-sm">{fieldErrors.form}</p>
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+                            <p className="text-red-700 text-xs font-semibold">{fieldErrors.form}</p>
                         </div>
                     )}
 
@@ -420,7 +421,7 @@ export default function ReservationManagement() {
                                 onChange={handleFieldChange}
                                 disabled={mode === 'update'}
                                 placeholder="e.g. 199012345678"
-                                className="w-full border border-gray-300 rounded-md p-2 disabled:bg-gray-100 disabled:text-gray-500"
+                                className="w-full border border-slate-200 rounded-xl p-2.5 text-xs sm:text-sm disabled:bg-slate-100 disabled:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                             />
                         </Field>
 
@@ -429,12 +430,12 @@ export default function ReservationManagement() {
                                 name="stationId"
                                 value={form.stationId}
                                 onChange={handleFieldChange}
-                                className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                                className="w-full border border-slate-200 rounded-xl p-2.5 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                             >
                                 <option value="">Select a node…</option>
                                 {stations.map((station) => (
                                     <option key={station.id} value={station.id}>
-                                        {station.stationName} — {station.city}
+                                        {station.stationName} ({station.city})
                                     </option>
                                 ))}
                             </select>
@@ -446,10 +447,10 @@ export default function ReservationManagement() {
                                 value={form.slotId}
                                 onChange={handleFieldChange}
                                 disabled={!form.stationId}
-                                className="w-full border border-gray-300 rounded-md p-2 bg-white disabled:bg-gray-100"
+                                className="w-full border border-slate-200 rounded-xl p-2.5 text-xs sm:text-sm bg-white disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                             >
                                 <option value="">
-                                    {form.stationId ? 'Select a slot…' : 'Choose a node first'}
+                                    {form.stationId ? 'Select an active slot…' : 'Choose a node first'}
                                 </option>
                                 {slots.map((slot) => {
                                     const info = describeSlot(slot, now, policy);
@@ -458,12 +459,10 @@ export default function ReservationManagement() {
                                         <option
                                             key={slot.id}
                                             value={slot.id}
-                                            // The booking's own slot stays selectable: keeping it is not a
-                                            // new booking, so the window rule does not apply to it.
                                             disabled={!info.selectable && !isCurrent}
                                         >
                                             {formatDateTime(slot.startTime)}
-                                            {isCurrent ? ' · current slot' : ''}
+                                            {isCurrent ? ' (Current)' : ''}
                                             {` · ${info.note}`}
                                         </option>
                                     );
@@ -471,25 +470,25 @@ export default function ReservationManagement() {
                             </select>
                         </Field>
 
-                        <Field label="Direction" error={fieldErrors.direction}>
+                        <Field label="Trading Direction" error={fieldErrors.direction}>
                             <select
                                 name="direction"
                                 value={form.direction}
                                 onChange={handleFieldChange}
-                                className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                                className="w-full border border-slate-200 rounded-xl p-2.5 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                             >
                                 {allowedDirections.map((direction) => (
-                                    <option key={direction} value={direction}>{direction}</option>
+                                    <option key={direction} value={direction}>{direction === 'Inject' ? 'Inject (Feed to Microgrid)' : 'Draw (Consume from Hub)'}</option>
                                 ))}
                             </select>
                             {selectedSlot && selectedSlot.supportedDirections.length > 0 && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    This slot only accepts {selectedSlot.supportedDirections.join(' and ')}.
+                                <p className="text-[10px] text-slate-500 mt-1">
+                                    Slot limits: {selectedSlot.supportedDirections.join(' & ')}.
                                 </p>
                             )}
                         </Field>
 
-                        <Field label="Energy (kWh)" error={fieldErrors.requestedKwh}>
+                        <Field label="Energy Volume (kWh)" error={fieldErrors.requestedKwh}>
                             <input
                                 type="number"
                                 name="requestedKwh"
@@ -498,37 +497,35 @@ export default function ReservationManagement() {
                                 min="0.001"
                                 step="0.5"
                                 placeholder="e.g. 10"
-                                className="w-full border border-gray-300 rounded-md p-2"
+                                className="w-full border border-slate-200 rounded-xl p-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
                             />
                             {selectedSlot && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {Number((selectedSlot.capacityKwh - selectedSlot.reservedKwh).toFixed(3))} kWh
-                                    of {selectedSlot.capacityKwh} kWh still free on this slot.
+                                <p className="text-[10px] text-slate-500 mt-1 font-semibold text-emerald-700">
+                                    {Number((selectedSlot.capacityKwh - selectedSlot.reservedKwh).toFixed(3))} kWh free on this slot.
                                 </p>
                             )}
                         </Field>
 
-                        <div className="flex items-end gap-2">
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || !validation.valid}
-                                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSubmitting
-                                    ? 'Saving…'
-                                    : mode === 'create' ? 'Create Reservation' : 'Save Changes'}
-                            </button>
+                        <div className="flex items-end gap-2.5">
                             <button
                                 type="button"
                                 onClick={resetPanel}
-                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-50 cursor-pointer"
                             >
                                 Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || !validation.valid}
+                                className="flex-1 px-4 py-2.5 bg-[#F59E0B] text-slate-950 font-bold rounded-xl text-xs hover:bg-[#d97706] shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                                {isSubmitting
+                                    ? 'Saving…'
+                                    : mode === 'create' ? 'Confirm Reservation' : 'Update Reservation'}
                             </button>
                         </div>
                     </form>
 
-                    {/* Live read-out of the rule checks on the chosen slot */}
                     {selectedSlot && (
                         <SlotRuleCheck
                             slot={selectedSlot}
@@ -541,12 +538,12 @@ export default function ReservationManagement() {
             )}
 
             {/* Filters */}
-            <div className="p-6 border-b border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50/50">
+            <div className="p-6 border-b border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50">
                 <Field label="Filter by Status">
                     <select
                         value={filters.status}
                         onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}
-                        className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                        className="w-full border border-slate-200 rounded-xl p-2 text-xs sm:text-sm bg-white"
                     >
                         <option value="All">All statuses</option>
                         {RESERVATION_STATUSES.map((status) => (
@@ -554,31 +551,31 @@ export default function ReservationManagement() {
                         ))}
                     </select>
                 </Field>
-                <Field label="Filter by Node">
+                <Field label="Filter by Microgrid Hub">
                     <select
                         value={filters.stationId}
                         onChange={(e) => setFilters((p) => ({ ...p, stationId: e.target.value }))}
-                        className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                        className="w-full border border-slate-200 rounded-xl p-2 text-xs sm:text-sm bg-white"
                     >
-                        <option value="All">All nodes</option>
+                        <option value="All">All Hubs</option>
                         {stations.map((station) => (
                             <option key={station.id} value={station.id}>{station.stationName}</option>
                         ))}
                     </select>
                 </Field>
-                <Field label="Search Prosumer NIC">
+                <Field label="Search by Prosumer NIC">
                     <input
                         type="text"
                         value={filters.nic}
                         onChange={(e) => setFilters((p) => ({ ...p, nic: e.target.value }))}
-                        placeholder="Enter a NIC…"
-                        className="w-full border border-gray-300 rounded-md p-2"
+                        placeholder="Enter NIC number…"
+                        className="w-full border border-slate-200 rounded-xl p-2 text-xs sm:text-sm bg-white"
                     />
                 </Field>
             </div>
 
-            {/* Reservation list */}
-            <div className="p-4">
+            {/* Reservation cards grid */}
+            <div className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {visibleReservations.map((reservation) => (
                         <ReservationCard
@@ -600,10 +597,13 @@ export default function ReservationManagement() {
                         />
                     ))}
                     {visibleReservations.length === 0 && (
-                        <div className="col-span-full p-8 text-center text-gray-500">
-                            {reservations.length === 0
-                                ? 'No reservations have been made yet.'
-                                : 'No reservations match the current filters.'}
+                        <div className="col-span-full p-12 text-center text-slate-500 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            <p className="font-semibold text-slate-800">No reservations found</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                                {reservations.length === 0
+                                    ? 'No reservations exist in the database yet.'
+                                    : 'Adjust filters to view other bookings.'}
+                            </p>
                         </div>
                     )}
                 </div>
@@ -612,21 +612,18 @@ export default function ReservationManagement() {
     );
 }
 
-// --- Presentational pieces -------------------------------------------------
-
-// Small stat tile for the summary row.
-function SummaryTile({ label, value, tone = 'indigo' }) {
+function SummaryTile({ label, value, tone = 'slate' }) {
     const tones = {
-        indigo: 'text-indigo-600',
+        slate: 'text-slate-900',
         amber: 'text-amber-600',
-        green: 'text-green-600',
-        red: 'text-red-600',
+        green: 'text-emerald-600',
+        red: 'text-rose-600',
     };
 
     return (
-        <div className="border border-gray-200 rounded-lg p-4 bg-white">
-            <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
-            <p className={`text-2xl font-bold mt-1 ${tones[tone]}`}>{value}</p>
+        <div className="border border-slate-200 rounded-2xl p-4 bg-white shadow-xs">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+            <p className={`text-2xl font-black mt-1 ${tones[tone]}`}>{value}</p>
         </div>
     );
 }
@@ -635,22 +632,20 @@ function SummaryTile({ label, value, tone = 'indigo' }) {
 function Field({ label, error, children }) {
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{label}</label>
             {children}
-            {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+            {error && <p className="text-[11px] text-red-600 font-semibold mt-1">{error}</p>}
         </div>
     );
 }
 
-// Spells out how the chosen slot scores against each rule, so a blocked submit
-// button always has a visible reason next to it.
 function SlotRuleCheck({ slot, reservation, now, policy }) {
     const startCheck = validateSlotStart(slot.startTime, now, policy);
     const hours = hoursUntil(slot.startTime, now);
 
     const checks = [
         {
-            label: `Starts within ${policy.bookingWindowDays} days`,
+            label: `Within ${policy.bookingWindowDays}-day rule`,
             passed: startCheck.valid,
             detail: startCheck.valid
                 ? `starts in ${formatDuration(hours)}`
@@ -662,22 +657,22 @@ function SlotRuleCheck({ slot, reservation, now, policy }) {
         const eligibility = evaluateChangeEligibility(reservation, now, policy);
         const notice = describeNotice(reservation, now, policy);
         checks.push({
-            label: `At least ${policy.minimumNoticeHours} hours' notice`,
+            label: `Minimum ${policy.minimumNoticeHours}h notice rule`,
             passed: eligibility.allowed,
             detail: eligibility.allowed ? notice.label : eligibility.reason,
         });
     }
 
     return (
-        <div className="mt-4 border-t border-indigo-100 pt-4 space-y-2">
+        <div className="mt-4 border-t border-slate-200 pt-3 space-y-1.5">
             {checks.map((check) => (
-                <p key={check.label} className="text-sm flex items-start gap-2">
-                    <span className={check.passed ? 'text-green-600' : 'text-red-600'}>
+                <p key={check.label} className="text-xs flex items-center gap-2">
+                    <span className={`font-bold ${check.passed ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {check.passed ? '✓' : '✗'}
                     </span>
-                    <span className="text-gray-700">
-                        <span className="font-medium">{check.label}</span>
-                        <span className="text-gray-500"> — {check.detail}</span>
+                    <span className="text-slate-700">
+                        <strong className="font-semibold">{check.label}</strong>
+                        <span className="text-slate-500"> — {check.detail}</span>
                     </span>
                 </p>
             ))}
@@ -695,71 +690,82 @@ function ReservationCard({
     const deadline = noticeDeadline(reservation.slotStartUtc, policy);
 
     return (
-        <div className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white flex flex-col">
+        <div className="border border-slate-200 rounded-2xl p-5 shadow-xs bg-white hover:shadow-md transition-all flex flex-col">
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-base font-bold text-gray-900 font-mono">{reservation.reservationNo}</h3>
-                    <p className="text-xs text-gray-500 mt-1">NIC {reservation.prosumerNic}</p>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 font-mono">{reservation.reservationNo}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">NIC: <strong className="text-slate-800">{reservation.prosumerNic}</strong></p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[reservation.status]}`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${STATUS_STYLES[reservation.status]}`}>
                     {reservation.status}
                 </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                <Detail label="Node" value={reservation.stationName} />
-                <Detail label="Direction" value={reservation.direction} />
-                <Detail label="Energy" value={`${reservation.requestedKwh} kWh`} />
-                <Detail label="Slot" value={reservation.slotId} mono />
+            <div className="grid grid-cols-2 gap-3 text-xs mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <Detail label="Station Node" value={reservation.stationName} />
+                <Detail 
+                    label="Trading Flow" 
+                    value={
+                        <span className={`inline-flex items-center gap-1 font-bold ${
+                            reservation.direction === 'Inject' ? 'text-emerald-700' : 'text-amber-700'
+                        }`}>
+                            {reservation.direction === 'Inject' ? '⚡ Inject (Feed)' : '🔌 Draw (Use)'}
+                        </span>
+                    } 
+                />
+                <Detail label="Reserved Quota" value={<strong className="text-slate-900 font-bold">{reservation.requestedKwh} kWh</strong>} />
+                <Detail label="Slot ID" value={reservation.slotId} mono />
             </div>
 
-            <div className="border-t border-gray-100 pt-4 mb-4 space-y-1">
-                <p className="text-sm text-gray-800">
-                    <span className="block text-gray-500 text-xs uppercase tracking-wider mb-1">Scheduled</span>
-                    {formatDateTime(reservation.slotStartUtc)} → {formatDateTime(reservation.slotEndUtc)}
+            <div className="border-t border-slate-100 pt-3 mb-3 space-y-1">
+                <p className="text-xs text-slate-800 font-medium">
+                    <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Operating Period</span>
+                    ⏰ {formatDateTime(reservation.slotStartUtc)} → {formatDateTime(reservation.slotEndUtc)}
                 </p>
-                <p className={`text-xs font-medium ${NOTICE_STYLES[notice.tone]}`}>{notice.label}</p>
+                <p className={`text-xs font-bold ${NOTICE_STYLES[notice.tone]}`}>{notice.label}</p>
                 {deadline && ['Pending', 'Approved'].includes(reservation.status) && (
-                    <p className="text-xs text-gray-500">
-                        Change/cancel deadline: {formatDateTime(deadline)}
+                    <p className="text-[11px] text-slate-400">
+                        Notice deadline: {formatDateTime(deadline)}
                     </p>
                 )}
             </div>
 
             {reservation.status === 'Rejected' && reservation.rejectionReason && (
-                <p className="text-xs text-red-700 mb-3">Rejected: {reservation.rejectionReason}</p>
+                <div className="bg-rose-50 border border-rose-200 p-2.5 rounded-xl mb-3 text-xs text-rose-800 font-medium">
+                    Rejection note: {reservation.rejectionReason}
+                </div>
             )}
 
-            {/* Staff decision. The API only approves a Pending reservation and gives capacity back on reject. */}
+            {/* Staff decision actions */}
             <div className="mb-3">
                 <ReservationDecisionActions reservation={reservation} onDecided={onDecided} onError={onDecisionError} />
             </div>
 
-            {/* Actions. Both are gated on the same notice and status rules. */}
-            <div className="mt-auto">
+            {/* Card actions */}
+            <div className="mt-auto pt-2 border-t border-slate-100">
                 {!eligibility.allowed && ['Pending', 'Approved'].includes(reservation.status) && (
-                    <p className="text-xs text-red-600 mb-2">{eligibility.reason}</p>
+                    <p className="text-[11px] text-rose-600 font-semibold mb-2">{eligibility.reason}</p>
                 )}
 
                 {isConfirmingCancel ? (
-                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                        <p className="text-sm text-red-800 mb-3">
-                            Cancel {reservation.reservationNo}? Its reserved capacity is released back to the slot.
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                        <p className="text-xs font-semibold text-red-800 mb-2">
+                            Cancel {reservation.reservationNo}? Reserved kWh will be returned to the slot pool.
                         </p>
                         <div className="flex gap-2 justify-end">
                             <button
                                 onClick={onAbortCancel}
                                 disabled={isBusy}
-                                className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                                className="px-3 py-1 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50"
                             >
-                                Keep booking
+                                Keep
                             </button>
                             <button
                                 onClick={onConfirmCancel}
                                 disabled={isBusy}
-                                className="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                                className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 disabled:opacity-50"
                             >
-                                {isBusy ? 'Cancelling…' : 'Confirm cancellation'}
+                                {isBusy ? 'Cancelling…' : 'Cancel Reservation'}
                             </button>
                         </div>
                     </div>
@@ -769,17 +775,17 @@ function ReservationCard({
                             onClick={onEdit}
                             disabled={!eligibility.allowed || isBusy}
                             title={eligibility.allowed ? 'Update this reservation' : eligibility.reason}
-                            className="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:text-gray-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                            className="text-amber-700 hover:bg-amber-50 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
                         >
-                            Update
+                            Modify
                         </button>
                         <button
                             onClick={onRequestCancel}
                             disabled={!eligibility.allowed || isBusy}
                             title={eligibility.allowed ? 'Cancel this reservation' : eligibility.reason}
-                            className="text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-sm font-medium transition-colors disabled:text-gray-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                            className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer"
                         >
-                            Cancel Reservation
+                            Cancel
                         </button>
                     </div>
                 )}
@@ -792,8 +798,8 @@ function ReservationCard({
 function Detail({ label, value, mono = false }) {
     return (
         <div>
-            <span className="block text-gray-500 text-xs uppercase tracking-wider">{label}</span>
-            <span className={`font-medium ${mono ? 'font-mono text-xs' : ''}`}>{value}</span>
+            <span className="block text-slate-400 text-[10px] font-bold uppercase tracking-wider">{label}</span>
+            <span className={`text-xs ${mono ? 'font-mono text-slate-600' : 'text-slate-800'}`}>{value}</span>
         </div>
     );
 }

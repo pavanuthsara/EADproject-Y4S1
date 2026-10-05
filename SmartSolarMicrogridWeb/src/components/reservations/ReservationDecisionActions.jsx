@@ -4,13 +4,6 @@ import { approveReservation, rejectReservation } from '../../services/reservatio
 const MIN_REASON_LENGTH = 3;
 const MAX_REASON_LENGTH = 300;
 
-// Approve / Reject buttons for staff. The API owns every rule: it only approves a Pending
-// reservation whose slot has not started, and rejecting gives the slot its capacity back.
-//
-// Props:
-//   reservation - ReservationSummaryResponse
-//   onDecided(updated) - called with the API's updated reservation after a successful decision
-//   onError(message)   - called with the API's message when a decision fails
 export default function ReservationDecisionActions({ reservation, onDecided, onError }) {
     const [isRejecting, setIsRejecting] = useState(false);
     const [reason, setReason] = useState('');
@@ -49,9 +42,9 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
 
     if (isRejecting) {
         return (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3 space-y-2">
-                <label className="block text-sm text-red-800" htmlFor={`reject-${reservation.reservationId}`}>
-                    Why is {reservation.reservationNo} being rejected? The prosumer will see this.
+            <div className="bg-red-50/80 border border-red-200 rounded-2xl p-3.5 space-y-2">
+                <label className="block text-xs font-semibold text-red-900" htmlFor={`reject-${reservation.reservationId}`}>
+                    State the justification for rejecting {reservation.reservationNo}:
                 </label>
                 <textarea
                     id={`reject-${reservation.reservationId}`}
@@ -59,18 +52,18 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
                     onChange={(e) => setReason(e.target.value)}
                     maxLength={MAX_REASON_LENGTH}
                     rows={2}
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm bg-white"
-                    placeholder="e.g. Battery maintenance on that day"
+                    className="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-red-400"
+                    placeholder="e.g. Inverter maintenance or grid load threshold exceeded"
                 />
-                <p className="text-xs text-red-700">
-                    Its reserved position and kWh go back to the slot straight away.
+                <p className="text-[11px] text-red-700 font-medium">
+                    Reserved position and kWh capacity will immediately return to the hub's pool.
                 </p>
                 <div className="flex gap-2 justify-end">
                     <button
                         type="button"
                         onClick={() => { setIsRejecting(false); setReason(''); }}
                         disabled={isBusy}
-                        className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                        className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-50 transition-colors"
                     >
                         Back
                     </button>
@@ -78,9 +71,9 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
                         type="button"
                         onClick={handleReject}
                         disabled={isBusy || reasonTooShort}
-                        className="px-3 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                        className="px-3.5 py-1.5 bg-red-600 text-white font-bold rounded-xl text-xs hover:bg-red-700 disabled:opacity-50 transition-colors shadow-xs"
                     >
-                        {isBusy ? 'Rejecting…' : 'Confirm rejection'}
+                        {isBusy ? 'Rejecting…' : 'Confirm Rejection'}
                     </button>
                 </div>
             </div>
@@ -94,10 +87,10 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
                     type="button"
                     onClick={handleApprove}
                     disabled={isBusy || slotStarted}
-                    title={slotStarted ? 'This slot has already started, so it can only be rejected.' : 'Approve this reservation'}
-                    className="px-3 py-1.5 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={slotStarted ? 'This slot has already started, so it cannot be approved.' : 'Approve this reservation'}
+                    className="px-3.5 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer"
                 >
-                    {isBusy ? 'Approving…' : 'Approve'}
+                    {isBusy ? 'Approving…' : '✓ Approve'}
                 </button>
             )}
             {canReject && (
@@ -105,7 +98,7 @@ export default function ReservationDecisionActions({ reservation, onDecided, onE
                     type="button"
                     onClick={() => setIsRejecting(true)}
                     disabled={isBusy}
-                    className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded text-sm font-medium"
+                    className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
                 >
                     Reject
                 </button>
