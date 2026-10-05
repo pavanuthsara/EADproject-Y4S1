@@ -10,10 +10,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SmartSolarMicrogridAPI.DTOs.Requests;
 
+// Send either Email (any role) or Nic (prosumers only). When both are sent, Nic is used.
 public class LoginRequestDto
 {
-[Required]
-    public string Email { get; set; } = string.Empty;
-[Required]
+    public string? Email { get; set; }
+
+    public string? Nic { get; set; }
+
+    [Required]
     public string Password { get; set; } = string.Empty;
 }
