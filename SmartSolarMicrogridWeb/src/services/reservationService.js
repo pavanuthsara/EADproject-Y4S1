@@ -5,9 +5,9 @@ import { apiRequest } from './apiClient';
  * GET /api/reservations/history
  */
 export async function getReservations(filters = {}) {
-    const { fromUtc, toUtc, status, stationId, prosumerNic } = filters;
+    const { fromUtc, toUtc, status, stationId, slotId, prosumerNic } = filters;
     const { data } = await apiRequest('/reservations/history', {
-        query: { fromUtc, toUtc, status, stationId, prosumerNic },
+        query: { fromUtc, toUtc, status, stationId, slotId, prosumerNic },
     });
     return data ?? [];
 }
@@ -72,6 +72,30 @@ export async function cancelReservation(reservationId, prosumerNic) {
     const { data } = await apiRequest(`/reservations/${encodeURIComponent(reservationId)}`, {
         method: 'DELETE',
         query: prosumerNic ? { prosumerNic } : undefined,
+    });
+    return data;
+}
+
+/**
+ * Approves a Pending reservation (Backoffice or GridOperator).
+ * PUT /api/reservations/{reservationId}/approve
+ */
+export async function approveReservation(reservationId) {
+    const { data } = await apiRequest(`/reservations/${encodeURIComponent(reservationId)}/approve`, {
+        method: 'PUT',
+    });
+    return data;
+}
+
+/**
+ * Rejects a Pending or Approved reservation with a reason. The API gives the reserved
+ * position and kWh back to the slot.
+ * PUT /api/reservations/{reservationId}/reject
+ */
+export async function rejectReservation(reservationId, reason) {
+    const { data } = await apiRequest(`/reservations/${encodeURIComponent(reservationId)}/reject`, {
+        method: 'PUT',
+        body: { reason },
     });
     return data;
 }

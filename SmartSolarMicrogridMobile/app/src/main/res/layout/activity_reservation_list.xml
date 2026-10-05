@@ -42,7 +42,7 @@
             android:id="@+id/editSearch"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Search by Date (YYYY-MM-DD)"
+            android:hint="Search by station or reservation no."
             android:textColor="@color/text"
             android:textColorHint="@color/text_secondary"
             android:background="@drawable/edit_text_border"
@@ -56,6 +56,15 @@
             android:layout_height="50dp"
             android:layout_marginBottom="20dp"
             android:background="@android:drawable/btn_dropdown" />
+
+        <TextView
+            android:id="@+id/textListStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/status_error"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/reservationsLayout"

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Solarix logo for in-app screens: the app icon (amber rounded square with a white bolt). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M28,4H80A24,24 0 0 1 104,28V80A24,24 0 0 1 80,104H28A24,24 0 0 1 4,80V28A24,24 0 0 1 28,4Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="104"
+                android:endY="104"
+                android:startX="4"
+                android:startY="4"
+                android:type="linear">
+                <item
+                    android:color="#F59E0B"
+                    android:offset="0.0" />
+                <item
+                    android:color="#D97706"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <group
+        android:scaleX="2.89"
+        android:scaleY="2.89"
+        android:translateX="19.3"
+        android:translateY="19.3">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M11,21h-1l1,-7H7.5c-0.88,0 -0.33,-0.75 -0.31,-0.78C8.48,10.94 10.42,7.54 13.01,3h1l-1,7h3.5c0.49,0 0.88,0.39 0.7,0.86L11,21z" />
+    </group>
+</vector>

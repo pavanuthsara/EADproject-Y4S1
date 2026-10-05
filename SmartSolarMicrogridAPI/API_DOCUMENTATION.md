@@ -300,31 +300,43 @@ Registers a new solar grid hub with its GPS location, kWh capacity, number of ba
 *   **Errors:** `400` when the station code already exists or a field is invalid (e.g. latitude outside -90..90, or `operatingSchedule` not in 24-hour `HH:mm-HH:mm` format or closing before it opens).
 *   `operatingSchedule` is `null` in responses for stations registered before the field existed.
 
-### 4.2 Update Station Schedule
-Lets Grid Operators and Backoffice staff replace the schedule of a booking slot at a station. All fields are required.
+### 4.2 Booking Slots
+A station is the battery; a slot is one time window at that station that prosumers can book. Creating a station does **not** create slots. Backoffice adds them afterwards.
 
-*   **Endpoint:** `/api/stations/{stationId}/schedules/{slotId}`
-*   **Method:** `PUT`
-*   **Authorization:** Bearer Token (Role: `Backoffice` or `GridOperator`)
-*   **Request Body (JSON):**
+| Action | Endpoint | Roles |
+|---|---|---|
+| Create a slot | `POST /api/stations/{stationId}/slots` | `Backoffice` |
+| Edit a slot | `PUT /api/stations/{stationId}/slots/{slotId}` | `Backoffice` |
+| Delete a slot | `DELETE /api/stations/{stationId}/slots/{slotId}` | `Backoffice` |
+| Open or close a slot | `PATCH /api/stations/{stationId}/slots/{slotId}/availability` | `Backoffice`, `GridOperator` |
+| List slots | `GET /api/stations/{stationId}/slots` | any signed-in role |
+| List a slot's bookings | `GET /api/reservations/history?slotId={slotId}` | `Backoffice`, `GridOperator` |
+
+*   **Create / Edit body (JSON).** Edit replaces every field:
 
     ```json
     {
-      "startTime": "2026-10-01T08:00:00Z",
-      "endTime": "2026-10-01T10:00:00Z",
-      "totalPositions": 3,
-      "status": "Available" // "Available" or "Closed"; "Full" is derived automatically
+      "startTime": "2026-10-08T09:00:00Z",
+      "endTime": "2026-10-08T10:00:00Z",
+      "totalPositions": 5,
+      "capacityKwh": 50,
+      "supportedDirections": ["Inject", "Draw"]
     }
     ```
 
+*   **Availability body:** `{ "open": false }` closes the slot to new bookings (existing bookings stay valid); `{ "open": true }` reopens it as `Available`, or `Full` if every position or all the kWh are taken.
+*   **Create returns `201`**; the new slot starts `Available` with nothing reserved. Staff can create slots any number of days ahead; the 7-day rule only limits when prosumers can **book**.
 *   **Business rules (each returns `400`):**
-    *   The station must be `Active`.
-    *   `endTime` must be after `startTime`.
-    *   `totalPositions` cannot exceed the station's `totalBays`, nor be lower than the schedule's active (Pending/Approved) reservations.
-    *   The time window cannot change while the schedule has active reservations, must start in the future, and cannot overlap another schedule at the same station.
-    *   The status becomes `Full` automatically when active reservations fill every position, otherwise `Available` (or `Closed` if requested).
-
-*   **Success Response (200 OK):** Returns the updated schedule (`id`, `stationId`, `startTime`, `endTime`, `totalPositions`, `status`, `updatedAt`).
+    *   The station must be `Active` (create and edit).
+    *   `endTime` must be after `startTime`, and when creating (or changing the time of) a slot the start must be in the future.
+    *   `totalPositions` cannot exceed the station's `totalBays`, and `capacityKwh` cannot exceed the station's `capacityKwh`.
+    *   `supportedDirections` needs at least one of `Inject` or `Draw`.
+    *   A slot cannot overlap another slot at the same station.
+    *   Edit: `totalPositions` and `capacityKwh` cannot drop below what is already reserved; the time window cannot change while the slot has reservations; a direction cannot be removed while an active reservation uses it.
+    *   Delete: refused while the slot has a `Pending` or `Approved` reservation.
+*   **`409 Conflict`** when a booking arrives at the same moment as an edit or delete; reload and retry.
+*   **List:** staff get every slot. A prosumer only gets slots they could still book: not `Closed`, starting in the future and within the booking window. `Full` slots are included so the app can grey them out.
+*   Slot responses contain `id`, `stationId`, `startTime`, `endTime`, `totalPositions`, `reservedPositions`, `capacityKwh`, `reservedKwh`, `supportedDirections`, `status`, `updatedAt`.
 
 ### 4.3 Deactivate Station
 Deactivates a station. The request is **blocked** while any energy reservation tied to the station is still active (`Pending` or `Approved`); `Rejected`, `Completed` and `Cancelled` reservations do not block.
@@ -345,7 +357,7 @@ Deactivates a station. The request is **blocked** while any energy reservation t
     ```
 
 ### 4.4 Update Station Operating Hours
-Lets Grid Operators and Backoffice staff change a station's daily operating window. This is separate from the booking slot schedules in 4.2.
+Lets Grid Operators and Backoffice staff change a station's daily operating window. This is separate from the booking slots in 4.2.
 
 *   **Endpoint:** `/api/stations/{stationId}/operating-schedule`
 *   **Method:** `PUT`
@@ -365,6 +377,15 @@ Lets Grid Operators and Backoffice staff change a station's daily operating wind
 *   **Success Response (200 OK):** Returns the updated station, including `operatingSchedule`.
 
 ---
+### 4.5 Approve or Reject a Reservation
+Backoffice and Grid Operators decide on reservations that prosumers make. The 12-hour notice rule applies to prosumers changing their own bookings, not to these staff decisions.
+
+*   **Approve:** `PUT /api/reservations/{reservationId}/approve` (no body). Only a `Pending` reservation whose slot has not started can be approved (`409` if it is not Pending, `400` if the slot already started).
+*   **Reject:** `PUT /api/reservations/{reservationId}/reject` with `{ "reason": "Battery maintenance that day" }` (3 to 300 characters). A `Pending` **or** `Approved` reservation can be rejected (`409` otherwise). The reserved position and kWh go back to the slot straight away, and a `Full` slot becomes `Available` again.
+*   Both return the reservation summary. A rejected reservation carries the staff reason in `rejectionReason`, so the prosumer can see why.
+*   `GET /api/reservations/history` accepts a `slotId` filter so staff can see the bookings of one slot.
+*   **QR code:** when a prosumer reads their own history, an `Approved` reservation carries `qrToken`. The mobile app draws it as a QR code, and the Grid Operator's scan sends the same text to `POST /api/transfers/verify`. `qrToken` is `null` for every other status and for staff.
+
 ## 5. Health Checks
 
 ### 5.1 API Health

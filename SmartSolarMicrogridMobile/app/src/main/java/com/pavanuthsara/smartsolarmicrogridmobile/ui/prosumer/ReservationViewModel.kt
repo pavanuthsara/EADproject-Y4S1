@@ -5,87 +5,174 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.pavanuthsara.smartsolarmicrogridmobile.data.local.AppDatabase
-import com.pavanuthsara.smartsolarmicrogridmobile.data.local.Reservation
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.ApiResult
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.CreateReservationRequest
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.ReservationSummaryDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.SlotDto
+import com.pavanuthsara.smartsolarmicrogridmobile.data.api.models.UpdateReservationRequest
+import com.pavanuthsara.smartsolarmicrogridmobile.data.local.CachedReservation
+import com.pavanuthsara.smartsolarmicrogridmobile.data.repository.ReservationRepository
+import com.pavanuthsara.smartsolarmicrogridmobile.data.repository.StationRepository
 import kotlinx.coroutines.launch
 
-sealed class ReservationStatus {
-    object Idle : ReservationStatus()
-    object Loading : ReservationStatus()
-    data class Loaded(val reservation: Reservation) : ReservationStatus()
-    data class Success(val reservationId: Long) : ReservationStatus()
-    object Deleted : ReservationStatus()
-    data class Error(val message: String) : ReservationStatus()
+// What the booking form shows. The form is used to create a booking (from a slot picked on the
+// station screen) and to change an existing one.
+sealed class FormState {
+    object Loading : FormState()
+
+    data class Ready(
+        val stationName: String,
+        val slots: List<SlotDto>,
+        val selectedSlotId: String?,
+        // Set when an existing reservation is being changed.
+        val existing: CachedReservation?
+    ) : FormState()
+
+    data class LoadError(val message: String) : FormState()
+}
+
+// A result the screen reacts to once (a toast, a navigation), so it is not replayed on rotation.
+sealed class FormEvent {
+    data class Saved(val reservationId: String, val message: String) : FormEvent()
+    data class Cancelled(val message: String) : FormEvent()
+    data class Failed(val message: String) : FormEvent()
+    object SessionExpired : FormEvent()
 }
 
 class ReservationViewModel(application: Application) : AndroidViewModel(application) {
-    private val reservationDao = AppDatabase.getDatabase(application).reservationDao()
 
-    private val _status = MutableLiveData<ReservationStatus>(ReservationStatus.Idle)
-    val status: LiveData<ReservationStatus> = _status
+    private val stationRepository = StationRepository(application)
+    private val reservationRepository = ReservationRepository(application)
 
-    private var currentReservationId: Long? = null
-    
-    fun loadReservation(id: Long) {
-        _status.value = ReservationStatus.Loading
+    private val _state = MutableLiveData<FormState>(FormState.Loading)
+    val state: LiveData<FormState> = _state
+
+    private val _busy = MutableLiveData(false)
+    val busy: LiveData<Boolean> = _busy
+
+    private val _event = MutableLiveData<ConsumableEvent<FormEvent>>()
+    val event: LiveData<ConsumableEvent<FormEvent>> = _event
+
+    private var existing: CachedReservation? = null
+    private var stationId: String = ""
+    private var loaded = false
+
+    // Loads the station's bookable slots (and the reservation being changed, if any).
+    fun load(stationIdExtra: String?, stationNameExtra: String?, slotId: String?, reservationId: String?) {
+        if (loaded) return
+        loaded = true
+
         viewModelScope.launch {
-            try {
-                val res = reservationDao.getReservationById(id)
-                if (res != null) {
-                    currentReservationId = res.id
-                    _status.value = ReservationStatus.Loaded(res)
-                } else {
-                    _status.value = ReservationStatus.Error("Reservation not found.")
+            val reservation = reservationId?.let { reservationRepository.cachedById(it) }
+            if (reservationId != null && reservation == null) {
+                _state.value = FormState.LoadError("This reservation could not be found. Go back and refresh the list.")
+                return@launch
+            }
+            existing = reservation
+
+            stationId = reservation?.stationId ?: stationIdExtra.orEmpty()
+            val stationName = reservation?.stationName ?: stationNameExtra.orEmpty()
+            if (stationId.isEmpty()) {
+                _state.value = FormState.LoadError("No station was selected.")
+                return@launch
+            }
+
+            when (val result = stationRepository.slots(stationId)) {
+                is ApiResult.Success -> {
+                    val slots = withCurrentSlot(result.data, reservation)
+                    _state.value = FormState.Ready(stationName, slots, reservation?.slotId ?: slotId, reservation)
                 }
-            } catch (e: Exception) {
-                _status.value = ReservationStatus.Error(e.message ?: "Unknown error")
+                is ApiResult.Failure ->
+                    if (result.sessionExpired) {
+                        _event.value = ConsumableEvent(FormEvent.SessionExpired)
+                    } else {
+                        _state.value = FormState.LoadError(result.message)
+                    }
             }
         }
     }
 
-    fun saveReservation(nic: String, type: String, date: String, time: String) {
-        viewModelScope.launch {
-            try {
-                if (currentReservationId != null) {
-                    val res = reservationDao.getReservationById(currentReservationId!!)
-                    if (res != null) {
-                        val updated = res.copy(type = type, date = date, time = time, status = "Approved", qrCodeData = "QR_${res.id}_${nic}_$date")
-                        reservationDao.updateReservation(updated)
-                        _status.value = ReservationStatus.Success(updated.id)
-                    }
-                } else {
-                    val newRes = Reservation(
-                        prosumerNic = nic,
-                        type = type,
-                        date = date,
-                        time = time,
-                        status = "Approved",
-                        qrCodeData = "PENDING" // We will update it after inserting to get the ID
-                    )
-                    val id = reservationDao.insertReservation(newRes)
-                    
-                    // Generate pseudo QR data based on ID
-                    val qrData = "QR_${id}_${nic}_$date"
-                    val finalRes = newRes.copy(id = id, qrCodeData = qrData)
-                    reservationDao.updateReservation(finalRes)
-                    
-                    _status.value = ReservationStatus.Success(id)
-                }
-            } catch (e: Exception) {
-                _status.value = ReservationStatus.Error(e.message ?: "Unknown error")
+    // The slot a reservation is already on may no longer be listed (for example it was closed), but the
+    // prosumer must still be able to keep it, so it is added from what the reservation remembers.
+    private fun withCurrentSlot(slots: List<SlotDto>, reservation: CachedReservation?): List<SlotDto> {
+        if (reservation == null || slots.any { it.id == reservation.slotId }) return slots
+
+        val current = SlotDto(
+            id = reservation.slotId,
+            stationId = reservation.stationId,
+            startTime = reservation.slotStartUtc,
+            endTime = reservation.slotEndUtc,
+            totalPositions = 0,
+            reservedPositions = 0,
+            capacityKwh = 0.0,
+            reservedKwh = 0.0,
+            supportedDirections = null,
+            status = "Available"
+        )
+        return (slots + current).sortedBy { it.startTime }
+    }
+
+    fun book(slotId: String, direction: String, kwh: Double) {
+        runAction {
+            when (val result = reservationRepository.create(CreateReservationRequest(stationId, slotId, direction, kwh))) {
+                is ApiResult.Success -> FormEvent.Saved(result.data.reservationId, summaryMessage(result.data, result.message))
+                is ApiResult.Failure -> failure(result)
+            }
+        }
+    }
+
+    // Sends only what changed; the API refuses an empty update, so "no changes" is caught here.
+    fun saveChanges(slotId: String, direction: String, kwh: Double) {
+        val current = existing ?: return
+        val request = UpdateReservationRequest(
+            slotId = slotId.takeIf { it != current.slotId },
+            direction = direction.takeIf { it != current.direction },
+            requestedKwh = kwh.takeIf { it != current.requestedKwh }
+        )
+        if (request.slotId == null && request.direction == null && request.requestedKwh == null) {
+            _event.value = ConsumableEvent(FormEvent.Failed("You have not changed anything."))
+            return
+        }
+
+        runAction {
+            when (val result = reservationRepository.update(current.reservationId, request)) {
+                is ApiResult.Success -> FormEvent.Saved(result.data.reservationId, summaryMessage(result.data, result.message))
+                is ApiResult.Failure -> failure(result)
             }
         }
     }
 
     fun cancelReservation() {
-        val id = currentReservationId ?: return
-        viewModelScope.launch {
-            try {
-                reservationDao.deleteReservation(id)
-                _status.value = ReservationStatus.Deleted
-            } catch (e: Exception) {
-                _status.value = ReservationStatus.Error(e.message ?: "Unknown error")
+        val current = existing ?: return
+        runAction {
+            when (val result = reservationRepository.cancel(current.reservationId)) {
+                is ApiResult.Success -> FormEvent.Cancelled(summaryMessage(result.data, result.message))
+                is ApiResult.Failure -> failure(result)
             }
         }
     }
+
+    private fun runAction(action: suspend () -> FormEvent) {
+        if (_busy.value == true) return
+        _busy.value = true
+        viewModelScope.launch {
+            val outcome = action()
+            _busy.value = false
+            _event.value = ConsumableEvent(outcome)
+        }
+    }
+
+    private fun failure(result: ApiResult.Failure): FormEvent =
+        if (result.sessionExpired) FormEvent.SessionExpired else FormEvent.Failed(result.message)
+
+    // The API's own sentence ("Reservation created and awaiting operator approval.") is shown as it is.
+    private fun summaryMessage(dto: ReservationSummaryDto, apiMessage: String): String =
+        dto.message?.takeIf { it.isNotBlank() } ?: apiMessage
+}
+
+// Holds a value that is handed out only once.
+class ConsumableEvent<out T>(private val content: T) {
+    private var handled = false
+
+    fun consume(): T? = if (handled) null else { handled = true; content }
 }

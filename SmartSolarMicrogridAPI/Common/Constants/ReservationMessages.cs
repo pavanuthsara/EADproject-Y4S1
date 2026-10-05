@@ -19,6 +19,10 @@ public static class ReservationMessages
     public const string NoChanges = "No changes were made to the reservation.";
     public const string Cancelled = "Reservation cancelled and its capacity released.";
 
+    public const string Approved = "Reservation approved.";
+    public const string Rejected = "Reservation rejected and its capacity released.";
+    public const string ApproveSlotStarted = "Approval rule: this reservation's slot has already started, so it can no longer be approved. Reject it instead.";
+
     public const string MissingClaims = "Required prosumer claims are missing from the token.";
     public const string NothingToUpdate = "Provide at least one of slotId, direction or requestedKwh to update.";
     public const string NotOwner = "You can only change your own reservations.";
@@ -60,6 +64,14 @@ public static class ReservationMessages
     // Builds the kWh capacity error message.
     public static string InsufficientCapacity(double availableKwh) =>
         $"Slot capacity rule: only {availableKwh:0.###} kWh is still available on this slot.";
+
+    // Builds the error for approving a reservation that is not Pending.
+    public static string CannotApprove(string status) =>
+        $"State rule: only a Pending reservation can be approved; this one is {status}.";
+
+    // Builds the error for rejecting a reservation that is already finished.
+    public static string CannotReject(string status) =>
+        $"State rule: only a Pending or Approved reservation can be rejected; this one is {status}.";
 
     // Builds the invalid state error message.
     public static string InvalidState(string status) =>

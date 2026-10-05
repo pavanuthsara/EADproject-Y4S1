@@ -15,11 +15,9 @@ namespace SmartSolarMicrogridAPI.Services.Interfaces;
 public interface IStationService
 {
     Task<StationResponseDto> CreateStationAsync(CreateStationRequestDto dto, string createdByUserId);
-    Task<ScheduleResponseDto> UpdateScheduleAsync(string stationId, string slotId, UpdateScheduleRequestDto dto);
     Task<StationResponseDto> UpdateOperatingScheduleAsync(string stationId, UpdateOperatingScheduleRequestDto dto);
     Task<StationResponseDto> DeactivateStationAsync(string stationId, string deactivatedByUserId);
     Task<StationResponseDto> ActivateStationAsync(string stationId);
     Task<IEnumerable<StationResponseDto>> GetNearbyStationsAsync(double latitude, double longitude, double maxDistanceMeters = 10000);
     Task<IEnumerable<StationResponseDto>> GetAllStationsAsync();
-    Task<IEnumerable<ScheduleResponseDto>> GetStationSlotsAsync(string stationId);
 }

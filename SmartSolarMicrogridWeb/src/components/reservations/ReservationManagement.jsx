@@ -23,6 +23,7 @@ import {
     formatDuration,
     hoursUntil,
 } from '../../utils/reservationRules';
+import ReservationDecisionActions from './ReservationDecisionActions';
 
 const EMPTY_FORM = { prosumerNic: '', stationId: '', slotId: '', direction: 'Inject', requestedKwh: '' };
 
@@ -50,10 +51,10 @@ function describeSlot(slot, now, policy) {
     if (slot.status === 'Closed') {
         return { selectable: false, note: 'closed by operator' };
     }
-    if (new Date(slot.startUtc).getTime() <= now.getTime()) {
+    if (new Date(slot.startTime).getTime() <= now.getTime()) {
         return { selectable: false, note: 'already started' };
     }
-    if (!isWithinBookingWindow(slot.startUtc, now, policy)) {
+    if (!isWithinBookingWindow(slot.startTime, now, policy)) {
         return { selectable: false, note: `outside the ${policy.bookingWindowDays}-day window` };
     }
     if (slot.reservedPositions >= slot.totalPositions) {
@@ -245,6 +246,7 @@ export default function ReservationManagement() {
         try {
             const created = await createReservation({
                 prosumerNic: form.prosumerNic.trim(),
+                stationId: form.stationId,
                 slotId: form.slotId,
                 direction: form.direction,
                 requestedKwh: Number(form.requestedKwh),
@@ -289,6 +291,13 @@ export default function ReservationManagement() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Called after staff approve or reject a reservation; the list is reloaded from the API.
+    const handleDecided = async (updated) => {
+        setError('');
+        setSummary(`${updated.reservationNo} — ${updated.message}`);
+        await loadAll();
     };
 
     const handleCancelConfirmed = async (reservation) => {
@@ -445,7 +454,7 @@ export default function ReservationManagement() {
                                             // new booking, so the window rule does not apply to it.
                                             disabled={!info.selectable && !isCurrent}
                                         >
-                                            {formatDateTime(slot.startUtc)}
+                                            {formatDateTime(slot.startTime)}
                                             {isCurrent ? ' · current slot' : ''}
                                             {` · ${info.note}`}
                                         </option>
@@ -578,6 +587,8 @@ export default function ReservationManagement() {
                             }}
                             onAbortCancel={() => setPendingCancelId(null)}
                             onConfirmCancel={() => handleCancelConfirmed(reservation)}
+                            onDecided={handleDecided}
+                            onDecisionError={setError}
                         />
                     ))}
                     {visibleReservations.length === 0 && (
@@ -624,8 +635,8 @@ function Field({ label, error, children }) {
 // Spells out how the chosen slot scores against each rule, so a blocked submit
 // button always has a visible reason next to it.
 function SlotRuleCheck({ slot, reservation, now, policy }) {
-    const startCheck = validateSlotStart(slot.startUtc, now, policy);
-    const hours = hoursUntil(slot.startUtc, now);
+    const startCheck = validateSlotStart(slot.startTime, now, policy);
+    const hours = hoursUntil(slot.startTime, now);
 
     const checks = [
         {
@@ -666,7 +677,7 @@ function SlotRuleCheck({ slot, reservation, now, policy }) {
 
 function ReservationCard({
     reservation, now, policy, isBusy, isConfirmingCancel,
-    onEdit, onRequestCancel, onAbortCancel, onConfirmCancel,
+    onEdit, onRequestCancel, onAbortCancel, onConfirmCancel, onDecided, onDecisionError,
 }) {
     const eligibility = evaluateChangeEligibility(reservation, now, policy);
     const notice = describeNotice(reservation, now, policy);
@@ -702,6 +713,15 @@ function ReservationCard({
                         Change/cancel deadline: {formatDateTime(deadline)}
                     </p>
                 )}
+            </div>
+
+            {reservation.status === 'Rejected' && reservation.rejectionReason && (
+                <p className="text-xs text-red-700 mb-3">Rejected: {reservation.rejectionReason}</p>
+            )}
+
+            {/* Staff decision. The API only approves a Pending reservation and gives capacity back on reject. */}
+            <div className="mb-3">
+                <ReservationDecisionActions reservation={reservation} onDecided={onDecided} onError={onDecisionError} />
             </div>
 
             {/* Actions. Both are gated on the same notice and status rules. */}

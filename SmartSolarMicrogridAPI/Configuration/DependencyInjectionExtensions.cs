@@ -59,6 +59,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IEnergyBookingSlotRepository, EnergyBookingSlotRepository>();
         services.AddScoped<IEnergyReservationRepository, EnergyReservationRepository>();
         services.AddScoped<IReservationService, ReservationService>();
+        services.AddScoped<ISlotService, SlotService>();
 
         return services;
     }

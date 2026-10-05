@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SmartSolarMicrogridMobile</string>
+    <string name="app_name">Solarix</string>
     <string name="register_title">Prosumer Registration</string>
     <string name="register_subtitle">Create your account to start sharing solar energy</string>
     <string name="nic_hint">NIC</string>
@@ -25,7 +25,8 @@
     <string name="error_password_invalid">Password must be at least 8 characters</string>
     <string name="error_confirm_password_required">Please re-enter your password</string>
     <string name="error_password_mismatch">Passwords do not match</string>
-    <string name="app_logo_desc">App Logo</string>
+    <string name="app_logo_desc">Solarix logo</string>
+    <string name="brand_name">Solarix</string>
     <string name="tab_prosumer">Solar Prosumer</string>
     <string name="tab_grid_operator">Grid Operator</string>
     <string name="operator_login_title">Operator Portal</string>
@@ -41,4 +42,13 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
+    <string name="map_loading">Loading solar stations…</string>
+    <string name="map_default_location">Location is off, so stations near Colombo are shown.</string>
+    <string name="no_slots_available">No slots are open for booking at this station right now. Please check again later.</string>
+    <string name="reservation_locked">This reservation can no longer be changed or cancelled.</string>
+    <string name="hint_pending">Waiting for staff approval. You will see the new status here once it is decided.</string>
+    <string name="hint_approved">Approved. Show this QR code to the grid operator at the station when you arrive.</string>
+    <string name="hint_approved_no_qr">Approved. Your QR code could not be loaded yet. Go back and open this booking again.</string>
+    <string name="hint_rejected">This reservation was rejected.</string>
+    <string name="hint_cancelled">This reservation was cancelled and its capacity was released.</string>
 </resources>
