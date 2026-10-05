@@ -1,6 +1,7 @@
 package com.pavanuthsara.smartsolarmicrogridmobile.data.api
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import com.pavanuthsara.smartsolarmicrogridmobile.data.session.SessionManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -49,8 +50,13 @@ object ApiClient {
                     chain.proceed(newRequest)
                 }
 
+                // Request bodies contain passwords, so they are logged in debug builds only,
+                // and the bearer token is never written to the log.
+                val isDebuggable =
+                    (context.applicationContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
                 val loggingInterceptor = HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
+                    level = if (isDebuggable) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+                    redactHeader("Authorization")
                 }
 
                 val okHttpClient = OkHttpClient.Builder()

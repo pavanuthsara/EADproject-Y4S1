@@ -1,7 +1,9 @@
 // Service for managing internal staff (Backoffice / Grid Operators)
 // Fully hooked up to the .NET Backend API
 
-const API_BASE = "http://localhost:5014/api/users";
+import { API_BASE as API_ROOT } from "../config";
+
+const API_BASE = `${API_ROOT}/users`;
 
 export async function getStaff() {
     const response = await fetch(`${API_BASE}/staff`, {

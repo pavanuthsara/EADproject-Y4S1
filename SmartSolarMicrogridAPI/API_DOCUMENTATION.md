@@ -57,7 +57,7 @@ Registers a new user (Prosumer or Staff) in the system and returns a JWT token.
     ```
 
 ### 1.2 Login
-Authenticates an existing user and returns a JWT token.
+Authenticates an existing user and returns a JWT token. Any role can sign in with `email`. Prosumers can sign in with `nic` instead (used by the mobile app); a NIC belonging to a staff account is rejected. If both are sent, `nic` is used.
 
 *   **Endpoint:** `/api/auth/login`
 *   **Method:** `POST`
@@ -69,6 +69,17 @@ Authenticates an existing user and returns a JWT token.
       "password": "Password123!"
     }
     ```
+
+    or, for a prosumer:
+
+    ```json
+    {
+      "nic": "199012345678",
+      "password": "Password123!"
+    }
+    ```
+
+*   **Error Responses:** `400` "Invalid email or password." / "Invalid NIC or password." / "Enter your email address or NIC."; `403` "Account is deactivated."
 
 *   **Success Response (200 OK):**
 

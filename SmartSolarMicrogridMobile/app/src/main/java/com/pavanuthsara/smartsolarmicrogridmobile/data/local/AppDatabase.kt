@@ -7,11 +7,12 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [TestUser::class, Prosumer::class, Reservation::class], version = 3)
+@Database(entities = [TestUser::class, Prosumer::class, Reservation::class, CachedUser::class], version = 5)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun testUserDao(): TestUserDao
     abstract fun prosumerDao(): ProsumerDao
     abstract fun reservationDao(): ReservationDao
+    abstract fun cachedUserDao(): CachedUserDao
 
     companion object {
         @Volatile
@@ -33,6 +34,22 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `cached_user` (`userId` TEXT NOT NULL, `nic` TEXT NOT NULL, `fullName` TEXT NOT NULL, `email` TEXT NOT NULL, `role` TEXT NOT NULL, PRIMARY KEY(`userId`))"
+                )
+            }
+        }
+
+        // Adds the phone number to the cached profile. Rows cached before this get an empty phone
+        // until the user signs in again.
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `cached_user` ADD COLUMN `phone` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -40,7 +57,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                 INSTANCE = instance
                 instance

@@ -64,20 +64,28 @@ public class AuthService : IAuthService
             Token = token,
             ExpiresAtUtc = expires,
             UserId = created.Id,
+            Nic = created.Nic,
             FullName = created.FullName,
             Email = created.Email,
+            Phone = created.Phone,
             Role = created.Role
         };
     }
 
-    // Validates credentials and returns a JWT token.
+    // Validates credentials and returns a JWT token. Any role can sign in by email; prosumers can also use their NIC.
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto dto)
     {
-        var users = await _userRepository.FindAsync(u => u.Email == dto.Email);
-        var user = users.FirstOrDefault();
+        bool byNic = !string.IsNullOrWhiteSpace(dto.Nic);
+        if (!byNic && string.IsNullOrWhiteSpace(dto.Email))
+            throw new BusinessRuleException("Enter your email address or NIC.");
 
+        var user = byNic
+            ? await FindProsumerByNicAsync(dto.Nic!.Trim())
+            : await FindByEmailAsync(dto.Email!.Trim());
+
+        // The same message for an unknown account and a wrong password, so the response does not reveal which accounts exist.
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
-            throw new BusinessRuleException("Invalid email or password.");
+            throw new BusinessRuleException(byNic ? "Invalid NIC or password." : "Invalid email or password.");
 
         if (user.AccountStatus == AccountStatus.Deactivated.ToString())
             throw new ForbiddenException("Account is deactivated.");
@@ -89,9 +97,29 @@ public class AuthService : IAuthService
             Token = token,
             ExpiresAtUtc = expires,
             UserId = user.Id,
+            Nic = user.Nic,
             FullName = user.FullName,
             Email = user.Email,
+            Phone = user.Phone,
             Role = user.Role
         };
+    }
+
+    // Finds a user of any role by email.
+    private async Task<User?> FindByEmailAsync(string email)
+    {
+        var users = await _userRepository.FindAsync(u => u.Email == email);
+        return users.FirstOrDefault();
+    }
+
+    // Finds a prosumer by NIC. Old-format NICs end in V, which may be typed in either case.
+    private async Task<User?> FindProsumerByNicAsync(string nic)
+    {
+        string upper = nic.ToUpperInvariant();
+        string lower = nic.ToLowerInvariant();
+
+        var users = await _userRepository.FindAsync(u =>
+            u.Role == RoleConstants.Prosumer && (u.Nic == nic || u.Nic == upper || u.Nic == lower));
+        return users.FirstOrDefault();
     }
 }

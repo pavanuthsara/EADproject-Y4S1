@@ -11,7 +11,11 @@
     <string name="register">Register</string>
     <string name="registration_success">Registration successful</string>
     <string name="error_nic_required">NIC is required</string>
-    <string name="error_nic_invalid">NIC must be 12 digits or 10 digits ending with \'v\'</string>
+    <string name="error_nic_invalid">NIC must be 12 digits, or 9 digits ending with V</string>
+    <string name="address_hint">Address</string>
+    <string name="solar_capacity_hint">Solar Capacity (kW)</string>
+    <string name="error_address_required">Address is required</string>
+    <string name="error_solar_capacity_invalid">Enter your solar capacity in kW (0 to 1000)</string>
     <string name="error_full_name_required">Full name is required</string>
     <string name="error_email_required">Email is required</string>
     <string name="error_email_invalid">Enter a valid email address</string>

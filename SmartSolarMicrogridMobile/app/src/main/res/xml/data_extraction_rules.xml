@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
+   Backup and device-transfer rules for Android 12 and higher.
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+   The encrypted session file is excluded: its key lives in the Android Keystore and does not
+   move with a backup or transfer, so the copy could not be decrypted on the new device.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="sharedpref" path="secure_session.xml" />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="sharedpref" path="secure_session.xml" />
     </device-transfer>
-    -->
 </data-extraction-rules>
