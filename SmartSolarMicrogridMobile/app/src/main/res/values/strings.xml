@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SmartSolarMicrogridMobile</string>
+    <string name="app_name">Solarix</string>
     <string name="register_title">Prosumer Registration</string>
     <string name="register_subtitle">Create your account to start sharing solar energy</string>
     <string name="nic_hint">NIC</string>
@@ -25,7 +25,8 @@
     <string name="error_password_invalid">Password must be at least 8 characters</string>
     <string name="error_confirm_password_required">Please re-enter your password</string>
     <string name="error_password_mismatch">Passwords do not match</string>
-    <string name="app_logo_desc">App Logo</string>
+    <string name="app_logo_desc">Solarix logo</string>
+    <string name="brand_name">Solarix</string>
     <string name="tab_prosumer">Solar Prosumer</string>
     <string name="tab_grid_operator">Grid Operator</string>
     <string name="operator_login_title">Operator Portal</string>
