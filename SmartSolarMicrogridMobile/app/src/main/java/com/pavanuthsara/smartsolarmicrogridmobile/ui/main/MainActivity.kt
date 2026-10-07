@@ -57,10 +57,11 @@ class MainActivity : AppCompatActivity() {
         NavigationUtils.setupBottomNav(bottomNavigation, this, R.id.nav_dashboard)
     }
 
+    // Highlights the Home tab and refreshes the reservation counts whenever the screen comes back into view.
     override fun onResume() {
         super.onResume()
         bottomNavigation.selectedItemId = R.id.nav_dashboard
-        updateDashboard()
+        updateDashboardStats()
     }
 
     private fun bindViews() {
@@ -95,12 +96,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.buttonLogout).setOnClickListener {
             confirmLogout()
         }
-    }
-
-    // Refreshes the reservation counts whenever the screen comes back into view.
-    override fun onResume() {
-        super.onResume()
-        updateDashboardStats()
     }
 
     // Loads the signed-in prosumer's reservations and shows the counts.
