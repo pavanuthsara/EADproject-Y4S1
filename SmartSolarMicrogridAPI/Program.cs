@@ -42,6 +42,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-await app.InitializeMongoDbAsync();
+if (!app.Configuration.GetValue<bool>("Testing:SkipMongoInitialization"))
+{
+    await app.InitializeMongoDbAsync();
+}
 
 app.Run();
+
+public partial class Program;
