@@ -1,5 +1,19 @@
 # React + Vite
 
+## Run utility tests
+
+The web frontend utility tests use Vitest and do not start the backend or mobile app:
+
+```bash
+npm test
+```
+
+Run the tests in watch mode while developing:
+
+```bash
+npm run test:watch
+```
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:

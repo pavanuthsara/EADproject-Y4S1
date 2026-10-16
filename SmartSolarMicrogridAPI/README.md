@@ -88,6 +88,20 @@ curl http://localhost:5014/api/health/database
 
 Swagger is only enabled when the environment is Development. It is not available in production.
 
+### 6. Run API tests
+
+The backend has an integration test project that exercises the HTTP pipeline with
+`WebApplicationFactory`. Tests use a safe test configuration and skip MongoDB startup
+initialization, so they do not require a local or Atlas MongoDB instance:
+
+```bash
+dotnet test ../SmartSolarMicrogridAPI.Tests/SmartSolarMicrogridAPI.Tests.csproj
+```
+
+Add new endpoint tests to `SmartSolarMicrogridAPI.Tests/ApiEndpointTests.cs`. Keep tests
+focused on HTTP behavior and use a separate test-specific data strategy before adding
+tests that depend on persisted MongoDB data.
+
 ## Troubleshooting
 
 | Problem | Cause and fix |
